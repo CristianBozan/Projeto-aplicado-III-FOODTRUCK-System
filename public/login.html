@@ -72,7 +72,6 @@
         </div>
         <div class="login-actions">
           <button type="submit" class="btn btn-primary">Entrar</button>
-          <button type="button" id="btnDemo" class="btn btn-secondary">Demo</button>
         </div>
       </form>
   <div class="login-note">Usuário padrão: <code>admin</code> / Senha: <code>admin</code> (alterável via .env)</div>
@@ -84,7 +83,6 @@
   <script>
     const API_URL = 'http://localhost:3000';
     const form = document.getElementById('loginForm');
-    const btnDemo = document.getElementById('btnDemo');
 
     form.addEventListener('submit', (e) => {
       e.preventDefault();
@@ -101,10 +99,7 @@
       alert('Credenciais inválidas (use admin / admin ou configure AUTH_USER/AUTH_PASS)');
     });
 
-    btnDemo.addEventListener('click', () => {
-      document.getElementById('loginUser').value = 'admin';
-      document.getElementById('loginPass').value = 'admin';
-    });
+    // Demo button removed for production; keep simple login handler above.
   </script>
 </body>
 </html>
