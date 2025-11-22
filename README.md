@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # FoodTruck System
 
 Resumo e documentação do backend Node/Express + Sequelize usado no projeto.
