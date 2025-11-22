@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Food Truck System</title>
+    <link rel="stylesheet" href="style.css">
+  </head>
+  <body>
+    <header>
+      <div class="header-inner">
+        <div class="header-left">
+          <img src="logo-foodtruck.png" alt="Food Truck System logo" class="site-logo" />
+          <h1><span>FOOD TRUCK</span> System</h1>
+        </div>
+        <div class="header-right">
+          <button id="syncBackupBtn" class="btn btn-secondary" title="Gerar backup manual">🔄 Gerar Backup</button>
+          <button id="openBackupsBtn" class="btn btn-primary" title="Listar backups">📁 Backups</button>
+          <button id="logoutBtn" class="btn btn-danger" title="Sair">🚪 Sair</button>
+        </div>
+      </div>
+    </header>
+
+  <!-- Navigation -->
+  <nav>
+    <ul>
+      <li><a href="#dashboard" class="nav-link active" data-section="dashboard">📊 Dashboard</a></li>
+      <li><a href="#atendentes" class="nav-link" data-section="atendentes">👥 Atendentes</a></li>
+      <li><a href="#produtos" class="nav-link" data-section="produtos">🍔 Produtos</a></li>
+      <li><a href="#mesas" class="nav-link" data-section="mesas">🪑 Mesas</a></li>
+      <li><a href="#pedidos" class="nav-link" data-section="pedidos">📝 Pedidos</a></li>
+      <li>
+        <a href="#vendas" class="nav-link" data-section="vendas">💰 Vendas <span id="vendasBadge" class="nav-badge hidden" aria-live="polite">0</span></a>
+      </li>
+    </ul>
+  </nav>
+
+  <!-- Container -->
+  <div class="container">
+    <!-- Alert Container -->
+    <div id="alertContainer"></div>
+
+    <!-- Dashboard Section -->
+    <section id="dashboard" class="section active">
+      <div class="card">
+        <h2>📊 Dashboard - Relatórios e Análises</h2>
+        
+        <div class="dashboard-grid">
+          <div class="stat-card">
+            <h3>Quantidade de Vendas</h3>
+            <div class="stat-value" id="statVendas">-</div>
+          </div>
+          <div class="stat-card">
+            <h3>Faturamento Total</h3>
+            <div class="stat-value" id="statFaturamento">R$ -</div>
+          </div>
+          <div class="stat-card">
+            <h3>Ticket Médio</h3>
+            <div class="stat-value" id="statTicket">R$ -</div>
+          </div>
+        </div>
+
+          <div class="chart-grid-wrapper">
+          <div class="card">
+            <h3 class="chart-title">Faturamento por Dia</h3>
+            <div class="chart-controls">
+              <label>Período:</label>
+              <select id="filtroPeriodo" title="Filtro de período">
+                <option value="preset:day">Hoje</option>
+                <option value="preset:week">Últimos 7 dias</option>
+                <option value="preset:month">Mês atual</option>
+                <option value="custom">Personalizado</option>
+                <option value="selectMonth">Escolher mês</option>
+              </select>
+              <input type="date" id="periodStart" class="hidden-inline" title="Data início">
+              <input type="date" id="periodEnd" class="hidden-inline" title="Data fim">
+              <select id="selectMonth" class="hidden-inline" title="Selecionar mês">
+                <!-- preenchido via JS -->
+              </select>
+              <button class="btn btn-secondary" id="applyPeriodo">Aplicar</button>
+            </div>
+            <canvas id="chartVendasDia"></canvas>
+          </div>
+
+          <div class="card">
+            <h3 class="chart-title">Vendas por Pagamento</h3>
+            <canvas id="chartPagamento"></canvas>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3 class="chart-title">Vendas por Atendente</h3>
+          <div class="chart-controls">
+            <label>Atendente:</label>
+            <select id="selectAtendente" title="Selecionar atendente">
+              <option value="">Todos</option>
+              <!-- opções preenchidas via JS -->
+            </select>
+            <button class="btn btn-secondary" id="applyAtendente">Aplicar</button>
+          </div>
+          <canvas id="chartAtendente"></canvas>
+        </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Atendentes Section -->
+    <section id="atendentes" class="section">
+      <div class="card">
+        <h2>👥 Gerenciamento de Atendentes</h2>
+        
+        <div class="btn-group">
+          <button class="btn btn-primary" onclick="openAtendenteModal()">➕ Novo Atendente</button>
+          <button class="btn btn-secondary" onclick="loadAtendentes()">🔄 Atualizar Lista</button>
+        </div>
+
+        <div class="loading" id="loadingAtendentes">
+          <div class="spinner"></div>
+          Carregando atendentes...
+        </div>
+
+        <div class="table-container">
+          <table id="atendenteTable">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Nome</th>
+                <th>CPF</th>
+                <th>Telefone</th>
+                <th>Login</th>
+                <th>Tipo</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody id="atendenteTableBody">
+              <!-- Dados carregados via JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- Produtos Section -->
+    <section id="produtos" class="section">
+      <div class="card">
+        <h2>🍔 Gerenciamento de Produtos</h2>
+        
+        <div class="btn-group">
+          <button class="btn btn-primary" onclick="openProdutoModal()">➕ Novo Produto</button>
+          <div class="flex-gap">
+            <input id="produtoSearchInput" class="search-input" title="Pesquisar produtos" type="text" placeholder="Pesquisar produtos...">
+            <button id="produtoSearchBtn" class="btn btn-info">🔎 Buscar</button>
+            <button id="produtoClearBtn" class="btn btn-light" title="Limpar pesquisa">✖️</button>
+            <button class="btn btn-secondary" onclick="loadProdutos()">🔄 Atualizar Lista</button>
+            <span id="produtoResultsCount" class="produto-results-count" aria-live="polite"></span>
+          </div>
+        </div>
+
+        <div class="loading" id="loadingProdutos">
+          <div class="spinner"></div>
+          Carregando produtos...
+        </div>
+
+        <div class="table-container">
+          <table id="produtoTable">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Nome</th>
+                <th>Categoria</th>
+                <th>Preço</th>
+                <th>Estoque</th>
+                <th>Status</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody id="produtoTableBody">
+              <!-- Dados carregados via JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- Mesas Section -->
+    <section id="mesas" class="section">
+      <div class="card">
+        <h2>🪑 Gerenciamento de Mesas</h2>
+        
+        <div class="btn-group">
+          <button class="btn btn-primary" onclick="openMesaModal()">➕ Nova Mesa</button>
+          <button class="btn btn-secondary" onclick="loadMesas()">🔄 Atualizar Lista</button>
+        </div>
+
+        <div class="loading" id="loadingMesas">
+          <div class="spinner"></div>
+          Carregando mesas...
+        </div>
+
+        <div class="table-container">
+          <table id="mesaTable">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Número da Mesa</th>
+                <th>Status</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody id="mesaTableBody">
+              <!-- Dados carregados via JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- Pedidos Section -->
+    <section id="pedidos" class="section">
+      <!-- Área de Seleção de Produtos -->
+      <div class="card">
+        <h2>🍔 Cardápio - Selecione os Produtos</h2>
+        
+        <div class="loading" id="loadingCardapio">
+          <div class="spinner"></div>
+          Carregando cardápio...
+        </div>
+
+        <div id="cardapioGrid" class="cardapio-grid">
+          <!-- Produtos serão carregados aqui via JS -->
+        </div>
+      </div>
+
+      <!-- Carrinho de Pedido -->
+      <div class="card">
+        <h2>🛒 Carrinho do Pedido</h2>
+        
+        <div class="carrinho-header">
+          <div class="form-grid form-grid-tight">
+            <div class="form-group">
+              <label>Mesa *</label>
+              <select id="carrinhoMesa" required title="Mesa do carrinho">
+                <option value="">Selecione a mesa...</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Atendente *</label>
+              <select id="carrinhoAtendente" required title="Atendente do carrinho">
+                <option value="">Selecione o atendente...</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Forma de Pagamento</label>
+              <select id="carrinhoPagamento" title="Forma de pagamento do pedido">
+                <option value="">Selecione (opcional)</option>
+                <option value="pix">PIX</option>
+                <option value="credito">Crédito</option>
+                <option value="debito">Débito</option>
+                <option value="dinheiro">Dinheiro</option>
+              </select>
+            </div>
+            <!-- 'Pagar agora' removido: finalização de pedidos e registro de vendas agora é feito a partir da lista de Pedidos -->
+          </div>
+        </div>
+
+        <div id="carrinhoItens" class="carrinho-itens">
+          <div class="empty-state">
+            <div class="empty-state-icon">🛒</div>
+            <p>Carrinho vazio. Adicione produtos do cardápio acima.</p>
+          </div>
+        </div>
+
+        <div class="carrinho-total">
+          <div class="total-info">
+            <span class="total-label">Total do Pedido:</span>
+            <span class="total-valor" id="carrinhoTotal">R$ 0,00</span>
+          </div>
+          <div class="btn-group">
+            <button class="btn btn-danger" onclick="limparCarrinho()">🗑️ Limpar Carrinho</button>
+            <button class="btn btn-success" onclick="finalizarPedido()">✅ Finalizar Pedido</button>
+          </div>
+        </div>
+      </div>
+
+      
+    </section>
+
+    <!-- Vendas Section (contém agora: Pedidos Realizados primeiro, depois Gerenciamento de Vendas) -->
+    <section id="vendas" class="section">
+      <!-- Lista de Pedidos Realizados (movida para cá)
+           Nota: este card foi movido da aba Pedidos para aparecer primeiro dentro da aba Vendas -->
+      <div class="card">
+        <h2>📋 Pedidos Realizados</h2>
+        
+        <div class="controls-row">
+          <div class="left">
+            <label for="pedidoFilterStatus">Filtrar:</label>
+            <select id="pedidoFilterStatus" title="Filtrar pedidos por status">
+              <option value="all">Todos</option>
+              <option value="aberto">Abertos</option>
+              <option value="pago">Pagos</option>
+            </select>
+            <label for="pedidoSortBy" class="margin-left">Ordenar:</label>
+            <select id="pedidoSortBy" title="Ordenar pedidos">
+              <option value="data_desc">Data ↓</option>
+              <option value="data_asc">Data ↑</option>
+              <option value="total_desc">Total ↓</option>
+              <option value="total_asc">Total ↑</option>
+              <option value="status_desc">Status ↓</option>
+              <option value="status_asc">Status ↑</option>
+              <option value="id_desc">ID ↓</option>
+              <option value="id_asc">ID ↑</option>
+            </select>
+          </div>
+
+          <div>
+            <button class="btn btn-secondary" onclick="loadPedidos()">🔄 Atualizar Lista</button>
+          </div>
+        </div>
+
+        <div class="loading" id="loadingPedidos">
+          <div class="spinner"></div>
+          Carregando pedidos...
+        </div>
+
+        <div class="table-container">
+          <table id="pedidoTable">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Data/Hora</th>
+                <th>Mesa</th>
+                <th>Atendente</th>
+                <th>Status</th>
+                <th>Pagamento</th>
+                <th>Total</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody id="pedidoTableBody">
+              <!-- Dados carregados via JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>💰 Gerenciamento de Vendas</h2>
+        
+        <div class="btn-group">
+          <button class="btn btn-secondary" onclick="loadVendas()">🔄 Atualizar Lista</button>
+        </div>
+
+        <div class="loading" id="loadingVendas">
+          <div class="spinner"></div>
+          Carregando vendas...
+        </div>
+
+        <div class="table-container">
+          <table id="vendaTable">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Data/Hora</th>
+                <th>ID Pedido</th>
+                <th>Valor Total</th>
+                <th>Forma de Pagamento</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody id="vendaTableBody">
+              <!-- Dados carregados via JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- Modal Atendente -->
+  <div id="atendenteModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="atendenteModalTitle">Novo Atendente</h3>
+        <button class="close-modal" onclick="closeModal('atendenteModal')">&times;</button>
+      </div>
+      <form id="atendenteForm">
+        <input type="hidden" id="atendenteId">
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Nome *</label>
+            <input type="text" id="atendenteNome" required title="Nome do atendente" placeholder="Nome completo">
+          </div>
+          <div class="form-group">
+            <label>CPF *</label>
+            <input type="text" id="atendenteCpf" maxlength="11" required title="CPF do atendente" placeholder="Somente números">
+          </div>
+          <div class="form-group">
+            <label>Telefone</label>
+            <input type="text" id="atendenteTelefone" title="Telefone do atendente" placeholder="(XX) 9XXXX-XXXX">
+          </div>
+          <div class="form-group">
+            <label>Login *</label>
+            <input type="text" id="atendenteLogin" required title="Login do atendente" placeholder="login">
+          </div>
+          <div class="form-group">
+            <label>Senha *</label>
+            <input type="password" id="atendenteSenha" required title="Senha do atendente" placeholder="Senha">
+          </div>
+          <div class="form-group">
+            <label>Tipo de Usuário *</label>
+            <select id="atendenteTipo" required title="Tipo de usuário">
+              <option value="atendente">Atendente</option>
+              <option value="gerente">Gerente</option>
+            </select>
+          </div>
+        </div>
+        <div class="btn-group">
+          <button type="submit" class="btn btn-primary">💾 Salvar</button>
+          <button type="button" class="btn btn-secondary" onclick="closeModal('atendenteModal')">❌ Cancelar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal Produto -->
+  <div id="produtoModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="produtoModalTitle">Novo Produto</h3>
+        <button class="close-modal" onclick="closeModal('produtoModal')">&times;</button>
+      </div>
+      <form id="produtoForm">
+        <input type="hidden" id="produtoId">
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Nome *</label>
+            <input type="text" id="produtoNome" required title="Nome do produto" placeholder="Ex: X-Burger">
+          </div>
+          <div class="form-group">
+            <label>Categoria</label>
+            <input type="text" id="produtoCategoria" title="Categoria do produto" placeholder="Ex: Lanches">
+          </div>
+          <div class="form-group">
+            <label>Preço *</label>
+            <input type="number" id="produtoPreco" step="0.01" min="0" required title="Preço do produto">
+          </div>
+          <div class="form-group">
+            <label>Quantidade em Estoque</label>
+            <input type="number" id="produtoEstoque" min="0" value="0" title="Quantidade em estoque">
+          </div>
+          <div class="form-group">
+            <label>Status *</label>
+            <select id="produtoStatus" required title="Status do produto">
+              <option value="ativo">Ativo</option>
+              <option value="inativo">Inativo</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Foto (URL)</label>
+            <input type="text" id="produtoFoto" title="URL da foto do produto" placeholder="https://...">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Descrição</label>
+          <textarea id="produtoDescricao" title="Descrição do produto" placeholder="Ingredientes, observações..."></textarea>
+        </div>
+        <div class="btn-group">
+          <button type="submit" class="btn btn-primary">💾 Salvar</button>
+          <button type="button" class="btn btn-secondary" onclick="closeModal('produtoModal')">❌ Cancelar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal Mesa -->
+  <div id="mesaModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="mesaModalTitle">Nova Mesa</h3>
+        <button class="close-modal" onclick="closeModal('mesaModal')">&times;</button>
+      </div>
+      <form id="mesaForm">
+        <input type="hidden" id="mesaId">
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Número da Mesa *</label>
+            <input type="number" id="mesaNumero" min="1" required title="Número da mesa">
+          </div>
+          <div class="form-group">
+            <label>Status *</label>
+            <select id="mesaStatus" required title="Status da mesa">
+              <option value="livre">Livre</option>
+              <option value="ocupada">Ocupada</option>
+            </select>
+          </div>
+        </div>
+        <div class="btn-group">
+          <button type="submit" class="btn btn-primary">💾 Salvar</button>
+          <button type="button" class="btn btn-secondary" onclick="closeModal('mesaModal')">❌ Cancelar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal Pedido -->
+  <div id="pedidoModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="pedidoModalTitle">Novo Pedido</h3>
+        <button class="close-modal" onclick="closeModal('pedidoModal')">&times;</button>
+      </div>
+      <form id="pedidoForm">
+        <input type="hidden" id="pedidoId">
+        <div class="form-grid">
+            <div class="form-group">
+            <label>Mesa *</label>
+            <select id="pedidoMesa" required title="Mesa do pedido">
+              <option value="">Selecione...</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Atendente *</label>
+            <select id="pedidoAtendente" required title="Atendente do pedido">
+              <option value="">Selecione...</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Status *</label>
+            <select id="pedidoStatus" required title="Status do pedido">
+              <option value="aberto">Aberto</option>
+              <option value="finalizado">Finalizado</option>
+              <option value="pago">Pago</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Forma de Pagamento</label>
+            <select id="pedidoPagamento" title="Forma de pagamento do pedido">
+              <option value="">Selecione...</option>
+              <option value="pix">PIX</option>
+              <option value="credito">Crédito</option>
+              <option value="debito">Débito</option>
+              <option value="dinheiro">Dinheiro</option>
+              <!-- opção Mix removida conforme solicitado -->
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Total (R$)</label>
+            <input type="number" id="pedidoTotal" step="0.01" min="0" value="0" title="Total do pedido">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Observações</label>
+          <textarea id="pedidoObservacoes" title="Observações do pedido" placeholder="Ex: sem cebola"></textarea>
+        </div>
+        <!-- Informação sobre Venda relacionada -->
+        <div id="pedidoVendaInfo" class="form-group pedido-venda-info">
+          <!-- preenchido dinamicamente via JS quando existir venda vinculada -->
+        </div>
+        <div class="btn-group">
+          <button type="submit" class="btn btn-primary">💾 Salvar</button>
+          <button type="button" class="btn btn-secondary" onclick="closeModal('pedidoModal')">❌ Cancelar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal Venda -->
+  <div id="vendaModal" class="modal hidden" data-backup="true">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="vendaModalTitle">Nova Venda</h3>
+        <button class="close-modal" onclick="closeModal('vendaModal')">&times;</button>
+      </div>
+      <form id="vendaForm">
+        <input type="hidden" id="vendaId">
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Pedido *</label>
+            <select id="vendaPedido" required title="Pedido vinculado à venda">
+              <option value="">Selecione...</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Forma de Pagamento *</label>
+            <select id="vendaPagamento" required title="Forma de pagamento da venda">
+              <option value="">Selecione...</option>
+              <option value="pix">PIX</option>
+              <option value="credito">Crédito</option>
+              <option value="debito">Débito</option>
+              <option value="dinheiro">Dinheiro</option>
+              <!-- opção Mix removida conforme solicitado -->
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Valor Total (R$) *</label>
+            <input type="number" id="vendaValor" step="0.01" min="0" required title="Valor total da venda">
+          </div>
+        </div>
+
+          <!-- Modal Finalizar Pedido (melhor UX para escolher forma de pagamento)
+               OBS: movido para fora do form de Venda para evitar forms aninhados -->
+        <div class="btn-group">
+          <button type="submit" class="btn btn-primary">💾 Salvar</button>
+          <button type="button" class="btn btn-secondary" onclick="closeModal('vendaModal')">❌ Cancelar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <!-- Modal Finalizar Pedido (melhor UX para escolher forma de pagamento) -->
+  <div id="finalizarModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="finalizarModalTitle">Finalizar Pedido</h3>
+        <button type="button" class="close-modal" onclick="closeModal('finalizarModal')">&times;</button>
+      </div>
+      <form id="finalizarForm">
+        <input type="hidden" id="finalizarPedidoId">
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Forma de Pagamento *</label>
+            <select id="finalizarForma" required title="Forma de pagamento">
+              <option value="">Selecione...</option>
+              <option value="pix">PIX</option>
+              <option value="dinheiro">Dinheiro</option>
+              <option value="credito">Crédito</option>
+              <option value="debito">Débito</option>
+              <!-- opção Mix removida conforme solicitado -->
+            </select>
+          </div>
+        </div>
+        <!-- Resumo do pedido (itens + total) exibido para confirmação antes de finalizar -->
+        <div id="finalizarResumo" class="finalizar-resumo" aria-live="polite">
+          <!-- preenchido dinamicamente via JS: lista de itens e total -->
+          <div class="resumo-empty">Carregando resumo do pedido...</div>
+        </div>
+        <div class="btn-group">
+          <button type="submit" class="btn btn-primary">✅ Finalizar</button>
+          <button type="button" class="btn btn-secondary" onclick="closeModal('finalizarModal')">❌ Cancelar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+    <!-- Modal Backups -->
+    <div id="backupsModal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3>Backups</h3>
+          <button class="close-modal" onclick="closeModal('backupsModal')">&times;</button>
+        </div>
+  <div class="btn-group">
+          <button class="btn btn-secondary" onclick="fetchBackups()">🔄 Atualizar</button>
+          <button class="btn btn-danger" onclick="document.getElementById('backupsTableBody').innerHTML='';">🧹 Limpar lista</button>
+        </div>
+  <div id="loadingBackups" class="loading">
+          <div class="spinner"></div>
+          Carregando backups...
+        </div>
+        <div class="table-container">
+          <table id="backupsTable">
+            <thead>
+              <tr>
+                <th>Nome</th>
+                <th>Tamanho</th>
+                <th>Modificado</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody id="backupsTableBody">
+              <!-- preenchido via JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  <!-- Chart.js (global) - precisa ser carregado antes do app.js que usa Chart -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

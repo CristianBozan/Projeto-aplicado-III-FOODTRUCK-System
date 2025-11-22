@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Login - Food Truck System</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    /* Pequeno estilo local para a tela de login */
+    /* Page layout: left image, right login */
+    .login-page { display:flex; min-height:100vh; }
+  /* left 50% / right 50% to bring the login closer to center */
+  /* increase left image width to reduce white area on the right */
+  .left-panel { flex: 1 1 65%; background-color: #d92b2b; background-image: url("fundo%20solido%20para%20a%20tela%20de%20login.png"); background-size: cover; background-position: center; background-repeat: no-repeat; position:relative; }
+  /* subtle dark overlay for readability */
+  .left-panel::before { content: ''; position: absolute; inset: 0; background: rgba(0,0,0,0.12); }
+  .right-panel { flex: 0 0 35%; display:flex; align-items:center; justify-content:flex-start; padding:1rem 1.5rem; }
+
+    /* Pequeno estilo local para a tela de login */
+  /* slightly larger login window but closer to the center */
+  /* use relative width so the login window scales nicely (90% of column, capped) */
+  .login-wrapper { width:90%; max-width:900px; margin:1.5rem auto; }
+  /* make the login card white for contrast over the red background */
+  .login-card { padding:2.5rem; border-radius:14px; box-shadow:0 12px 36px rgba(0,0,0,0.22); background-color: #ffffff; color: #111; }
+  .login-card h2 { color: #d92b2b; }
+  .login-card label { color: #333; font-weight:700; font-size:1.05rem; }
+  .login-card input { display:block; width:100%; padding:0.8rem 1rem; margin-top:0.35rem; margin-bottom:0.9rem; border-radius:8px; border:1px solid rgba(0,0,0,0.12); background: #fff; color:#111; box-shadow: inset 0 1px 2px rgba(0,0,0,0.02); font-size:1rem; }
+  .login-card .btn { min-width:6rem; font-size:1rem; padding:0.6rem 1rem; }
+  .login-note { color:#444; font-size:1rem; }
+    .login-card h2 { color:var(--primary-red); margin-bottom:1rem; font-size:1.9rem; }
+    .login-logo { display:block; margin:0 auto 1rem; width:140px; height:auto; }
+    @media (max-width:480px) { .login-logo { width:80px; } }
+
+    /* Responsive: collapse to single column on small screens */
+    @media (max-width:900px) {
+      .login-page { flex-direction:column; }
+      .left-panel { display:none; }
+      .right-panel { flex: 1 1 auto; padding:2rem; }
+      .login-wrapper { margin:4rem auto; transform:none; width:92%; }
+    }
+    @media (min-width:1200px) {
+      .login-wrapper { transform: translateX(-4%); }
+    }
+    @media (max-width:480px) {
+      .login-card h2 { font-size:1.4rem; }
+      .login-card label { font-size:0.95rem; }
+      .login-card input { font-size:0.95rem; }
+      .login-card .btn { font-size:0.95rem; }
+      .login-logo { width:100px; }
+    }
+    .login-actions { display:flex; gap:0.75rem; margin-top:1rem }
+
+    .login-note { margin-top:1rem; color:#666; font-size:0.9rem }
+  </style>
+</head>
+<body>
+  <div class="login-page">
+    <div class="left-panel" aria-hidden="true"></div>
+    <div class="right-panel">
+      <div class="container login-wrapper">
+        <div class="card login-card">
+  <img src="logo-foodtruck.png" alt="Logo Food Truck" class="login-logo" />
+  <h2>Entrar — Food Truck System</h2>
+      <form id="loginForm">
+        <div class="form-group">
+          <label>Usuário</label>
+          <input id="loginUser" type="text" required placeholder="Usuário">
+        </div>
+        <div class="form-group">
+          <label>Senha</label>
+          <input id="loginPass" type="password" required placeholder="Senha">
+        </div>
+        <div class="login-actions">
+          <button type="submit" class="btn btn-primary">Entrar</button>
+          <button type="button" id="btnDemo" class="btn btn-secondary">Demo</button>
+        </div>
+      </form>
+  <div class="login-note">Usuário padrão: <code>admin</code> / Senha: <code>admin</code> (alterável via .env)</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API_URL = 'http://localhost:3000';
+    const form = document.getElementById('loginForm');
+    const btnDemo = document.getElementById('btnDemo');
+
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const username = document.getElementById('loginUser').value.trim();
+      const password = document.getElementById('loginPass').value;
+      // Autenticação local simples (fallback) — compara com credenciais padrão
+      const DEFAULT_USER = 'admin';
+      const DEFAULT_PASS = 'admin';
+      if (username === DEFAULT_USER && password === DEFAULT_PASS) {
+        localStorage.setItem('loggedIn', '1');
+        window.location = '/';
+        return;
+      }
+      alert('Credenciais inválidas (use admin / admin ou configure AUTH_USER/AUTH_PASS)');
+    });
+
+    btnDemo.addEventListener('click', () => {
+      document.getElementById('loginUser').value = 'admin';
+      document.getElementById('loginPass').value = 'admin';
+    });
+  </script>
+</body>
+</html>

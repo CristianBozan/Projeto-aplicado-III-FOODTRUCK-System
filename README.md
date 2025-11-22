@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # FoodTruck System
 
 Resumo e documentação do backend Node/Express + Sequelize usado no projeto.
@@ -61,6 +62,7 @@ Observação: o projeto usa `sequelize.sync()` no startup para sincronizar tabel
 - `src/controllers/` — controllers por recurso (ex.: `backupController.js`).
 - `src/routes/` — rotas por recurso.
 - `public/` — frontend estático e scripts de UI.
+
 
 ## Banco de dados / Models importantes
 
@@ -333,3 +335,4 @@ Se quiser, eu faço agora:
 - Proteger as rotas de backup com um middleware simples (autenticação baseada em sessão/localStorage).
 - Implementar restauração de estoque.
 - Comitar estas alterações com mensagens claras.
+>>>>>>> feature/backup-audit
