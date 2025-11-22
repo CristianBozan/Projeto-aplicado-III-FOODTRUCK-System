@@ -9,6 +9,30 @@ Resumo e documentação do backend Node/Express + Sequelize usado no projeto.
 - ORM: Sequelize com MySQL (`src/config/database.js`).
 - Frontend estático: `public/` (HTML/CSS/JS).
 
+## Proposta de Solução Tecnológica Escolhida
+
+Para este projeto foi adotada a seguinte pilha tecnológica pela combinação de facilidade de desenvolvimento, disponibilidade de bibliotecas maduras e compatibilidade com o escopo acadêmico e de produção esperado:
+
+- Backend: **Node.js** com **Express** — escolha motivada pela uniformidade da linguagem (JavaScript) entre frontend e backend, rápida prototipagem e ampla disponibilidade de pacotes (npm). O modelo assíncrono do Node facilita operações I/O intensivas comuns em APIs REST.
+- ORM: **Sequelize** — abstrai o acesso ao banco relacional, reduz código boilerplate para CRUD e facilita mudanças futuras entre dialetos (MySQL/Postgres). Permite trabalhar com models facilmente e integrar sincronização/migrações quando necessário.
+- Banco de Dados: **MySQL** (via `mysql2`) — selecionado por sua simplicidade de configuração em ambientes de desenvolvimento e ampla disponibilidade em provedores de hospedagem; também é compatível com o conhecimento prévio do curso e com o uso do Sequelize. Para projetos de maior escala, a migração para PostgreSQL é direta com Sequelize.
+- Frontend: **Arquivos estáticos** (HTML/CSS/vanilla JS) servidos por Express — solução leve e suficiente para a interface de gerenciamento do Food Truck sem a complexidade de frameworks SPA. Facilidade para integrar operações de export/download e tokens no navegador.
+- Agendamento e relatórios: **node-cron** para agendamento de backups automáticos e **exceljs** para geração de planilhas `.xlsx` — escolhas que permitem exportações compatíveis com ferramentas de escritório (Excel) e automação simples sem depender de serviços externos.
+
+Razões principais para as escolhas:
+
+- Curva de aprendizado e produtividade: manter JavaScript em toda a stack acelera desenvolvimento e revisão por equipes pequenas (projeto acadêmico).
+- Ecossistema maduro: Express, Sequelize, exceljs e node-cron têm documentação e exemplos amplamente disponíveis, reduzindo riscos de integração.
+- Flexibilidade e portabilidade: o uso do Sequelize permite trocar o dialeto do banco sem reescrever a camada de acesso (útil para migração futuro para Postgres ou outro RDBMS).
+- Simplicidade operacional: configuração e deploy em ambientes de ensino/estágio costumam ter MySQL disponível por padrão; logs e backups locais (JSON/Excel) facilitam verificação manual e recuperação.
+
+Observações e recomendações:
+
+- Em produção recomenda-se migrar para migrações formais (`sequelize-cli`) em vez de depender de `sequelize.sync()` no startup.
+- Para segurança e auditoria, substituir o middleware de token simples por um sistema de autenticação robusto (JWT + roles) e proteger backups/enpoints sensíveis.
+- Para cargas maiores ou requisitos transacionais mais rígidos, considere PostgreSQL e políticas de replicação/backups centralizados (S3, RDS snapshots, etc.).
+
+
 O projeto oferece endpoints REST para `produtos`, `pedidos`, `vendas`, `mesas`, `atendentes` e um sistema de backup/restore com exportação Excel/JSON.
 
 ## Stack
