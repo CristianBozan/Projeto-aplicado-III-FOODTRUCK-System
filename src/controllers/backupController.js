@@ -38,24 +38,34 @@ module.exports = {
       const itens = await ItemPedido.findAll({ transaction: t });
       const produtos = await require('../models/Produto').findAll({ transaction: t });
 
-      // agrega itens por pedido
+      // Converter instâncias Sequelize para objetos plain para garantir
+      // serialização consistente e evitar propriedades/metadata inesperadas
+      const vendasPlain = vendas.map(v => (v && v.toJSON) ? v.toJSON() : v);
+      const itensPlain = itens.map(i => (i && i.toJSON) ? i.toJSON() : i);
+      const produtosPlain = produtos.map(p => (p && p.toJSON) ? p.toJSON() : p);
+
+      // agrega itens por pedido (usando objetos plain)
       const itensPorPedido = {};
-      itens.forEach(it => {
+      itensPlain.forEach(it => {
         const pid = it.id_pedido;
         if (!itensPorPedido[pid]) itensPorPedido[pid] = [];
         itensPorPedido[pid].push(it);
       });
-      // juntar pedidos com seus itens
-      const pedidosComItens = pedidos.map(p => ({ ...p.toJSON(), itens: itensPorPedido[p.id_pedido] || [] }));
 
-      // calcula vendasPorDia a partir de vendas
+      // juntar pedidos (plain) com seus itens
+      const pedidosComItens = pedidos.map(p => {
+        const pj = (p && p.toJSON) ? p.toJSON() : p;
+        return { ...pj, itens: itensPorPedido[pj.id_pedido] || [] };
+      });
+
+      // calcula vendasPorDia a partir de vendasPlain
       const vendasPorDiaMap = {};
-      vendas.forEach(v => {
+      vendasPlain.forEach(v => {
         const d = new Date(v.data_hora).toISOString().slice(0,10); // YYYY-MM-DD
         vendasPorDiaMap[d] = (vendasPorDiaMap[d] || 0) + parseFloat(v.valor_total || 0);
       });
       const vendasPorDia = Object.keys(vendasPorDiaMap).sort().map(k => ({ data: k, total_vendas: vendasPorDiaMap[k] }));
-      const conteudo = { vendas, pedidos: pedidosComItens, produtos, vendasPorDia, gerado_em: new Date() };
+      const conteudo = { vendas: vendasPlain, pedidos: pedidosComItens, produtos: produtosPlain, vendasPorDia, gerado_em: new Date() };
       const registro = await Backup.create({ nome, conteudo_json: JSON.stringify(conteudo), data_hora: new Date() }, { transaction: t });
       await t.commit();
       return registro;
