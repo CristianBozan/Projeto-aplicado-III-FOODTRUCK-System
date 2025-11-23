@@ -1,0 +1,64 @@
+@startuml
+class Produto {
+  +id_produto: integer
+  +nome: string
+  +descricao: string
+  +preco: decimal
+  +quantidade_estoque: integer
+  +status: string
+}
+class Pedido {
+  +id_pedido: integer
+  +data_hora: datetime
+  +id_atendente: integer
+  +id_mesa: integer
+  +forma_pagamento: string
+  +status: string
+  +observacoes: string
+  +total: decimal
+}
+class ItemPedido {
+  +id_item: integer
+  +id_pedido: integer
+  +id_produto: integer
+  +quantidade: integer
+  +preco_unitario: decimal
+  +subtotal: decimal
+}
+class Venda {
+  +id_venda: integer
+  +id_pedido: integer
+  +data_hora: datetime
+  +valor_total: decimal
+  +forma_pagamento: string
+}
+class Atendente {
+  +id_atendente: integer
+  +nome: string
+  +email: string
+}
+class Mesa {
+  +id_mesa: integer
+  +descricao: string
+}
+class Backup {
+  +id_backup: integer
+  +nome: string
+  +conteudo_json: text
+  +data_hora: datetime
+}
+class EstoqueLog {
+  +id_estoque_log: integer
+  +id_produto: integer
+  +acao: string
+  +quantidade_anterior: integer
+  +quantidade_nova: integer
+  +nota: string
+  +data_hora: datetime
+}
+
+Pedido "1" -- "*" ItemPedido : possui
+Produto "1" -- "*" ItemPedido : referenciado por
+Pedido "1" -- "0..1" Venda : pode ter
+Produto "1" -- "*" EstoqueLog : registra alterações
+@enduml

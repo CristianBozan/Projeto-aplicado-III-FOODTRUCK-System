@@ -1,0 +1,20 @@
+@startuml
+node "Servidor de Aplicação (Node.js)" as AppNode {
+  component "foodtruck-system (app)" as App
+}
+node "Servidor de Banco (MySQL)" as DBNode {
+  database "MySQL" as DB
+}
+node "Armazenamento (opcional)" as Storage {
+  folder "Backups (S3 / FS)" as Backups
+}
+AppNode --> DBNode : conexão MySQL (mysql2)
+AppNode --> Storage : upload/download backups (opcional)
+
+legend left
+  Implementação típica:
+  - App executando Node.js (processo / container)
+  - Banco MySQL (instância gerenciada ou container)
+  - Opcionalmente S3 para backups/arquivos grandes
+endlegend
+@enduml

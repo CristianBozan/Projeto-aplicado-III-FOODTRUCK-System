@@ -1,0 +1,21 @@
+@startuml
+actor Cliente
+participant "Front-end (public)" as FE
+participant "PedidoController (API)" as API
+participant "Pedido Model" as Pedido
+participant "ItemPedido Model" as Item
+participant "Produto Model" as Produto
+database "MySQL" as DB
+
+Cliente -> FE : Preenche formulário e envia (POST /pedidos)
+FE -> API : POST /pedidos {itens, total, id_atendente}
+API -> API : Inicia transação
+API -> Pedido : create(pedidoPayload)
+Pedido -> DB : INSERT pedidos
+API -> Item : create(itens) [loop]
+Item -> DB : INSERT itens_pedido
+API -> Produto : atualizar quantidade_estoque (decremento) [loop]
+Produto -> DB : UPDATE produtos
+API -> API : commit
+API -> FE : 201 Created (pedido criado)
+@enduml

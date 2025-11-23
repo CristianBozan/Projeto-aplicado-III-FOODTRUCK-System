@@ -1,0 +1,21 @@
+@startuml
+start
+:Receber request /backups/:id/restore;
+:Carregar backup (conteudo_json);
+if (mode == 'force'?) then (sim)
+  :Apagar pedidos, itens e vendas atuais;
+  :Recriar pedidos, itens e vendas;
+  :Sobrescrever produtos (criar/atualizar) e gravar logs em `estoque_logs` (acao: create/update);
+else (não)
+  :Para cada pedido do backup;
+  if (pedido existe?) then (sim)
+    :pular;
+  else (não)
+    :criar pedido e itens;
+  endif
+  :Para cada venda do backup -> criar se ausente;
+  :Para cada produto do backup -> se existe e estoque==0 então atualizar; ao atualizar gravar entrada em `estoque_logs` (acao: update, nota: 'restore safe');
+endif
+:Retornar relatório de resultado;
+stop
+@enduml
