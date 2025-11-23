@@ -3,5 +3,4 @@ npm-debug.log
 .env
 backups/
 backup_*.json
-public/assets/
 .vscode/
