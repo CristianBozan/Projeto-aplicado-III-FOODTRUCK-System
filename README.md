@@ -3,317 +3,391 @@
 Resumo e documentação do backend Node/Express + Sequelize usado no projeto.
 
 ## Visão Geral
+# Food Truck System
 
-- Backend: Node.js + Express (entrypoint: `src/app.js`).
-- ORM: Sequelize com MySQL (`src/config/database.js`).
-- Frontend estático: `public/` (HTML/CSS/JS).
+Este repositório contém a aplicação "Food Truck System", uma solução web para gestão de operações de um food truck — cadastro de produtos, gerenciamento de mesas, criação e acompanhamento de pedidos, registro de vendas, administração de atendentes, relatórios e um sistema de backup/restauração com exportação em Excel/JSON.
 
-O projeto oferece endpoints REST para `produtos`, `pedidos`, `vendas`, `mesas`, `atendentes` e um sistema de backup/restore com exportação Excel/JSON.
+O objetivo deste README é documentar a arquitetura, tecnologias utilizadas, instruções de instalação e operação, e pontos relevantes para manutenção e implantação.
 
-## Stack
+------------------------------------------------------------------------------
 
-- Node.js
-- Express
-- Sequelize (MySQL)
-- exceljs (exportar .xlsx)
-- node-cron (agendamento de backups)
+## Sumário
 
-## Instalação e execução (desenvolvimento)
+- Visão geral
+- Tecnologias principais
+- Pré-requisitos
+- Instalação e execução
+- Variáveis de ambiente
+- Estrutura do projeto
+- Modelos e tabelas principais
+- Endpoints principais (resumo)
+- Sistema de backup e restauração
+# Food Truck System
 
-1. Instale dependências:
-
-```cmd
-npm install
-```
-
-2. Crie um arquivo `.env` com variáveis de ambiente mínimas (exemplo):
-
-```text
-DB_NAME=seu_banco
-DB_USER=usuario
-DB_PASS=senha
-DB_HOST=localhost
-DB_PORT=3306
-DB_DIALECT=mysql
-BACKUP_TOKEN=<token-secreto-para-backups>
-```
-
-3. Inicie em modo dev (nodemon):
-
-```cmd
-npm run dev
-```
-
-Observação: o projeto usa `sequelize.sync()` no startup para sincronizar tabelas — em produção prefira migrações.
-
-## Convenções importantes
-
-- Módulos CommonJS (`require`, `module.exports`).
-- Campos PK em models usam snake_case (ex.: `id_produto`, `id_pedido`).
-- Controllers seguem padrão de métodos async: `listar`, `buscarPorId`, `criar`, `atualizar`, `deletar`.
-- Error handling simples: controllers retornam 500 com `err.message`.
-
-## Estrutura relevante
-
-- `src/app.js` — entrypoint do servidor e registro de rotas.
-- `src/config/database.js` — configuração do Sequelize.
-- `src/models/` — models Sequelize (ex.: `Produto.js`, `Pedido.js`, `Venda.js`, `EstoqueLog.js`, `Backup.js`).
-- `src/controllers/` — controllers por recurso (ex.: `backupController.js`).
-- `src/routes/` — rotas por recurso.
-- `public/` — frontend estático e scripts de UI.
-
-
-## Banco de dados / Models importantes
-
-- `produtos` (model `Produto`) — campos: `id_produto`, `nome`, `preco`, `quantidade_estoque`, etc.
-- `pedidos` / `itens_pedido` (models `Pedido` / `ItemPedido`) — pedidos com seus itens.
-- `vendas` (model `Venda`) — registra pagamentos.
-- `backups` (model `Backup`) — armazena `conteudo_json` com snapshot.
-- `estoque_logs` (model `EstoqueLog`) — auditoria de mudanças de estoque: `id_estoque_log`, `id_produto`, `acao`, `quantidade_anterior`, `quantidade_nova`, `nota`, `data_hora`.
-
-## Sistema de Backup
-
-Funcionalidades:
-
-- Backup automático diário agendado com `node-cron` (configurado para rodar às `05:00` — fuso/ajuste no `src/app.js`).
-- Backup manual via endpoint `POST /backups`.
-- Backups são armazenados na tabela `backups` como JSON (`conteudo_json`) e contêm: `vendas`, `pedidos` (com `itens`), `produtos` (snapshot) e `vendasPorDia`.
-- Download JSON: `GET /backups/:id/download`.
-- Exportar Excel: `GET /backups/:id/excel` (contém abas `Vendas`, `Pedidos`, `Itens`, `VendasPorDia`, `Produtos`).
-- Restauração: `POST /backups/:id/restore` com body `{ "mode": "safe" | "force" }`.
-
-Políticas de restauração:
-
-- `safe` (não-destrutivo): insere apenas registros ausentes; para estoques, atualiza o campo `quantidade_estoque` somente se o produto existir e o estoque atual for `0`.
-- `force` (destrutivo): remove pedidos/itens/vendas atuais e recria tudo a partir do snapshot; também recria/atualiza produtos para refletir o snapshot (sobrescreve `quantidade_estoque`).
-
-Auditoria de estoque:
-
-- Durante o processo de restauração o sistema grava entradas em `estoque_logs` para cada criação/atualização de produto com os campos `quantidade_anterior`, `quantidade_nova`, `acao` (`create`/`update`) e `nota` (ex.: `restore safe` / `restore force - created`).
-- A tabela é `estoque_logs`; você pode inspecionar com SQL:
-
-```sql
-SELECT * FROM estoque_logs ORDER BY data_hora DESC LIMIT 100;
-```
-
-Proteção dos endpoints de backup:
-
-- As rotas de backup/restauração estão protegidas por um middleware simples que exige o `BACKUP_TOKEN` (via header `x-backup-token`, `Authorization: Bearer <token>` ou query param `?token=`). Configure `BACKUP_TOKEN` em `.env`.
-
-Exemplos de uso (curl — Windows `cmd`):
-
-```cmd
-REM criar backup manual
-curl -X POST http://localhost:3000/backups -H "Content-Type: application/json" -H "x-backup-token: <TOKEN>" -d "{\"nome\":\"BKP_TESTE\"}"
-
-REM baixar json
-curl -H "x-backup-token: <TOKEN>" http://localhost:3000/backups/1/download --output backup_1.json
-
-REM baixar excel
-curl -H "x-backup-token: <TOKEN>" http://localhost:3000/backups/1/excel --output backup_1.xlsx
-
-REM restaurar (safe)
-curl -X POST -H "Content-Type: application/json" -H "x-backup-token: <TOKEN>" -d "{\"mode\":\"safe\"}" http://localhost:3000/backups/1/restore
-
-REM restaurar (force)
-curl -X POST -H "Content-Type: application/json" -H "x-backup-token: <TOKEN>" -d "{\"mode\":\"force\"}" http://localhost:3000/backups/1/restore
-```
-
-## Endpoints Principais (resumo)
-
-- `GET /produtos` — listar produtos
-- `GET /produtos/:id` — buscar produto
-- `POST /produtos` — criar produto
-- `PUT /produtos/:id` — atualizar produto
-- `DELETE /produtos/:id` — deletar produto
-
-- `GET /pedidos` — listar pedidos
-- `GET /pedidos/:id` — buscar pedido (com itens)
-- `POST /pedidos` — criar pedido (aceita campo `itens` com array)
-
-- `GET /vendas` e `POST /vendas`
-
-- Backup:
-  - `POST /backups` — criar backup manual
-  - `GET /backups` — listar backups
-  - `GET /backups/:id` — ver backup
-  - `GET /backups/:id/download` — baixar JSON
-  - `GET /backups/:id/excel` — baixar Excel (.xlsx)
-  - `POST /backups/:id/restore` — restaurar backup (body: `{ mode: 'safe'|'force' }`)
-
-Obs.: Ver arquivos em `src/routes/` para rotas completas e `src/controllers/` para implementação das regras.
-
-## Testes e validações rápidas
-
-- Sanity checklist sugerida após alterações:
-  1. Reiniciar servidor: `npm run dev`.
-  2. Criar backup manual: `POST /backups`.
-  3. Baixar e inspecionar JSON: `GET /backups/:id/download`.
-  4. Gerar Excel: `GET /backups/:id/excel`.
-  5. Restaurar em `safe` e `force` e checar `estoque_logs`.
-
-## Observações e próximos passos recomendados
-
-- Em produção, substitua o middleware de token por um sistema de autenticação real (JWT + roles).
-- Considere usar migrações (`sequelize-cli`) em vez de `sequelize.sync()` no startup.
-- Adicionar endpoint para consultar `estoque_logs` via API (`/auditoria/estoque`) pode ser útil para acompanhamento operacional. Existe um TODO no projeto para isso.
-
-## Pontos de contato no código
-
-- Backup controller: `src/controllers/backupController.js`
-- Middleware token: `src/middleware/requireBackupAuth.js`
-- Models: `src/models/Backup.js`, `src/models/EstoqueLog.js`, `src/models/Produto.js`
-- Frontend: `public/app.js`, `public/index.html` (UI de backup)
+Aplicação web desenvolvida para apoiar a gestão completa de um Food Truck, cobrindo desde o cadastro de produtos até o controle de pedidos, vendas, mesas, atendentes e geração de relatórios gerenciais.
+O sistema foi construído como parte de um projeto acadêmico, mas segue boas práticas de desenvolvimento visando escalabilidade, organização e facilidade de manutenção.
 
 ---
 
-Se quiser, eu posso:
+## 1. Visão Geral do Sistema
 
-- (A) criar um branch e commitar todas as alterações agora,
-- (B) executar os testes locais automatizados / sanity checks (requer seu OK para usar o token do `.env`),
-- (C) adicionar o endpoint `/auditoria/estoque` para consultar logs via API.
+O **Food Truck System** é uma solução de backoffice (administração interna) voltada para o dia a dia de um food truck, permitindo:
 
-Escolha uma opção ou peça as próximas ações que preferir.
-# 🚚 Food Truck System - Sistema de Gestão Completo
+- Cadastro e manutenção de **produtos** e seus preços.
+- Abertura de **pedidos** vinculados a mesas e atendentes.
+- Registro de **vendas** e formas de pagamento.
+- Acompanhamento de **estoque** e auditoria de alterações.
+- Emissão de **relatórios** operacionais (por dia, por forma de pagamento, por atendente etc.).
+- **Backups** automáticos e manuais, com possibilidade de restauração de dados e exportação em formatos amigáveis (JSON e Excel).
 
-Sistema completo de gerenciamento para Food Truck com interface web moderna e funcionalidades CRUD completas.
+A aplicação utiliza uma API REST em Node.js (Express + Sequelize) e um frontend estático em HTML/CSS/JavaScript, todos rodando no mesmo servidor.
 
-## 🎨 Identidade Visual
-- **Cores principais:** Branco, Vermelho (#C41E3A) e Dourado (#DAA520)
-- Interface moderna e responsiva
-- Design intuitivo e profissional
+---
 
-## 🚀 Como Executar
+## 2. Tecnologias e Linguagens Utilizadas
 
-### 1. Instalar Dependências
-```bash
-npm install
-```
+### 2.1 Linguagem Principal
 
-### 2. Configurar Banco de Dados
-Crie um arquivo `.env` na raiz do projeto com as seguintes variáveis:
+- **JavaScript**
+  - **Backend**: Node.js
+  - **Frontend**: JavaScript em páginas HTML estáticas
 
-```env
-DB_NAME=foodtruck_db
-DB_USER=seu_usuario
-DB_PASS=sua_senha
-DB_HOST=localhost
-DB_PORT=3306
-DB_DIALECT=mysql
-```
+**Motivações da escolha:**
 
-### 3. Iniciar o Servidor
+- Mesma linguagem no backend e no frontend, reduzindo a curva de aprendizado.
+- Ecossistema rico de bibliotecas (npm) para banco de dados, ORM, agendamento, geração de planilhas etc.
+- Modelo assíncrono e orientado a eventos do Node.js, adequado para aplicações web que lidam com muitas requisições I/O (banco de dados, arquivos).
 
-# 🚚 Food Truck System — Documentação (Atualizada)
+### 2.2 Frameworks e Bibliotecas
 
-Aplicação web para gestão de um Food Truck: cadastro de produtos, gerenciamento de mesas, criação e acompanhamento de pedidos, registro de vendas, gerenciamento de atendentes e geração de relatórios. Inclui sistema de backup automático e manual, geração de planilhas Excel e restauração com políticas configuráveis.
+- **Node.js**: runtime JavaScript no servidor.
+- **Express**: framework HTTP minimalista para construção de APIs REST e servidor de arquivos estáticos.
+- **Sequelize**: ORM para comunicação com banco de dados **MySQL/MariaDB**.
+- **mysql2**: driver para o MySQL utilizado pelo Sequelize.
+- **exceljs**: geração de planilhas Excel (.xlsx) para exportação de relatórios/backup.
+- **node-cron**: agendamento de tarefas, utilizado para backups automáticos diários.
+- **dotenv**: leitura de variáveis de ambiente a partir de um arquivo `.env`.
+- **nodemon** (desenvolvimento): recarregamento automático do servidor ao alterar arquivos.
 
-## Linguagem e por que foi escolhida
+---
 
-- Linguagem principal: JavaScript (Node.js no backend; JavaScript no frontend).
-- Razões para usar Node.js/JavaScript:
-	- Mesma linguagem na API e no frontend, reduzindo a curva de aprendizado e o número de tecnologias a manter.
-	- Grande ecossistema (npm) com bibliotecas maduras — Sequelize (ORM), exceljs (geração de planilhas), node-cron (agendamento), etc.
-	- Modelo não-bloqueante (event-driven) ideal para APIs I/O-bound e aplicações que fazem muitas consultas/leituras em banco e integração com arquivos.
-	- Rápida prototipagem e grande comunidade de suporte.
+## 3. Principais Funcionalidades
 
-## Principais funcionalidades
+### 3.1 Gestão de Produtos
 
-- CRUD completo para: Atendentes, Produtos, Mesas, Pedidos, Vendas.
-- Dashboard com gráficos (faturamento por dia, vendas por forma de pagamento, por atendente).
-- Criação atômica de pedidos com itens e ajuste de estoque dentro de transações.
-- Sistema de Backup:
-	- Backup automático diário às 05:00 (timezone America/Sao_Paulo) registrado na tabela `backups`.
-	- Backup manual via botão `Gerar Backup` (cabeçalho esquerdo) que solicita um nome e grava snapshot.
-	- Modal `Backups` (cabeçalho direito) lista backups e permite: baixar JSON, gerar/baixar Excel, visualizar e restaurar.
+- Cadastro, edição, listagem e remoção de produtos.
+- Campos como nome, descrição, preço, quantidade em estoque e status (ativo/inativo).
+- Controle de estoque integrado com pedidos e vendas.
 
-## Backup — detalhes técnicos
+### 3.2 Gestão de Mesas e Atendentes
 
-- Model: `src/models/Backup.js` com campos: `id_backup`, `nome`, `conteudo_json`, `data_hora`.
-- Controller: `src/controllers/backupController.js` com métodos:
-	- `createBackup(nome)` — monta snapshot (vendas, pedidos com itens, vendasPorDia) e grava JSON.
-	- `criar` (POST /backups) — cria backup manual.
-	- `listar` (GET /backups) — lista backups.
-	- `buscarPorId` (GET /backups/:id) — visualiza backup.
-	- `download` (GET /backups/:id/download) — baixa JSON.
-	- `excel` (GET /backups/:id/excel) — gera `.xlsx` (sheets: Vendas, Pedidos, Itens, VendasPorDia).
-	- `restore` (POST /backups/:id/restore) — restaura backup em modo `safe` ou `force`.
+- Cadastro de **mesas** (identificação, status, capacidade).
+- Cadastro de **atendentes** (dados básicos de identificação).
+- Associação de atendentes e mesas aos pedidos, permitindo relatórios por atendente/mesa.
 
-## Políticas de restauração
+### 3.3 Pedidos
 
-- SAFE (padrão): insere somente registros do backup que não existam (checagem por PK). Não altera nem remove dados existentes.
-- FORCE (destrutivo): apaga `itens_pedido`, `vendas` e `pedidos` atuais e recria exatamente o conteúdo do backup.
+- Abertura de pedidos vinculados a:
+  - Mesa
+  - Atendente
+  - Lista de **itens de pedido** (produto + quantidade + valor unitário)
+- Atualização e cancelamento de pedidos.
+- Integração com estoque (decremento de estoque quando itens de pedido são criados, conforme a regra de negócio definida).
 
-_Observação_: a restauração atual não altera automaticamente o estoque dos produtos; se necessário podemos adicionar uma política para recalcular ou sobrescrever os valores de estoque.
+### 3.4 Vendas
 
-## API (resumo)
+- Registro de vendas finalizadas com:
+  # Food Truck System
 
-- Atendentes: `/atendentes` (GET, POST, PUT, DELETE)
-- Produtos: `/produtos` (GET, POST, PUT, DELETE)
-- Mesas: `/mesas` (GET, POST, PUT, DELETE)
-- Pedidos: `/pedidos` (GET, POST, PUT, DELETE)
-- Vendas: `/vendas` (GET, POST, DELETE)
-- Relatórios: `/relatorios/*` (ex.: `/relatorios/vendas-por-dia`)
-- Backups:
-	- `POST /backups` — criar backup manual (body: `{ nome?: string }`).
-	- `GET /backups` — listar backups.
-	- `GET /backups/:id` — visualizar backup JSON.
-	- `GET /backups/:id/download` — baixar backup em JSON.
-	- `GET /backups/:id/excel` — baixar relatório em Excel (.xlsx).
-	- `POST /backups/:id/restore` — restaurar backup; body: `{ mode: 'safe'|'force' }`.
+  Aplicação web desenvolvida para apoiar a gestão completa de um Food Truck, cobrindo desde o cadastro de produtos até o controle de pedidos, vendas, mesas, atendentes e geração de relatórios gerenciais.
+  O sistema foi construído como parte de um projeto acadêmico, mas segue boas práticas de desenvolvimento visando escalabilidade, organização e facilidade de manutenção.
 
-## Como executar (rápido)
+  ---
 
-1. Instalar dependências:
-```bash
-npm install
-```
-2. Criar `.env` com credenciais MySQL:
-```env
-DB_NAME=foodtruck_db
-DB_USER=seu_usuario
-DB_PASS=sua_senha
-DB_HOST=localhost
-DB_PORT=3306
-DB_DIALECT=mysql
-```
-3. Rodar em desenvolvimento:
-```bash
-npm run dev
-```
-Abrir http://localhost:3000
+  ## 1. Visão Geral do Sistema
 
-## Dependências relevantes adicionadas
+  O **Food Truck System** é uma solução de backoffice (administração interna) voltada para o dia a dia de um food truck, permitindo:
 
-- `sequelize` + `mysql2` — ORM e driver MySQL
-- `node-cron` — agendamento do backup diário
-- `exceljs` — geração de planilhas `.xlsx`
+  - Cadastro e manutenção de **produtos** e seus preços.
+  - Abertura de **pedidos** vinculados a mesas e atendentes.
+  - Registro de **vendas** e formas de pagamento.
+  - Acompanhamento de **estoque** e auditoria de alterações.
+  - Emissão de **relatórios** operacionais (por dia, por forma de pagamento, por atendente etc.).
+  - **Backups** automáticos e manuais, com possibilidade de restauração de dados e exportação em formatos amigáveis (JSON e Excel).
 
-## Notas de segurança e recomendações
+  A aplicação utiliza uma API REST em Node.js (Express + Sequelize) e um frontend estático em HTML/CSS/JavaScript, todos rodando no mesmo servidor.
 
-- Proteja as rotas de backup/restore com autenticação (middleware). No momento essas rotas estão acessíveis sem autenticação no código — atenção em produção.
-- Armazenamento de senhas: adotar hash (bcrypt) em vez de texto plano.
-- Backups contêm dados sensíveis; considere criptografia/armazenamento seguro (S3 com criptografia ou disco protegido).
+  ---
 
-### Protegendo rotas de backup (opcional, recomendado)
+  ## 2. Tecnologias e Linguagens Utilizadas
 
-Para ativar a proteção simples por token configure a variável de ambiente `BACKUP_TOKEN` no arquivo `.env` (por exemplo `BACKUP_TOKEN=uma-chave-secreta`). Quando `BACKUP_TOKEN` estiver definida, todas as rotas sob `/backups` exigirão esse token e retornarão 401 caso não seja informado.
+  ### 2.1 Linguagem Principal
 
-O frontend pede o token ao usuário na primeira vez que executar uma operação de backup na sessão e o envia automaticamente nas requisições usando o header `x-backup-token`. Para downloads (arquivos .json/.xlsx) o frontend acrescenta `?token=<token>` à URL (já que anchors não suportam headers).
+  - **JavaScript**
+    - **Backend**: Node.js
+    - **Frontend**: JavaScript em páginas HTML estáticas
 
-Exemplo `.env`:
-```env
-DB_NAME=foodtruck_db
-DB_USER=seu_usuario
-DB_PASS=sua_senha
-DB_HOST=localhost
-DB_PORT=3306
-DB_DIALECT=mysql
-BACKUP_TOKEN=uma-chave-secreta
-```
+  **Motivações da escolha:**
 
-## Testes e scripts úteis
+  - Mesma linguagem no backend e no frontend, reduzindo a curva de aprendizado.
+  - Ecossistema rico de bibliotecas (npm) para banco de dados, ORM, agendamento, geração de planilhas etc.
+  - Modelo assíncrono e orientado a eventos do Node.js, adequado para aplicações web que lidam com muitas requisições I/O (banco de dados, arquivos).
 
-- `scripts/test_preserve_atendente.js` — valida que o `id_atendente` é preservado ao finalizar pedido.
-- Recomendo criar scripts adicionais para testes E2E cobrindo: criação de pedido com itens, verificação de decremento de estoque, criação/baixar/restore de backups.
+  ### 2.2 Frameworks e Bibliotecas
 
+  - **Node.js**: runtime JavaScript no servidor.
+  - **Express**: framework HTTP minimalista para construção de APIs REST e servidor de arquivos estáticos.
+  - **Sequelize**: ORM para comunicação com banco de dados **MySQL/MariaDB**.
+  - **mysql2**: driver para o MySQL utilizado pelo Sequelize.
+  - **exceljs**: geração de planilhas Excel (.xlsx) para exportação de relatórios/backup.
+  - **node-cron**: agendamento de tarefas, utilizado para backups automáticos diários.
+  - **dotenv**: leitura de variáveis de ambiente a partir de um arquivo `.env`.
+  - **nodemon** (desenvolvimento): recarregamento automático do servidor ao alterar arquivos.
+
+  ---
+
+  ## 3. Principais Funcionalidades
+
+  ### 3.1 Gestão de Produtos
+
+  - Cadastro, edição, listagem e remoção de produtos.
+  - Campos como nome, descrição, preço, quantidade em estoque e status (ativo/inativo).
+  - Controle de estoque integrado com pedidos e vendas.
+
+  ### 3.2 Gestão de Mesas e Atendentes
+
+  - Cadastro de **mesas** (identificação, status, capacidade).
+  - Cadastro de **atendentes** (dados básicos de identificação).
+  - Associação de atendentes e mesas aos pedidos, permitindo relatórios por atendente/mesa.
+
+  ### 3.3 Pedidos
+
+  - Abertura de pedidos vinculados a:
+    - Mesa
+    - Atendente
+    - Lista de **itens de pedido** (produto + quantidade + valor unitário)
+  - Atualização e cancelamento de pedidos.
+  - Integração com estoque (decremento de estoque quando itens de pedido são criados, conforme a regra de negócio definida).
+
+  ### 3.4 Vendas
+
+  - Registro de vendas finalizadas com:
+    - Valor total
+    - Forma de pagamento
+    - Relacionamento com o pedido de origem
+  - Base para relatórios de faturamento diário, por forma de pagamento, por atendente etc.
+
+  ### 3.5 Relatórios
+
+  - Endpoints de **relatórios** que consolidam:
+    - Vendas por dia
+    - Vendas por forma de pagamento
+    - Vendas por atendente
+  - Podem ser consumidos pelo frontend para exibição de dashboards (gráficos, tabelas).
+
+  ### 3.6 Estoque e Auditoria
+
+  - Controle de **quantidade em estoque** dos produtos.
+  - Registro de alterações em tabela de **auditoria de estoque** (`EstoqueLog`), permitindo rastrear:
+    - Produto afetado
+    - Quantidade anterior
+    - Quantidade nova
+    - Ação (criação, atualização, restauração)
+    - Data/hora da alteração
+
+  ### 3.7 Sistema de Backup e Restauração
+
+  - **Backup manual**:
+    - Endpoint para criar snapshots sob demanda (por exemplo, antes de grandes alterações).
+  - **Backup automático**:
+    - Tarefa agendada com `node-cron` (por padrão, diariamente às 05:00) para gerar backups no banco.
+  - **Armazenamento dos backups**:
+    - Tabela `backups` com campo JSON (`conteudo_json`) contendo snapshot de:
+      - Vendas
+      - Pedidos e seus itens
+      - Produtos
+      - Resumos por dia
+  - **Exportação**:
+    - Exportar backup em **JSON**.
+    - Exportar dados em **Excel (.xlsx)** com múltiplas planilhas (ex.: Vendas, Pedidos, Itens, Produtos, VendasPorDia).
+  - **Restauração**:
+    - Modo `safe` (não destrutivo): insere apenas registros inexistentes, preservando dados atuais tanto quanto possível.
+    - Modo `force` (destrutivo): recria os dados a partir do snapshot, sobrescrevendo o estado atual.
+    - Registra operações de restauração na auditoria de estoque.
+
+  ---
+
+  ## 4. Arquitetura da Aplicação
+
+  A arquitetura é organizada em camadas bem definidas, seguindo um padrão comum em APIs Node.js:
+
+  ### 4.1 Backend (API REST)
+
+  - Entrypoint: `src/app.js`
+    - Configurações iniciais (dotenv, banco).
+    - Registro das rotas (import de `src/routes`).
+    - Configuração de middlewares globais.
+    - Exposição da pasta `public/` como estática.
+    - Agendamento de backup automático com `node-cron`.
+
+  ### 4.2 Banco de Dados
+
+  - **Sequelize** configura a conexão com MySQL em `src/config/database.js`.
+  - As models são definidas como arquivos separados em `src/models/`, espelhando a estrutura do banco:
+    - `Atendente`, `Mesa`, `Produto`, `Pedido`, `ItemPedido`, `Venda`, `Backup`, `EstoqueLog` etc.
+  - Convenções:
+    - Nomes de colunas em **snake_case**, por exemplo: `id_produto`, `id_pedido`.
+    - Muitas tabelas desabilitam timestamps automáticos (`timestamps: false`) para compatibilidade com o banco existente.
+
+  ### 4.3 Controllers e Rotas
+
+  - Controllers localizados em `src/controllers/`:
+    - Contêm a lógica de negócio (validação, acesso às models, regras da aplicação).
+    - Padrão de métodos:
+      - `listar`
+      - `buscarPorId`
+      - `criar`
+      - `atualizar`
+      - `deletar`
+  - Rotas em `src/routes/`:
+    - Cada recurso possui seu arquivo de rotas, por exemplo:
+      - `produtoRoutes.js`, `pedidoRoutes.js`, `vendaRoutes.js`, `mesaRoutes.js`, `atendenteRoutes.js`, `relatorioRoutes.js`, `backupRoutes.js` etc.
+    - Mapeiam as URLs e métodos HTTP para os métodos dos controllers.
+
+  ### 4.4 Middleware
+
+  - `src/middleware/requireBackupAuth.js`
+    - Middleware responsável por proteger endpoints de backup com um token simples (`BACKUP_TOKEN`).
+    - Aceita token via:
+      - Header `x-backup-token`.
+      - Header `Authorization: Bearer <token>`.
+      - Query string `?token=<token>` em downloads.
+
+  ### 4.5 Frontend
+
+  - Pasta `public/`:
+    - `index.html`: interface principal, com navegação para dashboard, produtos, mesas, pedidos, vendas, atendentes, relatórios, backups etc.
+    - `login.html`: tela de login com layout dedicado.
+    - `style.css`: estilos visuais da aplicação (cores, fontes, layouts).
+    - `app.js` / `script.js`: scripts de frontend que:
+      - Consomem a API via `fetch`.
+      - Atualizam a interface dinamicamente (cards, tabelas, modais).
+      - Implementam interações do usuário (criar pedido, registrar venda, gerar backup, etc.).
+    - Imagens:
+      - `logo-foodtruck.png`: logotipo do sistema.
+      - `login-bg.png`: imagem de background da tela de login.
+
+  ---
+
+  ## 5. Esqueleto de Pastas (Principais Diretórios)
+
+  Abaixo, um resumo da estrutura de pastas mais relevante para entendimento do projeto:
+
+  ```text
+  Projeto-aplicado-2---FOOD-TRUCK-System/
+  ├─ README.md                 # Documentação principal do projeto
+  ├─ package.json              # Dependências e scripts npm
+  ├─ .env                      # Variáveis de ambiente (não versionado no GitHub)
+  ├─ .gitignore                # Arquivos/pastas ignorados pelo Git
+  ├─ sql/                      # Scripts SQL auxiliares (estrutura/alterações)
+  │  ├─ alter_pedidos.sql
+  │  └─ ...
+  ├─ scripts/                  # Scripts Node.js de apoio/teste
+  │  ├─ test_create_pedido.js
+  │  ├─ test_pedido_venda.js
+  │  └─ ...
+  ├─ public/                   # Frontend estático
+  │  ├─ index.html             # Tela principal/admin
+  │  ├─ login.html             # Tela de login
+  │  ├─ style.css              # Estilos globais
+  │  ├─ app.js / script.js     # Lógica de frontend (chamada da API)
+  │  ├─ logo-foodtruck.png     # Logotipo do sistema
+  │  └─ login-bg.png           # Background da tela de login
+  └─ src/                      # Código-fonte do backend (Node.js + Express)
+     ├─ app.js                 # Entrypoint do servidor
+     ├─ config/
+     │  └─ database.js         # Configuração do Sequelize (MySQL)
+     ├─ controllers/           # Lógica de negócio por recurso
+     │  ├─ produtoController.js
+     │  ├─ pedidoController.js
+     │  ├─ vendaController.js
+     │  ├─ atendenteController.js
+     │  ├─ mesaController.js
+     │  ├─ relatorioController.js
+     │  ├─ backupController.js
+     │  └─ ...
+     ├─ middleware/
+     │  └─ requireBackupAuth.js # Proteção de rotas de backup
+     ├─ models/                # Models Sequelize
+     │  ├─ Produto.js
+     │  ├─ Pedido.js
+     │  ├─ ItemPedido.js
+     │  ├─ Venda.js
+     │  ├─ Atendente.js
+     │  ├─ Mesa.js
+     │  ├─ Backup.js
+     │  └─ EstoqueLog.js
+     └─ routes/                # Definições de rotas Express
+        ├─ produtoRoutes.js
+        ├─ pedidoRoutes.js
+        ├─ vendaRoutes.js
+        ├─ atendenteRoutes.js
+        ├─ mesaRoutes.js
+        ├─ relatorioRoutes.js
+        ├─ backupRoutes.js
+        └─ ...
+  ```
+
+  ---
+
+  ## 6. Como Executar o Projeto
+
+  ### 6.1 Pré-requisitos
+
+  - Node.js (versão 18+ recomendada)
+  - npm
+  - Banco de dados MySQL ou MariaDB configurado
+
+  ### 6.2 Configuração das Variáveis de Ambiente
+
+  Crie um arquivo `.env` na raiz do projeto com pelo menos:
+
+  ```env
+  DB_NAME=nome_do_banco
+  DB_USER=usuario
+  DB_PASS=senha
+  DB_HOST=localhost
+  DB_PORT=3306
+  DB_DIALECT=mysql
+
+  # Token opcional para proteger rotas de backup
+  BACKUP_TOKEN=uma_chave_secreta_opcional
+  ```
+
+  ### 6.3 Instalação de Dependências
+
+  ```bash
+  npm install
+  ```
+
+  ### 6.4 Execução em Ambiente de Desenvolvimento
+
+  ```bash
+  npm run dev
+  ```
+
+  - O servidor iniciará (por padrão) na porta `3000`.
+  - A interface web poderá ser acessada em:  `http://localhost:3000`
+
+  ---
+
+  ## 7. Considerações Finais para Apresentação
+
+  - O projeto demonstra:
+    - Organização em camadas (models, controllers, routes, middleware).
+    - Uso de ORM (Sequelize) para abstrair acesso ao banco.
+    - Boas práticas de configuração via `.env` e `.gitignore`.
+    - Separação clara entre **backend** (API) e **frontend** (páginas e assets).
+    - Funções avançadas relevantes para um cenário real (backups automáticos, exportação Excel, auditoria de estoque).
+
+  Este README foi estruturado para ajudar na apresentação do aplicativo em ambiente acadêmico ou profissional, facilitando a explicação da arquitetura, das decisões técnicas e do fluxo principal de uso do sistema.
