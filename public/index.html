@@ -1,387 +1,855 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>Food Truck System</title>
-    <link rel="stylesheet" href="style.css">
-  </head>
-  <body>
-    <header>
-      <div class="header-inner">
-        <div class="header-left">
-          <img src="logo-foodtruck.png" alt="Food Truck System logo" class="site-logo" />
-          <h1><span>FOOD TRUCK</span> System</h1>
-        </div>
-        <div class="header-right">
-          <button id="syncBackupBtn" class="btn btn-secondary" title="Gerar backup manual">🔄 Gerar Backup</button>
-          <button id="openBackupsBtn" class="btn btn-primary" title="Listar backups">📁 Backups</button>
-          <button id="logoutBtn" class="btn btn-danger" title="Sair">🚪 Sair</button>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Food Truck System</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    /* ============================================================
+       LAYOUT COM MENU LATERAL
+    ============================================================ */
+    body { display: flex; flex-direction: column; min-height: 100vh; }
+
+    /* Topo fixo */
+    header {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 1100;
+      height: 64px;
+      padding: 0 1.5rem;
+      display: flex;
+      align-items: center;
+    }
+    header .header-inner { width: 100%; }
+
+    /* Wrapper abaixo do header */
+    .app-body {
+      display: flex;
+      margin-top: 64px;
+      min-height: calc(100vh - 64px);
+    }
+
+    /* ---- SIDEBAR ---- */
+    .sidebar {
+      width: 240px;
+      min-width: 240px;
+      background: #A01830 !important;
+      display: flex;
+      flex-direction: column;
+      position: fixed;
+      top: 64px;
+      left: 0;
+      bottom: 0;
+      z-index: 1000;
+      transition: transform 0.3s ease;
+      overflow-y: auto;
+      box-shadow: 4px 0 14px rgba(0,0,0,0.25);
+    }
+
+    /* Forçar fundo vermelho em TODOS os filhos do sidebar */
+    .sidebar nav,
+    .sidebar nav ul,
+    .sidebar nav li,
+    .sidebar-group {
+      background: transparent !important;
+      border: none !important;
+      box-shadow: none !important;
+      padding-left: 0 !important;
+      padding-right: 0 !important;
+      max-width: none !important;
+      justify-content: flex-start !important;
+    }
+
+    .sidebar-group {
+      padding: 1rem 0 0.4rem !important;
+    }
+
+    .sidebar-group-label {
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: #FFD700;
+      opacity: 0.8;
+      padding: 0 1.2rem 0.4rem;
+      display: block;
+    }
+
+    .sidebar nav ul {
+      list-style: none !important;
+      display: flex !important;
+      flex-direction: column !important;
+      padding: 0 !important;
+      margin: 0 !important;
+      flex-wrap: nowrap !important;
+    }
+
+    .sidebar nav li {
+      flex: none !important;
+      min-width: 0 !important;
+      width: 100% !important;
+    }
+
+    .sidebar nav a {
+      display: flex !important;
+      align-items: center !important;
+      gap: 0.75rem !important;
+      padding: 0.7rem 1.2rem !important;
+      color: #fff !important;
+      text-decoration: none !important;
+      font-weight: 600 !important;
+      font-size: 0.9rem !important;
+      text-align: left !important;
+      border-left: 3px solid transparent !important;
+      border-bottom: none !important;
+      border-top: none !important;
+      border-right: none !important;
+      background: transparent !important;
+      transition: all 0.2s ease !important;
+      width: 100% !important;
+    }
+
+    .sidebar nav a .nav-icon { font-size: 1rem; width: 20px; text-align: center; flex-shrink: 0; }
+
+    .sidebar nav a:hover {
+      background: rgba(0,0,0,0.18) !important;
+      color: #FFD700 !important;
+      border-left-color: #FFD700 !important;
+    }
+
+    .sidebar nav a.active {
+      background: rgba(0,0,0,0.28) !important;
+      color: #FFD700 !important;
+      border-left-color: #FFD700 !important;
+      font-weight: 700 !important;
+    }
+
+    .sidebar-divider {
+      height: 1px;
+      background: rgba(255,255,255,0.2);
+      margin: 0.4rem 1.2rem;
+    }
+
+    /* ---- MAIN CONTENT ---- */
+    .main-content {
+      margin-left: 240px;
+      flex: 1;
+      padding: 2rem;
+      min-width: 0;
+    }
+
+    /* ---- HAMBURGER (mobile) ---- */
+    .sidebar-toggle {
+      display: none;
+      background: none;
+      border: none;
+      color: #fff;
+      font-size: 1.5rem;
+      cursor: pointer;
+      padding: 0.3rem 0.5rem;
+      margin-right: 0.75rem;
+    }
+
+    /* ---- OVERLAY (mobile) ---- */
+    .sidebar-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 999;
+    }
+
+    /* ============================================================
+       PERFIL NO TOPO DA SIDEBAR
+    ============================================================ */
+    .sidebar-user {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 1.2rem 1.2rem 0.75rem;
+      border-bottom: 1px solid rgba(255,255,255,0.2);
+    }
+    .sidebar-avatar {
+      width: 36px; height: 36px;
+      background: #FFD700;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700; color: #8B1228; font-size: 1rem; flex-shrink: 0;
+    }
+    .sidebar-username { font-size: 0.85rem; font-weight: 700; color: #fff; }
+    .sidebar-role { font-size: 0.75rem; color: rgba(255,215,0,0.8); }
+
+    /* ============================================================
+       SEÇÃO ADMIN — CARDS DE USUÁRIOS
+    ============================================================ */
+    .admin-stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+    .admin-stat-card {
+      background: #fff;
+      border-radius: 10px;
+      padding: 1.25rem 1.5rem;
+      border-top: 4px solid var(--primary-gold);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+      display: flex; flex-direction: column; gap: 0.25rem;
+    }
+    .admin-stat-card .stat-label { font-size: 0.8rem; color: #888; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
+    .admin-stat-card .stat-val { font-size: 2rem; font-weight: 700; color: var(--primary-red); }
+
+    /* Badges de permissão */
+    .perm-badge {
+      display: inline-block;
+      padding: 0.25rem 0.65rem;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+    .perm-admin    { background: #FFF3CD; color: #856404; }
+    .perm-gerente  { background: #D1ECF1; color: #0C5460; }
+    .perm-atendente{ background: #D4EDDA; color: #155724; }
+
+    /* ============================================================
+       ATENDIMENTO — LAYOUT 2 COLUNAS (cardápio + carrinho)
+    ============================================================ */
+    .atendimento-layout {
+      display: grid;
+      grid-template-columns: 1fr 360px;
+      gap: 1.5rem;
+      align-items: start;
+    }
+    .carrinho-sticky { position: sticky; top: 80px; }
+
+    /* ============================================================
+       RESPONSIVE
+    ============================================================ */
+    @media (max-width: 900px) {
+      .atendimento-layout { grid-template-columns: 1fr; }
+      .carrinho-sticky { position: static; }
+    }
+
+    @media (max-width: 768px) {
+      .sidebar {
+        transform: translateX(-100%);
+      }
+      .sidebar.open {
+        transform: translateX(0);
+      }
+      .sidebar-overlay.open { display: block; }
+      .sidebar-toggle { display: block; }
+      .main-content { margin-left: 0; padding: 1rem; }
+      .admin-stats { grid-template-columns: 1fr 1fr; }
+    }
+
+    @media (max-width: 480px) {
+      .admin-stats { grid-template-columns: 1fr; }
+      .main-content { padding: 0.75rem; }
+    }
+
+    /* ============================================================
+       MISC AJUSTES
+    ============================================================ */
+
+    /* ============================================================
+       BUSCA NO CARDÁPIO
+    ============================================================ */
+    .cardapio-search-bar {
+      margin-bottom: 1rem;
+    }
+    .cardapio-search-input {
+      width: 100%;
+      padding: 0.65rem 1rem;
+      border: 2px solid var(--border-color);
+      border-radius: 8px;
+      font-size: 0.95rem;
+      transition: border-color 0.2s;
+      background: #fafafa;
+    }
+    .cardapio-search-input:focus {
+      outline: none;
+      border-color: var(--primary-gold);
+      box-shadow: 0 0 0 3px rgba(218,165,32,0.12);
+      background: #fff;
+    }
+
+    /* Produtos 20% menores */
+    .cardapio-grid-sm {
+      grid-template-columns: repeat(auto-fill, minmax(224px, 1fr)) !important;
+    }
+    .cardapio-grid-sm .produto-card .produto-imagem {
+      height: 160px !important;
+      font-size: 3.2rem !important;
+    }
+    .cardapio-grid-sm .produto-card .produto-info {
+      padding: 1.1rem !important;
+    }
+    .cardapio-grid-sm .produto-card .produto-nome {
+      font-size: 1.05rem !important;
+    }
+    .cardapio-grid-sm .produto-card .produto-preco {
+      font-size: 1.4rem !important;
+    }
+    .cardapio-grid-sm .produto-card .btn-add-produto {
+      padding: 0.6rem 1rem !important;
+      font-size: 0.82rem !important;
+    }
+    .cardapio-grid-sm .produto-card {
+      font-size: 0.88rem !important;
+    }
+
+    /* Itens do carrinho — forçar que não vazem */
+    .carrinho-itens {
+      max-height: 420px;
+      overflow-y: auto;
+      overflow-x: hidden;
+    }
+    .carrinho-item {
+      flex-wrap: wrap !important;
+      overflow: hidden !important;
+      word-break: break-word !important;
+    }
+    .carrinho-item-imagem {
+      width: 64px !important;
+      height: 64px !important;
+      font-size: 1.6rem !important;
+      flex-shrink: 0 !important;
+    }
+    .carrinho-item-nome {
+      font-size: 0.95rem !important;
+    }
+    .carrinho-item-preco {
+      font-size: 0.82rem !important;
+    }
+    .carrinho-item-subtotal {
+      font-size: 1rem !important;
+      min-width: 80px !important;
+    }
+
+    /* Remove o nav antigo */
+    body > nav { display: none !important; }
+
+    /* Container sem margin-top pois o layout já cuida */
+    .main-content > .container { margin: 0; padding: 0; max-width: none; }
+
+    /* Ajusta header h1 para caber no espaço reduzido */
+    header h1 { font-size: 1.4rem; }
+    @media (max-width: 480px) { header h1 { font-size: 1rem; } }
+  </style>
+</head>
+<body>
+
+  <!-- ===== HEADER ===== -->
+  <header>
+    <div class="header-inner">
+      <div class="header-left">
+        <button class="sidebar-toggle" id="sidebarToggle" aria-label="Menu">☰</button>
+        <img src="logo-foodtruck.png" alt="Food Truck System logo" class="site-logo" />
+        <h1><span>FOOD TRUCK</span> System</h1>
+      </div>
+      <div class="header-right">
+        <button id="syncBackupBtn" class="btn btn-secondary" title="Gerar backup manual">🔄 Backup</button>
+        <button id="openBackupsBtn" class="btn btn-primary" title="Listar backups">📁 Backups</button>
+        <button id="logoutBtn" class="btn btn-danger" title="Sair">🚪 Sair</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ===== OVERLAY MOBILE ===== -->
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+  <!-- ===== APP BODY ===== -->
+  <div class="app-body">
+
+    <!-- ===== SIDEBAR ===== -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-user">
+        <div class="sidebar-avatar">A</div>
+        <div>
+          <div class="sidebar-username">Administrador</div>
+          <div class="sidebar-role">admin</div>
         </div>
       </div>
-    </header>
 
-  <!-- Navigation -->
-  <nav>
-    <ul>
-      <li><a href="#dashboard" class="nav-link active" data-section="dashboard">📊 Dashboard</a></li>
-      <li><a href="#atendentes" class="nav-link" data-section="atendentes">👥 Atendentes</a></li>
-      <li><a href="#produtos" class="nav-link" data-section="produtos">🍔 Produtos</a></li>
-      <li><a href="#mesas" class="nav-link" data-section="mesas">🪑 Mesas</a></li>
-      <li><a href="#pedidos" class="nav-link" data-section="pedidos">📝 Pedidos</a></li>
-      <li>
-        <a href="#vendas" class="nav-link" data-section="vendas">💰 Vendas <span id="vendasBadge" class="nav-badge hidden" aria-live="polite">0</span></a>
-      </li>
-    </ul>
-  </nav>
+      <!-- Grupo: Administração -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">Administração</div>
+        <nav>
+          <ul>
+            <li>
+              <a href="#admin-dashboard" class="nav-link active" data-section="admin-dashboard">
+                <span class="nav-icon">📊</span> Dashboard
+              </a>
+            </li>
+            <li>
+              <a href="#admin-usuarios" class="nav-link" data-section="admin-usuarios">
+                <span class="nav-icon">👤</span> Usuários
+              </a>
+            </li>
+            <li>
+              <a href="#atendentes" class="nav-link" data-section="atendentes">
+                <span class="nav-icon">👥</span> Atendentes
+              </a>
+            </li>
+          </ul>
+        </nav>
+      </div>
 
-  <!-- Container -->
-  <div class="container">
-    <!-- Alert Container -->
-    <div id="alertContainer"></div>
+      <div class="sidebar-divider"></div>
 
-    <!-- Dashboard Section -->
-    <section id="dashboard" class="section active">
-      <div class="card">
-        <h2>📊 Dashboard - Relatórios e Análises</h2>
-        
-        <div class="dashboard-grid">
-          <div class="stat-card">
-            <h3>Quantidade de Vendas</h3>
-            <div class="stat-value" id="statVendas">-</div>
+      <!-- Grupo: Atendimento -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">Atendimento</div>
+        <nav>
+          <ul>
+            <li>
+              <a href="#pedidos" class="nav-link" data-section="pedidos">
+                <span class="nav-icon">📝</span> Novo Pedido
+              </a>
+            </li>
+            <li>
+              <a href="#vendas" class="nav-link" data-section="vendas">
+                <span class="nav-icon">💰</span> Pedidos &amp; Vendas
+                <span id="vendasBadge" class="nav-badge hidden" aria-live="polite">0</span>
+              </a>
+            </li>
+          </ul>
+        </nav>
+      </div>
+
+      <div class="sidebar-divider"></div>
+
+      <!-- Grupo: Gestão -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">Gestão</div>
+        <nav>
+          <ul>
+            <li>
+              <a href="#produtos" class="nav-link" data-section="produtos">
+                <span class="nav-icon">🍔</span> Produtos
+              </a>
+            </li>
+            <li>
+              <a href="#mesas" class="nav-link" data-section="mesas">
+                <span class="nav-icon">🪑</span> Mesas
+              </a>
+            </li>
+          </ul>
+        </nav>
+      </div>
+    </aside>
+
+    <!-- ===== CONTEÚDO PRINCIPAL ===== -->
+    <main class="main-content">
+      <div id="alertContainer"></div>
+
+      <!-- ======================================
+           SEÇÃO: ADMIN DASHBOARD
+      ======================================= -->
+      <section id="admin-dashboard" class="section active">
+        <div class="card">
+          <h2>📊 Dashboard — Relatórios e Análises</h2>
+
+          <div class="admin-stats">
+            <div class="admin-stat-card">
+              <span class="stat-label">Quantidade de Vendas</span>
+              <span class="stat-val" id="statVendas">—</span>
+            </div>
+            <div class="admin-stat-card">
+              <span class="stat-label">Faturamento Total</span>
+              <span class="stat-val" id="statFaturamento">R$ —</span>
+            </div>
+            <div class="admin-stat-card">
+              <span class="stat-label">Ticket Médio</span>
+              <span class="stat-val" id="statTicket">R$ —</span>
+            </div>
           </div>
-          <div class="stat-card">
-            <h3>Faturamento Total</h3>
-            <div class="stat-value" id="statFaturamento">R$ -</div>
-          </div>
-          <div class="stat-card">
-            <h3>Ticket Médio</h3>
-            <div class="stat-value" id="statTicket">R$ -</div>
-          </div>
-        </div>
 
           <div class="chart-grid-wrapper">
-          <div class="card">
-            <h3 class="chart-title">Faturamento por Dia</h3>
-            <div class="chart-controls">
-              <label>Período:</label>
-              <select id="filtroPeriodo" title="Filtro de período">
-                <option value="preset:day">Hoje</option>
-                <option value="preset:week">Últimos 7 dias</option>
-                <option value="preset:month">Mês atual</option>
-                <option value="custom">Personalizado</option>
-                <option value="selectMonth">Escolher mês</option>
-              </select>
-              <input type="date" id="periodStart" class="hidden-inline" title="Data início">
-              <input type="date" id="periodEnd" class="hidden-inline" title="Data fim">
-              <select id="selectMonth" class="hidden-inline" title="Selecionar mês">
-                <!-- preenchido via JS -->
-              </select>
-              <button class="btn btn-secondary" id="applyPeriodo">Aplicar</button>
+            <div class="card">
+              <h3 class="chart-title">Faturamento por Dia</h3>
+              <div class="chart-controls">
+                <label>Período:</label>
+                <select id="filtroPeriodo" title="Filtro de período">
+                  <option value="preset:day">Hoje</option>
+                  <option value="preset:week">Últimos 7 dias</option>
+                  <option value="preset:month">Mês atual</option>
+                  <option value="custom">Personalizado</option>
+                  <option value="selectMonth">Escolher mês</option>
+                </select>
+                <input type="date" id="periodStart" class="hidden-inline" title="Data início">
+                <input type="date" id="periodEnd" class="hidden-inline" title="Data fim">
+                <select id="selectMonth" class="hidden-inline" title="Selecionar mês"></select>
+                <button class="btn btn-secondary" id="applyPeriodo">Aplicar</button>
+              </div>
+              <canvas id="chartVendasDia"></canvas>
             </div>
-            <canvas id="chartVendasDia"></canvas>
+
+            <div class="card">
+              <h3 class="chart-title">Vendas por Pagamento</h3>
+              <canvas id="chartPagamento"></canvas>
+            </div>
           </div>
 
           <div class="card">
-            <h3 class="chart-title">Vendas por Pagamento</h3>
-            <canvas id="chartPagamento"></canvas>
+            <h3 class="chart-title">Vendas por Atendente</h3>
+            <div class="chart-controls">
+              <label>Atendente:</label>
+              <select id="selectAtendente" title="Selecionar atendente">
+                <option value="">Todos</option>
+              </select>
+              <button class="btn btn-secondary" id="applyAtendente">Aplicar</button>
+            </div>
+            <canvas id="chartAtendente"></canvas>
+          </div>
+        </div>
+      </section>
+
+      <!-- ======================================
+           SEÇÃO: ADMIN — USUÁRIOS E PERMISSÕES
+      ======================================= -->
+      <section id="admin-usuarios" class="section">
+        <div class="card">
+          <h2>👤 Gestão de Usuários e Permissões</h2>
+
+          <div class="btn-group" style="margin-bottom:1.5rem">
+            <button class="btn btn-primary" onclick="openAtendenteModal()">➕ Novo Usuário</button>
+            <button class="btn btn-secondary" onclick="loadAtendentes()">🔄 Atualizar</button>
+          </div>
+
+          <!-- Mini cards de resumo -->
+          <div class="admin-stats" style="margin-bottom:1.5rem">
+            <div class="admin-stat-card">
+              <span class="stat-label">Total de Usuários</span>
+              <span class="stat-val" id="totalUsuarios">—</span>
+            </div>
+            <div class="admin-stat-card">
+              <span class="stat-label">Administradores</span>
+              <span class="stat-val" id="totalAdmins">—</span>
+            </div>
+            <div class="admin-stat-card">
+              <span class="stat-label">Atendentes</span>
+              <span class="stat-val" id="totalAtendentesCount">—</span>
+            </div>
+          </div>
+
+          <div class="loading" id="loadingUsuarios">
+            <div class="spinner"></div>
+            Carregando usuários...
+          </div>
+
+          <div class="table-container">
+            <table id="usuariosTable">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Nome</th>
+                  <th>Login</th>
+                  <th>CPF</th>
+                  <th>Telefone</th>
+                  <th>Permissão</th>
+                  <th>Ações</th>
+                </tr>
+              </thead>
+              <tbody id="usuariosTableBody">
+                <!-- preenchido via JS — reutiliza loadAtendentes() -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ======================================
+           SEÇÃO: ATENDENTES
+      ======================================= -->
+      <section id="atendentes" class="section">
+        <div class="card">
+          <h2>👥 Gerenciamento de Atendentes</h2>
+
+          <div class="btn-group">
+            <button class="btn btn-primary" onclick="openAtendenteModal()">➕ Novo Atendente</button>
+            <button class="btn btn-secondary" onclick="loadAtendentes()">🔄 Atualizar Lista</button>
+          </div>
+
+          <div class="loading" id="loadingAtendentes">
+            <div class="spinner"></div>
+            Carregando atendentes...
+          </div>
+
+          <div class="table-container">
+            <table id="atendenteTable">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Nome</th>
+                  <th>CPF</th>
+                  <th>Telefone</th>
+                  <th>Login</th>
+                  <th>Tipo</th>
+                  <th>Ações</th>
+                </tr>
+              </thead>
+              <tbody id="atendenteTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ======================================
+           SEÇÃO: PRODUTOS
+      ======================================= -->
+      <section id="produtos" class="section">
+        <div class="card">
+          <h2>🍔 Gerenciamento de Produtos</h2>
+
+          <div class="btn-group">
+            <button class="btn btn-primary" onclick="openProdutoModal()">➕ Novo Produto</button>
+            <div class="flex-gap">
+              <input id="produtoSearchInput" class="search-input" type="text" placeholder="Pesquisar produtos..." title="Pesquisar produtos">
+              <button id="produtoSearchBtn" class="btn btn-info">🔎 Buscar</button>
+              <button id="produtoClearBtn" class="btn btn-light" title="Limpar pesquisa">✖️</button>
+              <button class="btn btn-secondary" onclick="loadProdutos()">🔄 Atualizar Lista</button>
+              <span id="produtoResultsCount" class="produto-results-count" aria-live="polite"></span>
+            </div>
+          </div>
+
+          <div class="loading" id="loadingProdutos">
+            <div class="spinner"></div>
+            Carregando produtos...
+          </div>
+
+          <div class="table-container">
+            <table id="produtoTable">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Nome</th>
+                  <th>Categoria</th>
+                  <th>Preço</th>
+                  <th>Estoque</th>
+                  <th>Status</th>
+                  <th>Ações</th>
+                </tr>
+              </thead>
+              <tbody id="produtoTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ======================================
+           SEÇÃO: MESAS
+      ======================================= -->
+      <section id="mesas" class="section">
+        <div class="card">
+          <h2>🪑 Gerenciamento de Mesas</h2>
+
+          <div class="btn-group">
+            <button class="btn btn-primary" onclick="openMesaModal()">➕ Nova Mesa</button>
+            <button class="btn btn-secondary" onclick="loadMesas()">🔄 Atualizar Lista</button>
+          </div>
+
+          <div class="loading" id="loadingMesas">
+            <div class="spinner"></div>
+            Carregando mesas...
+          </div>
+
+          <div class="table-container">
+            <table id="mesaTable">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Número da Mesa</th>
+                  <th>Status</th>
+                  <th>Ações</th>
+                </tr>
+              </thead>
+              <tbody id="mesaTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ======================================
+           SEÇÃO: NOVO PEDIDO (ATENDIMENTO)
+      ======================================= -->
+      <section id="pedidos" class="section">
+        <div class="atendimento-layout">
+
+          <!-- Cardápio -->
+          <div>
+            <div class="card">
+              <h2>🍔 Cardápio — Selecione os Produtos</h2>
+
+              <!-- Busca no cardápio -->
+              <div class="cardapio-search-bar">
+                <input type="text" id="cardapioSearch" placeholder="🔎  Buscar produto no cardápio..." class="cardapio-search-input" oninput="filtrarCardapio(this.value)">
+              </div>
+
+              <div class="loading" id="loadingCardapio">
+                <div class="spinner"></div>
+                Carregando cardápio...
+              </div>
+              <div id="cardapioGrid" class="cardapio-grid cardapio-grid-sm"></div>
+            </div>
+          </div>
+
+          <!-- Carrinho (coluna direita, sticky) -->
+          <div class="carrinho-sticky">
+            <div class="card">
+              <h2>🛒 Carrinho do Pedido</h2>
+
+              <div class="carrinho-header">
+                <div class="form-grid form-grid-tight">
+                  <div class="form-group">
+                    <label>Mesa *</label>
+                    <select id="carrinhoMesa" required title="Mesa do carrinho">
+                      <option value="">Selecione a mesa...</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label>Atendente *</label>
+                    <select id="carrinhoAtendente" required title="Atendente do carrinho">
+                      <option value="">Selecione o atendente...</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label>Forma de Pagamento</label>
+                    <select id="carrinhoPagamento" title="Forma de pagamento do pedido">
+                      <option value="">Selecione (opcional)</option>
+                      <option value="pix">PIX</option>
+                      <option value="credito">Crédito</option>
+                      <option value="debito">Débito</option>
+                      <option value="dinheiro">Dinheiro</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              <div id="carrinhoItens" class="carrinho-itens">
+                <div class="empty-state">
+                  <div class="empty-state-icon">🛒</div>
+                  <p>Carrinho vazio. Adicione produtos do cardápio.</p>
+                </div>
+              </div>
+
+              <div class="carrinho-total">
+                <div class="total-info">
+                  <span class="total-label">Total do Pedido:</span>
+                  <span class="total-valor" id="carrinhoTotal">R$ 0,00</span>
+                </div>
+                <div class="btn-group">
+                  <button class="btn btn-danger" onclick="limparCarrinho()">🗑️ Limpar</button>
+                  <button class="btn btn-success" onclick="finalizarPedido()">✅ Finalizar</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ======================================
+           SEÇÃO: PEDIDOS REALIZADOS & VENDAS
+      ======================================= -->
+      <section id="vendas" class="section">
+        <div class="card">
+          <h2>📋 Pedidos Realizados</h2>
+
+          <div class="controls-row">
+            <div class="left">
+              <label for="pedidoFilterStatus">Filtrar:</label>
+              <select id="pedidoFilterStatus" title="Filtrar pedidos por status">
+                <option value="all">Todos</option>
+                <option value="aberto">Abertos</option>
+                <option value="pago">Pagos</option>
+              </select>
+              <label for="pedidoSortBy" class="margin-left">Ordenar:</label>
+              <select id="pedidoSortBy" title="Ordenar pedidos">
+                <option value="data_desc">Data ↓</option>
+                <option value="data_asc">Data ↑</option>
+                <option value="total_desc">Total ↓</option>
+                <option value="total_asc">Total ↑</option>
+                <option value="status_desc">Status ↓</option>
+                <option value="status_asc">Status ↑</option>
+                <option value="id_desc">ID ↓</option>
+                <option value="id_asc">ID ↑</option>
+              </select>
+            </div>
+            <div>
+              <button class="btn btn-secondary" onclick="loadPedidos()">🔄 Atualizar Lista</button>
+            </div>
+          </div>
+
+          <div class="loading" id="loadingPedidos">
+            <div class="spinner"></div>
+            Carregando pedidos...
+          </div>
+
+          <div class="table-container">
+            <table id="pedidoTable">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Data/Hora</th>
+                  <th>Mesa</th>
+                  <th>Atendente</th>
+                  <th>Status</th>
+                  <th>Pagamento</th>
+                  <th>Total</th>
+                  <th>Ações</th>
+                </tr>
+              </thead>
+              <tbody id="pedidoTableBody"></tbody>
+            </table>
           </div>
         </div>
 
         <div class="card">
-          <h3 class="chart-title">Vendas por Atendente</h3>
-          <div class="chart-controls">
-            <label>Atendente:</label>
-            <select id="selectAtendente" title="Selecionar atendente">
-              <option value="">Todos</option>
-              <!-- opções preenchidas via JS -->
-            </select>
-            <button class="btn btn-secondary" id="applyAtendente">Aplicar</button>
-          </div>
-          <canvas id="chartAtendente"></canvas>
-        </div>
-        </div>
-      </div>
-    </section>
+          <h2>💰 Gerenciamento de Vendas</h2>
 
-    <!-- Atendentes Section -->
-    <section id="atendentes" class="section">
-      <div class="card">
-        <h2>👥 Gerenciamento de Atendentes</h2>
-        
-        <div class="btn-group">
-          <button class="btn btn-primary" onclick="openAtendenteModal()">➕ Novo Atendente</button>
-          <button class="btn btn-secondary" onclick="loadAtendentes()">🔄 Atualizar Lista</button>
-        </div>
-
-        <div class="loading" id="loadingAtendentes">
-          <div class="spinner"></div>
-          Carregando atendentes...
-        </div>
-
-        <div class="table-container">
-          <table id="atendenteTable">
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>Nome</th>
-                <th>CPF</th>
-                <th>Telefone</th>
-                <th>Login</th>
-                <th>Tipo</th>
-                <th>Ações</th>
-              </tr>
-            </thead>
-            <tbody id="atendenteTableBody">
-              <!-- Dados carregados via JS -->
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </section>
-
-    <!-- Produtos Section -->
-    <section id="produtos" class="section">
-      <div class="card">
-        <h2>🍔 Gerenciamento de Produtos</h2>
-        
-        <div class="btn-group">
-          <button class="btn btn-primary" onclick="openProdutoModal()">➕ Novo Produto</button>
-          <div class="flex-gap">
-            <input id="produtoSearchInput" class="search-input" title="Pesquisar produtos" type="text" placeholder="Pesquisar produtos...">
-            <button id="produtoSearchBtn" class="btn btn-info">🔎 Buscar</button>
-            <button id="produtoClearBtn" class="btn btn-light" title="Limpar pesquisa">✖️</button>
-            <button class="btn btn-secondary" onclick="loadProdutos()">🔄 Atualizar Lista</button>
-            <span id="produtoResultsCount" class="produto-results-count" aria-live="polite"></span>
-          </div>
-        </div>
-
-        <div class="loading" id="loadingProdutos">
-          <div class="spinner"></div>
-          Carregando produtos...
-        </div>
-
-        <div class="table-container">
-          <table id="produtoTable">
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>Nome</th>
-                <th>Categoria</th>
-                <th>Preço</th>
-                <th>Estoque</th>
-                <th>Status</th>
-                <th>Ações</th>
-              </tr>
-            </thead>
-            <tbody id="produtoTableBody">
-              <!-- Dados carregados via JS -->
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </section>
-
-    <!-- Mesas Section -->
-    <section id="mesas" class="section">
-      <div class="card">
-        <h2>🪑 Gerenciamento de Mesas</h2>
-        
-        <div class="btn-group">
-          <button class="btn btn-primary" onclick="openMesaModal()">➕ Nova Mesa</button>
-          <button class="btn btn-secondary" onclick="loadMesas()">🔄 Atualizar Lista</button>
-        </div>
-
-        <div class="loading" id="loadingMesas">
-          <div class="spinner"></div>
-          Carregando mesas...
-        </div>
-
-        <div class="table-container">
-          <table id="mesaTable">
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>Número da Mesa</th>
-                <th>Status</th>
-                <th>Ações</th>
-              </tr>
-            </thead>
-            <tbody id="mesaTableBody">
-              <!-- Dados carregados via JS -->
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </section>
-
-    <!-- Pedidos Section -->
-    <section id="pedidos" class="section">
-      <!-- Área de Seleção de Produtos -->
-      <div class="card">
-        <h2>🍔 Cardápio - Selecione os Produtos</h2>
-        
-        <div class="loading" id="loadingCardapio">
-          <div class="spinner"></div>
-          Carregando cardápio...
-        </div>
-
-        <div id="cardapioGrid" class="cardapio-grid">
-          <!-- Produtos serão carregados aqui via JS -->
-        </div>
-      </div>
-
-      <!-- Carrinho de Pedido -->
-      <div class="card">
-        <h2>🛒 Carrinho do Pedido</h2>
-        
-        <div class="carrinho-header">
-          <div class="form-grid form-grid-tight">
-            <div class="form-group">
-              <label>Mesa *</label>
-              <select id="carrinhoMesa" required title="Mesa do carrinho">
-                <option value="">Selecione a mesa...</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label>Atendente *</label>
-              <select id="carrinhoAtendente" required title="Atendente do carrinho">
-                <option value="">Selecione o atendente...</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label>Forma de Pagamento</label>
-              <select id="carrinhoPagamento" title="Forma de pagamento do pedido">
-                <option value="">Selecione (opcional)</option>
-                <option value="pix">PIX</option>
-                <option value="credito">Crédito</option>
-                <option value="debito">Débito</option>
-                <option value="dinheiro">Dinheiro</option>
-              </select>
-            </div>
-            <!-- 'Pagar agora' removido: finalização de pedidos e registro de vendas agora é feito a partir da lista de Pedidos -->
-          </div>
-        </div>
-
-        <div id="carrinhoItens" class="carrinho-itens">
-          <div class="empty-state">
-            <div class="empty-state-icon">🛒</div>
-            <p>Carrinho vazio. Adicione produtos do cardápio acima.</p>
-          </div>
-        </div>
-
-        <div class="carrinho-total">
-          <div class="total-info">
-            <span class="total-label">Total do Pedido:</span>
-            <span class="total-valor" id="carrinhoTotal">R$ 0,00</span>
-          </div>
           <div class="btn-group">
-            <button class="btn btn-danger" onclick="limparCarrinho()">🗑️ Limpar Carrinho</button>
-            <button class="btn btn-success" onclick="finalizarPedido()">✅ Finalizar Pedido</button>
-          </div>
-        </div>
-      </div>
-
-      
-    </section>
-
-    <!-- Vendas Section (contém agora: Pedidos Realizados primeiro, depois Gerenciamento de Vendas) -->
-    <section id="vendas" class="section">
-      <!-- Lista de Pedidos Realizados (movida para cá)
-           Nota: este card foi movido da aba Pedidos para aparecer primeiro dentro da aba Vendas -->
-      <div class="card">
-        <h2>📋 Pedidos Realizados</h2>
-        
-        <div class="controls-row">
-          <div class="left">
-            <label for="pedidoFilterStatus">Filtrar:</label>
-            <select id="pedidoFilterStatus" title="Filtrar pedidos por status">
-              <option value="all">Todos</option>
-              <option value="aberto">Abertos</option>
-              <option value="pago">Pagos</option>
-            </select>
-            <label for="pedidoSortBy" class="margin-left">Ordenar:</label>
-            <select id="pedidoSortBy" title="Ordenar pedidos">
-              <option value="data_desc">Data ↓</option>
-              <option value="data_asc">Data ↑</option>
-              <option value="total_desc">Total ↓</option>
-              <option value="total_asc">Total ↑</option>
-              <option value="status_desc">Status ↓</option>
-              <option value="status_asc">Status ↑</option>
-              <option value="id_desc">ID ↓</option>
-              <option value="id_asc">ID ↑</option>
-            </select>
+            <button class="btn btn-secondary" onclick="loadVendas()">🔄 Atualizar Lista</button>
           </div>
 
-          <div>
-            <button class="btn btn-secondary" onclick="loadPedidos()">🔄 Atualizar Lista</button>
+          <div class="loading" id="loadingVendas">
+            <div class="spinner"></div>
+            Carregando vendas...
+          </div>
+
+          <div class="table-container">
+            <table id="vendaTable">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Data/Hora</th>
+                  <th>ID Pedido</th>
+                  <th>Valor Total</th>
+                  <th>Forma de Pagamento</th>
+                  <th>Ações</th>
+                </tr>
+              </thead>
+              <tbody id="vendaTableBody"></tbody>
+            </table>
           </div>
         </div>
+      </section>
 
-        <div class="loading" id="loadingPedidos">
-          <div class="spinner"></div>
-          Carregando pedidos...
-        </div>
-
-        <div class="table-container">
-          <table id="pedidoTable">
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>Data/Hora</th>
-                <th>Mesa</th>
-                <th>Atendente</th>
-                <th>Status</th>
-                <th>Pagamento</th>
-                <th>Total</th>
-                <th>Ações</th>
-              </tr>
-            </thead>
-            <tbody id="pedidoTableBody">
-              <!-- Dados carregados via JS -->
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <div class="card">
-        <h2>💰 Gerenciamento de Vendas</h2>
-        
-        <div class="btn-group">
-          <button class="btn btn-secondary" onclick="loadVendas()">🔄 Atualizar Lista</button>
-        </div>
-
-        <div class="loading" id="loadingVendas">
-          <div class="spinner"></div>
-          Carregando vendas...
-        </div>
-
-        <div class="table-container">
-          <table id="vendaTable">
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>Data/Hora</th>
-                <th>ID Pedido</th>
-                <th>Valor Total</th>
-                <th>Forma de Pagamento</th>
-                <th>Ações</th>
-              </tr>
-            </thead>
-            <tbody id="vendaTableBody">
-              <!-- Dados carregados via JS -->
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </section>
+    </main>
   </div>
 
-  <!-- Modal Atendente -->
+  <!-- ===================================================
+       MODAIS (inalterados do original)
+  ==================================================== -->
+
+  <!-- Modal Atendente / Usuário -->
   <div id="atendenteModal" class="modal">
     <div class="modal-content">
       <div class="modal-header">
-        <h3 id="atendenteModalTitle">Novo Atendente</h3>
+        <h3 id="atendenteModalTitle">Novo Usuário</h3>
         <button class="close-modal" onclick="closeModal('atendenteModal')">&times;</button>
       </div>
       <form id="atendenteForm">
@@ -389,29 +857,30 @@
         <div class="form-grid">
           <div class="form-group">
             <label>Nome *</label>
-            <input type="text" id="atendenteNome" required title="Nome do atendente" placeholder="Nome completo">
+            <input type="text" id="atendenteNome" required title="Nome" placeholder="Nome completo">
           </div>
           <div class="form-group">
             <label>CPF *</label>
-            <input type="text" id="atendenteCpf" maxlength="11" required title="CPF do atendente" placeholder="Somente números">
+            <input type="text" id="atendenteCpf" maxlength="11" required title="CPF" placeholder="Somente números">
           </div>
           <div class="form-group">
             <label>Telefone</label>
-            <input type="text" id="atendenteTelefone" title="Telefone do atendente" placeholder="(XX) 9XXXX-XXXX">
+            <input type="text" id="atendenteTelefone" title="Telefone" placeholder="(XX) 9XXXX-XXXX">
           </div>
           <div class="form-group">
             <label>Login *</label>
-            <input type="text" id="atendenteLogin" required title="Login do atendente" placeholder="login">
+            <input type="text" id="atendenteLogin" required title="Login" placeholder="login">
           </div>
           <div class="form-group">
             <label>Senha *</label>
-            <input type="password" id="atendenteSenha" required title="Senha do atendente" placeholder="Senha">
+            <input type="password" id="atendenteSenha" required title="Senha" placeholder="Senha">
           </div>
           <div class="form-group">
-            <label>Tipo de Usuário *</label>
+            <label>Permissão *</label>
             <select id="atendenteTipo" required title="Tipo de usuário">
               <option value="atendente">Atendente</option>
               <option value="gerente">Gerente</option>
+              <option value="admin">Administrador</option>
             </select>
           </div>
         </div>
@@ -439,31 +908,31 @@
           </div>
           <div class="form-group">
             <label>Categoria</label>
-            <input type="text" id="produtoCategoria" title="Categoria do produto" placeholder="Ex: Lanches">
+            <input type="text" id="produtoCategoria" title="Categoria" placeholder="Ex: Lanches">
           </div>
           <div class="form-group">
             <label>Preço *</label>
-            <input type="number" id="produtoPreco" step="0.01" min="0" required title="Preço do produto">
+            <input type="number" id="produtoPreco" step="0.01" min="0" required title="Preço">
           </div>
           <div class="form-group">
-            <label>Quantidade em Estoque</label>
-            <input type="number" id="produtoEstoque" min="0" value="0" title="Quantidade em estoque">
+            <label>Estoque</label>
+            <input type="number" id="produtoEstoque" min="0" value="0" title="Estoque">
           </div>
           <div class="form-group">
             <label>Status *</label>
-            <select id="produtoStatus" required title="Status do produto">
+            <select id="produtoStatus" required title="Status">
               <option value="ativo">Ativo</option>
               <option value="inativo">Inativo</option>
             </select>
           </div>
           <div class="form-group">
             <label>Foto (URL)</label>
-            <input type="text" id="produtoFoto" title="URL da foto do produto" placeholder="https://...">
+            <input type="text" id="produtoFoto" title="URL da foto" placeholder="https://...">
           </div>
         </div>
         <div class="form-group">
           <label>Descrição</label>
-          <textarea id="produtoDescricao" title="Descrição do produto" placeholder="Ingredientes, observações..."></textarea>
+          <textarea id="produtoDescricao" title="Descrição" placeholder="Ingredientes, observações..."></textarea>
         </div>
         <div class="btn-group">
           <button type="submit" class="btn btn-primary">💾 Salvar</button>
@@ -513,7 +982,7 @@
       <form id="pedidoForm">
         <input type="hidden" id="pedidoId">
         <div class="form-grid">
-            <div class="form-group">
+          <div class="form-group">
             <label>Mesa *</label>
             <select id="pedidoMesa" required title="Mesa do pedido">
               <option value="">Selecione...</option>
@@ -541,7 +1010,6 @@
               <option value="credito">Crédito</option>
               <option value="debito">Débito</option>
               <option value="dinheiro">Dinheiro</option>
-              <!-- opção Mix removida conforme solicitado -->
             </select>
           </div>
           <div class="form-group">
@@ -553,10 +1021,7 @@
           <label>Observações</label>
           <textarea id="pedidoObservacoes" title="Observações do pedido" placeholder="Ex: sem cebola"></textarea>
         </div>
-        <!-- Informação sobre Venda relacionada -->
-        <div id="pedidoVendaInfo" class="form-group pedido-venda-info">
-          <!-- preenchido dinamicamente via JS quando existir venda vinculada -->
-        </div>
+        <div id="pedidoVendaInfo" class="form-group pedido-venda-info"></div>
         <div class="btn-group">
           <button type="submit" class="btn btn-primary">💾 Salvar</button>
           <button type="button" class="btn btn-secondary" onclick="closeModal('pedidoModal')">❌ Cancelar</button>
@@ -589,7 +1054,6 @@
               <option value="credito">Crédito</option>
               <option value="debito">Débito</option>
               <option value="dinheiro">Dinheiro</option>
-              <!-- opção Mix removida conforme solicitado -->
             </select>
           </div>
           <div class="form-group">
@@ -597,9 +1061,6 @@
             <input type="number" id="vendaValor" step="0.01" min="0" required title="Valor total da venda">
           </div>
         </div>
-
-          <!-- Modal Finalizar Pedido (melhor UX para escolher forma de pagamento)
-               OBS: movido para fora do form de Venda para evitar forms aninhados -->
         <div class="btn-group">
           <button type="submit" class="btn btn-primary">💾 Salvar</button>
           <button type="button" class="btn btn-secondary" onclick="closeModal('vendaModal')">❌ Cancelar</button>
@@ -608,8 +1069,7 @@
     </div>
   </div>
 
-  <!-- Scripts -->
-  <!-- Modal Finalizar Pedido (melhor UX para escolher forma de pagamento) -->
+  <!-- Modal Finalizar Pedido -->
   <div id="finalizarModal" class="modal">
     <div class="modal-content">
       <div class="modal-header">
@@ -627,13 +1087,10 @@
               <option value="dinheiro">Dinheiro</option>
               <option value="credito">Crédito</option>
               <option value="debito">Débito</option>
-              <!-- opção Mix removida conforme solicitado -->
             </select>
           </div>
         </div>
-        <!-- Resumo do pedido (itens + total) exibido para confirmação antes de finalizar -->
         <div id="finalizarResumo" class="finalizar-resumo" aria-live="polite">
-          <!-- preenchido dinamicamente via JS: lista de itens e total -->
           <div class="resumo-empty">Carregando resumo do pedido...</div>
         </div>
         <div class="btn-group">
@@ -644,40 +1101,120 @@
     </div>
   </div>
 
-    <!-- Modal Backups -->
-    <div id="backupsModal" class="modal">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h3>Backups</h3>
-          <button class="close-modal" onclick="closeModal('backupsModal')">&times;</button>
-        </div>
-  <div class="btn-group">
-          <button class="btn btn-secondary" onclick="fetchBackups()">🔄 Atualizar</button>
-          <button class="btn btn-danger" onclick="document.getElementById('backupsTableBody').innerHTML='';">🧹 Limpar lista</button>
-        </div>
-  <div id="loadingBackups" class="loading">
-          <div class="spinner"></div>
-          Carregando backups...
-        </div>
-        <div class="table-container">
-          <table id="backupsTable">
-            <thead>
-              <tr>
-                <th>Nome</th>
-                <th>Tamanho</th>
-                <th>Modificado</th>
-                <th>Ações</th>
-              </tr>
-            </thead>
-            <tbody id="backupsTableBody">
-              <!-- preenchido via JS -->
-            </tbody>
-          </table>
-        </div>
+  <!-- Modal Backups -->
+  <div id="backupsModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Backups</h3>
+        <button class="close-modal" onclick="closeModal('backupsModal')">&times;</button>
+      </div>
+      <div class="btn-group">
+        <button class="btn btn-secondary" onclick="fetchBackups()">🔄 Atualizar</button>
+        <button class="btn btn-danger" onclick="document.getElementById('backupsTableBody').innerHTML='';">🧹 Limpar lista</button>
+      </div>
+      <div id="loadingBackups" class="loading">
+        <div class="spinner"></div>
+        Carregando backups...
+      </div>
+      <div class="table-container">
+        <table id="backupsTable">
+          <thead>
+            <tr>
+              <th>Nome</th>
+              <th>Tamanho</th>
+              <th>Modificado</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody id="backupsTableBody"></tbody>
+        </table>
       </div>
     </div>
-  <!-- Chart.js (global) - precisa ser carregado antes do app.js que usa Chart -->
+  </div>
+
+  <!-- ===================================================
+       SCRIPTS
+  ==================================================== -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="app.js"></script>
+  <script>
+    // ---- FILTRO CARDÁPIO ----
+    function filtrarCardapio(termo) {
+      const t = termo.toLowerCase().trim();
+      const cards = document.querySelectorAll('#cardapioGrid .produto-card');
+      cards.forEach(card => {
+        const nome = (card.querySelector('.produto-nome') || card).textContent.toLowerCase();
+        const cat  = (card.querySelector('.produto-categoria') || {textContent:''}).textContent.toLowerCase();
+        card.style.display = (!t || nome.includes(t) || cat.includes(t)) ? '' : 'none';
+      });
+    }
+
+    // ---- SIDEBAR TOGGLE (mobile) ----
+    const sidebar        = document.getElementById('sidebar');
+    const sidebarOverlay = document.getElementById('sidebarOverlay');
+    const sidebarToggle  = document.getElementById('sidebarToggle');
+
+    sidebarToggle.addEventListener('click', () => {
+      sidebar.classList.toggle('open');
+      sidebarOverlay.classList.toggle('open');
+    });
+    sidebarOverlay.addEventListener('click', () => {
+      sidebar.classList.remove('open');
+      sidebarOverlay.classList.remove('open');
+    });
+
+    // ---- NAVEGAÇÃO POR SEÇÃO ----
+    // Compatível com o app.js existente: mantém a lógica de data-section
+    // O app.js original escuta cliques em .nav-link, aqui reforçamos
+    document.querySelectorAll('.nav-link').forEach(link => {
+      link.addEventListener('click', (e) => {
+        e.preventDefault();
+        const target = link.dataset.section;
+        if (!target) return;
+
+        // Ativa link
+        document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+        document.querySelectorAll(`.nav-link[data-section="${target}"]`).forEach(l => l.classList.add('active'));
+
+        // Mostra seção
+        document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+        const sec = document.getElementById(target);
+        if (sec) sec.classList.add('active');
+
+        // Fecha sidebar mobile
+        sidebar.classList.remove('open');
+        sidebarOverlay.classList.remove('open');
+      });
+    });
+
+    // ---- TABELA DE USUÁRIOS (espelha atendenteTableBody) ----
+    // Após loadAtendentes() rodar, copiamos os dados para usuariosTableBody também
+    const _origLoadAtendentes = window.loadAtendentes;
+    if (typeof _origLoadAtendentes === 'function') {
+      window.loadAtendentes = function() {
+        _origLoadAtendentes();
+        setTimeout(syncUsuariosTable, 800);
+      };
+    }
+
+    function syncUsuariosTable() {
+      const src  = document.getElementById('atendenteTableBody');
+      const dest = document.getElementById('usuariosTableBody');
+      if (src && dest) dest.innerHTML = src.innerHTML;
+
+      // Atualiza contadores
+      const rows = src ? src.querySelectorAll('tr') : [];
+      document.getElementById('totalUsuarios').textContent = rows.length || '0';
+
+      let admins = 0, atendentes = 0;
+      rows.forEach(r => {
+        const tipo = r.cells[5] ? r.cells[5].textContent.toLowerCase() : '';
+        if (tipo.includes('gerente') || tipo.includes('admin')) admins++;
+        else atendentes++;
+      });
+      document.getElementById('totalAdmins').textContent = admins;
+      document.getElementById('totalAtendentesCount').textContent = atendentes;
+    }
+  </script>
 </body>
 </html>
