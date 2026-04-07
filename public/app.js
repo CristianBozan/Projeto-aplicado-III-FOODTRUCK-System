@@ -1,5 +1,7 @@
 // Configuração da API
-const API_URL = "http://localhost:3000";
+const API_URL = window.location.protocol === 'file:'
+  ? 'http://localhost:3000'
+  : window.location.origin;
 
 // Carrinho de compras global
  
@@ -68,7 +70,7 @@ document.addEventListener("DOMContentLoaded", () => {
 if (!window.location.pathname.endsWith('/login.html')) {
   try {
     if (!localStorage.getItem('loggedIn')) {
-      window.location = '/login.html';
+      window.location = 'login.html';
     }
   } catch (err) {
     console.warn('Erro ao verificar estado de autenticação', err);
@@ -1025,33 +1027,31 @@ if (applyAtBtn) {
     loadVendasPorAtendente(null, id);
   });
 }
- 
 
-// Permite buscar ao pressionar Enter no input de busca
-document.addEventListener('DOMContentLoaded', () => {
-  const input = document.getElementById('produtoSearchInput');
-  if (input) {
-    input.addEventListener('keyup', (e) => {
-      if (e.key === 'Enter') searchProdutos();
-    });
-  }
-  // Garantir que o botão de busca chame a função (em caso de onclick inline não funcionar)
-  const btn = document.getElementById('produtoSearchBtn');
-  if (btn) {
-    btn.addEventListener('click', (e) => {
-      e.preventDefault();
-      searchProdutos();
-    });
-  }
-  // botão limpar pesquisa
-  const clearBtn = document.getElementById('produtoClearBtn');
-  if (clearBtn) {
-    clearBtn.addEventListener('click', (e) => {
-      e.preventDefault();
-      clearProdutoSearch();
-    });
-  }
-});
+
+// Permite buscar ao pressionar Enter no input de busca (movido para fora do DOMContentLoaded redundante)
+const input = document.getElementById('produtoSearchInput');
+if (input) {
+  input.addEventListener('keyup', (e) => {
+    if (e.key === 'Enter') searchProdutos();
+  });
+}
+// Garantir que o botão de busca chame a função (em caso de onclick inline não funcionar)
+const btn = document.getElementById('produtoSearchBtn');
+if (btn) {
+  btn.addEventListener('click', (e) => {
+    e.preventDefault();
+    searchProdutos();
+  });
+}
+// botão limpar pesquisa
+const clearBtn = document.getElementById('produtoClearBtn');
+if (clearBtn) {
+  clearBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    clearProdutoSearch();
+  });
+}
 
 // Carrega lista de produtos (tela de gerenciamento)
 async function loadProdutos() {

@@ -27,7 +27,7 @@ body {
 header {
   background: linear-gradient(135deg, var(--primary-red) 0%, #8B1228 100%);
   color: var(--white);
-  padding: 1.5rem 2rem;
+  padding: 0.75rem 1rem;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   position: sticky;
   top: 0;
@@ -35,11 +35,14 @@ header {
 }
 
 header h1 {
-  font-size: 2rem;
+  font-size: 1.5rem;
   font-weight: 700;
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: 0.5rem;
+  margin: 0;
+  flex-wrap: nowrap;
+  word-break: keep-all;
 }
 
 /* Logo no header */
@@ -47,36 +50,151 @@ header h1 {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 1rem;
+  gap: 0.5rem;
+  flex-wrap: nowrap;
 }
 
 .header-left {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: 0.5rem;
+  overflow: hidden;
+  flex: 1;
+  min-width: 0;
 }
 
 .header-right {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  justify-content: flex-end;
 }
 
 .site-logo {
-  width: 120px; /* aumentado para melhor visibilidade */
-  height: auto;
+  width: 50px;
+  height: 50px;
+  object-fit: contain;
+  flex-shrink: 0;
   display: block;
 }
 
 /* reduzir logo em telas pequenas para não quebrar layout */
+@media (max-width: 900px) {
+  header {
+    padding: 0.6rem 0.8rem;
+  }
+  
+  header h1 {
+    font-size: 1.2rem;
+    gap: 0.4rem;
+  }
+  
+  .header-inner {
+    gap: 0.4rem;
+  }
+  
+  .header-left {
+    gap: 0.4rem;
+  }
+  
+  .header-right {
+    gap: 0.4rem;
+  }
+  
+  .site-logo {
+    width: 44px;
+    height: 44px;
+  }
+  
+  .header-right .btn {
+    padding: 0.45rem 0.7rem;
+    font-size: 0.85rem;
+  }
+}
+
 @media (max-width: 768px) {
-  .site-logo { width: 80px; }
+  header {
+    padding: 0.6rem 0.6rem;
+  }
+  
+  header h1 {
+    font-size: 1rem;
+    gap: 0.3rem;
+  }
+  
+  header h1 span {
+    display: none;
+  }
+  
+  .header-inner {
+    gap: 0.3rem;
+  }
+  
+  .header-left {
+    gap: 0.3rem;
+  }
+  
+  .header-right {
+    gap: 0.3rem;
+  }
+  
+  .site-logo {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .header-right .btn {
+    padding: 0.45rem;
+    font-size: 1.1rem;
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    letter-spacing: -999px;
+    overflow: hidden;
+  }
+}
+
+@media (max-width: 480px) {
+  header {
+    padding: 0.5rem 0.5rem;
+  }
+  
+  header h1 {
+    font-size: 0.9rem;
+  }
+  
+  .header-inner {
+    gap: 0.2rem;
+  }
+  
+  .header-left {
+    gap: 0.2rem;
+  }
+  
+  .header-right {
+    gap: 0.2rem;
+  }
+  
+  .site-logo {
+    width: 36px;
+    height: 36px;
+  }
+  
+  .header-right .btn {
+    padding: 0.4rem 0.4rem;
+    min-width: 40px;
+    min-height: 40px;
+  }
 }
 
 /* botão de sincronização no header */
 .header-right .btn {
   padding: 0.5rem 0.9rem;
   font-size: 0.9rem;
+  white-space: nowrap;
 }
 
 header h1 span {
