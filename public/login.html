@@ -81,7 +81,9 @@
   </div>
 
   <script>
-    const API_URL = 'http://localhost:3000';
+    const API_URL = window.location.protocol === 'file:'
+      ? 'http://localhost:3000'
+      : window.location.origin;
     const form = document.getElementById('loginForm');
 
     form.addEventListener('submit', (e) => {
@@ -93,7 +95,7 @@
       const DEFAULT_PASS = 'admin';
       if (username === DEFAULT_USER && password === DEFAULT_PASS) {
         localStorage.setItem('loggedIn', '1');
-        window.location = '/';
+        window.location = 'index.html';
         return;
       }
       alert('Credenciais inválidas (use admin / admin ou configure AUTH_USER/AUTH_PASS)');
