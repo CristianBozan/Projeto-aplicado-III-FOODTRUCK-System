@@ -34,7 +34,8 @@
     .sidebar {
       width: 240px;
       min-width: 240px;
-      background: #A01830 !important;
+      background: #ffffff;
+      border-right: 1px solid #E8E8E8;
       display: flex;
       flex-direction: column;
       position: fixed;
@@ -44,10 +45,9 @@
       z-index: 1000;
       transition: transform 0.3s ease;
       overflow-y: auto;
-      box-shadow: 4px 0 14px rgba(0,0,0,0.25);
+      box-shadow: 2px 0 8px rgba(0,0,0,0.06);
     }
 
-    /* Forçar fundo vermelho em TODOS os filhos do sidebar */
     .sidebar nav,
     .sidebar nav ul,
     .sidebar nav li,
@@ -62,17 +62,16 @@
     }
 
     .sidebar-group {
-      padding: 1rem 0 0.4rem !important;
+      padding: 1.1rem 0 0.3rem !important;
     }
 
     .sidebar-group-label {
-      font-size: 0.68rem;
+      font-size: 0.65rem;
       font-weight: 700;
-      letter-spacing: 0.14em;
+      letter-spacing: 0.13em;
       text-transform: uppercase;
-      color: #FFD700;
-      opacity: 0.8;
-      padding: 0 1.2rem 0.4rem;
+      color: #AAAAAA;
+      padding: 0 1.2rem 0.5rem;
       display: block;
     }
 
@@ -94,42 +93,71 @@
     .sidebar nav a {
       display: flex !important;
       align-items: center !important;
-      gap: 0.75rem !important;
-      padding: 0.7rem 1.2rem !important;
-      color: #fff !important;
+      gap: 0.65rem !important;
+      padding: 0.6rem 1.2rem !important;
+      color: #555 !important;
       text-decoration: none !important;
-      font-weight: 600 !important;
-      font-size: 0.9rem !important;
+      font-weight: 500 !important;
+      font-size: 0.88rem !important;
       text-align: left !important;
       border-left: 3px solid transparent !important;
       border-bottom: none !important;
       border-top: none !important;
       border-right: none !important;
       background: transparent !important;
-      transition: all 0.2s ease !important;
+      transition: all 0.18s ease !important;
       width: 100% !important;
+      border-radius: 0 6px 6px 0 !important;
     }
 
-    .sidebar nav a .nav-icon { font-size: 1rem; width: 20px; text-align: center; flex-shrink: 0; }
+    .sidebar nav a .nav-icon {
+      font-size: 1rem;
+      width: 22px;
+      text-align: center;
+      flex-shrink: 0;
+      opacity: 0.7;
+    }
 
     .sidebar nav a:hover {
-      background: rgba(0,0,0,0.18) !important;
-      color: #FFD700 !important;
-      border-left-color: #FFD700 !important;
+      background: rgba(196,30,58,0.06) !important;
+      color: #C41E3A !important;
+      border-left-color: rgba(196,30,58,0.4) !important;
     }
+    .sidebar nav a:hover .nav-icon { opacity: 1; }
 
     .sidebar nav a.active {
-      background: rgba(0,0,0,0.28) !important;
-      color: #FFD700 !important;
-      border-left-color: #FFD700 !important;
+      background: rgba(196,30,58,0.08) !important;
+      color: #C41E3A !important;
+      border-left-color: #C41E3A !important;
       font-weight: 700 !important;
     }
+    .sidebar nav a.active .nav-icon { opacity: 1; }
 
     .sidebar-divider {
       height: 1px;
-      background: rgba(255,255,255,0.2);
-      margin: 0.4rem 1.2rem;
+      background: #EEEEEE;
+      margin: 0.3rem 1.2rem;
     }
+
+    /* Sair do sistema — fixado no fundo */
+    .sidebar-logout {
+      margin-top: auto;
+      padding: 1rem 0;
+      border-top: 1px solid #EEEEEE;
+    }
+    .sidebar-logout a {
+      display: flex !important;
+      align-items: center !important;
+      gap: 0.65rem !important;
+      padding: 0.6rem 1.2rem !important;
+      color: #888 !important;
+      text-decoration: none !important;
+      font-size: 0.88rem !important;
+      font-weight: 500 !important;
+      transition: color 0.18s !important;
+      cursor: pointer !important;
+    }
+    .sidebar-logout a:hover { color: #C41E3A !important; }
 
     /* ---- MAIN CONTENT ---- */
     .main-content {
@@ -161,24 +189,42 @@
     }
 
     /* ============================================================
-       PERFIL NO TOPO DA SIDEBAR
+       HEADER — BREADCRUMB + USER INFO
     ============================================================ */
-    .sidebar-user {
+    .header-breadcrumb {
+      font-size: 0.88rem;
+      color: rgba(255,255,255,0.75);
+      font-weight: 400;
+      margin: 0 1rem;
+      flex: 1;
+    }
+    .header-user {
       display: flex;
       align-items: center;
-      gap: 0.75rem;
-      padding: 1.2rem 1.2rem 0.75rem;
-      border-bottom: 1px solid rgba(255,255,255,0.2);
+      gap: 0.6rem;
     }
-    .sidebar-avatar {
+    .header-user-name {
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: #fff;
+      line-height: 1.2;
+    }
+    .header-user-role {
+      font-size: 0.75rem;
+      color: rgba(255,255,255,0.65);
+      line-height: 1.2;
+    }
+    .header-avatar {
       width: 36px; height: 36px;
       background: #FFD700;
       border-radius: 50%;
       display: flex; align-items: center; justify-content: center;
-      font-weight: 700; color: #8B1228; font-size: 1rem; flex-shrink: 0;
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      color: #8B1228;
+      font-size: 0.85rem;
+      flex-shrink: 0;
     }
-    .sidebar-username { font-size: 0.85rem; font-weight: 700; color: #fff; }
-    .sidebar-role { font-size: 0.75rem; color: rgba(255,215,0,0.8); }
 
     /* ============================================================
        SEÇÃO ADMIN — CARDS DE USUÁRIOS
@@ -222,32 +268,67 @@
       gap: 1.5rem;
       align-items: start;
     }
-    .carrinho-sticky { position: sticky; top: 80px; }
+    .carrinho-sticky {
+      position: sticky;
+      top: 80px;
+      max-height: calc(100vh - 96px);
+      overflow-y: auto;
+      border-radius: 12px;
+    }
 
     /* ============================================================
        RESPONSIVE
     ============================================================ */
-    @media (max-width: 900px) {
-      .atendimento-layout { grid-template-columns: 1fr; }
-      .carrinho-sticky { position: static; }
+
+    /* Tablet largo: carrinho em coluna menor */
+    @media (max-width: 1100px) {
+      .atendimento-layout { grid-template-columns: 1fr 300px; }
     }
 
+    /* Tablet: empilha cardápio + carrinho */
+    @media (max-width: 900px) {
+      .atendimento-layout { grid-template-columns: 1fr; }
+      .carrinho-sticky {
+        position: static;
+        max-height: none;
+        overflow-y: visible;
+      }
+      /* Tabelas: scroll horizontal */
+      .table-container { overflow-x: auto; }
+      /* Controles em linha única viram coluna */
+      .controls-row { flex-direction: column; gap: 0.5rem; }
+      .controls-row .left { flex-wrap: wrap; }
+      /* Page-header empilha */
+      .page-header { flex-direction: column; align-items: flex-start; }
+    }
+
+    /* Mobile: sidebar oculta */
     @media (max-width: 768px) {
-      .sidebar {
-        transform: translateX(-100%);
-      }
-      .sidebar.open {
-        transform: translateX(0);
-      }
+      .sidebar { transform: translateX(-100%); }
+      .sidebar.open { transform: translateX(0); }
       .sidebar-overlay.open { display: block; }
       .sidebar-toggle { display: block; }
       .main-content { margin-left: 0; padding: 1rem; }
       .admin-stats { grid-template-columns: 1fr 1fr; }
+      /* Header: esconde textos longos */
+      .header-breadcrumb { display: none; }
+      header h1 { font-size: 1.1rem; }
+      /* Quick cards: 3 colunas no mobile */
+      .quick-access-grid { grid-template-columns: repeat(3, 1fr) !important; }
     }
 
+    /* Mobile pequeno */
     @media (max-width: 480px) {
       .admin-stats { grid-template-columns: 1fr; }
       .main-content { padding: 0.75rem; }
+      /* Quick cards: 2 colunas */
+      .quick-access-grid { grid-template-columns: repeat(2, 1fr) !important; }
+      /* Atendente cards: 1 coluna */
+      .atendente-cards-grid { grid-template-columns: 1fr; }
+      /* Produto cards: 1 coluna */
+      .produtos-cards-grid { grid-template-columns: 1fr !important; }
+      /* Form grid: 1 coluna */
+      .form-grid { grid-template-columns: 1fr !important; }
     }
 
     /* ============================================================
@@ -301,32 +382,81 @@
       font-size: 0.88rem !important;
     }
 
-    /* Itens do carrinho — forçar que não vazem */
+    /* Itens do carrinho — sem scroll próprio; o scroll é da coluna inteira */
     .carrinho-itens {
-      max-height: 420px;
-      overflow-y: auto;
       overflow-x: hidden;
     }
+
+    /* Novo layout: imagem | [info + controles] | [subtotal + lixeira] */
     .carrinho-item {
-      flex-wrap: wrap !important;
+      display: flex !important;
+      align-items: flex-start !important;
+      gap: 10px !important;
+      padding: 10px 0 !important;
+      border-bottom: 1px solid #f0f0f0 !important;
       overflow: hidden !important;
-      word-break: break-word !important;
     }
+    .carrinho-item:last-child { border-bottom: none !important; }
+
     .carrinho-item-imagem {
-      width: 64px !important;
-      height: 64px !important;
-      font-size: 1.6rem !important;
+      width: 52px !important;
+      height: 52px !important;
+      font-size: 1.4rem !important;
       flex-shrink: 0 !important;
+      border-radius: 8px !important;
+      background: #f5f5f5 !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      overflow: hidden !important;
+    }
+    .carrinho-item-imagem img {
+      width: 100% !important;
+      height: 100% !important;
+      object-fit: cover !important;
+      border-radius: 8px !important;
+    }
+
+    /* Coluna do meio: nome + preço unitário + botões de quantidade */
+    .carrinho-item-info {
+      flex: 1 !important;
+      min-width: 0 !important;
+      display: flex !important;
+      flex-direction: column !important;
+      gap: 5px !important;
     }
     .carrinho-item-nome {
-      font-size: 0.95rem !important;
+      font-size: 0.9rem !important;
+      font-weight: 600 !important;
+      color: #1A1A1A !important;
+      white-space: nowrap !important;
+      overflow: hidden !important;
+      text-overflow: ellipsis !important;
     }
     .carrinho-item-preco {
-      font-size: 0.82rem !important;
+      font-size: 0.78rem !important;
+      color: #888 !important;
+    }
+    .carrinho-item-controls {
+      display: flex !important;
+      align-items: center !important;
+      gap: 6px !important;
+      margin-top: 2px !important;
+    }
+
+    /* Coluna direita: subtotal + lixeira */
+    .carrinho-item-right {
+      display: flex !important;
+      flex-direction: column !important;
+      align-items: flex-end !important;
+      gap: 8px !important;
+      flex-shrink: 0 !important;
     }
     .carrinho-item-subtotal {
-      font-size: 1rem !important;
-      min-width: 80px !important;
+      font-size: 0.95rem !important;
+      font-weight: 700 !important;
+      color: #1A1A1A !important;
+      white-space: nowrap !important;
     }
 
     /* Remove o nav antigo */
@@ -338,6 +468,163 @@
     /* Ajusta header h1 para caber no espaço reduzido */
     header h1 { font-size: 1.4rem; }
     @media (max-width: 480px) { header h1 { font-size: 1rem; } }
+
+    /* ── Cabeçalho de página (título + botão) ── */
+    .page-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+    }
+    .page-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: #1A1A1A;
+      margin: 0 0 4px;
+    }
+    .page-subtitle {
+      font-size: 0.88rem;
+      color: #888;
+      margin: 0;
+    }
+
+    /* ── Cards de acesso rápido (Dashboard) ── */
+    .quick-access-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+      gap: 0.75rem;
+    }
+    .quick-card {
+      background: #fafafa;
+      border: 1.5px solid #eee;
+      border-radius: 10px;
+      padding: 1rem 0.5rem;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 0.18s, background 0.18s;
+      text-decoration: none;
+    }
+    .quick-card:hover {
+      border-color: #C41E3A;
+      background: rgba(196,30,58,0.04);
+    }
+    .quick-card-icon { font-size: 1.8rem; display: block; margin-bottom: 0.4rem; }
+    .quick-card-label { font-size: 0.78rem; font-weight: 600; color: #444; }
+
+    /* ── Tabela Vendas: fonte compacta para caber na tela ── */
+    #pedidoTable { font-size: 0.82rem; }
+    #pedidoTable th, #pedidoTable td { padding: 0.5rem 0.6rem; }
+    #pedidoTable .actions { flex-wrap: wrap; gap: 0.25rem; }
+
+    /* ── Status badge (pedidos recentes) ── */
+    .badge-pago    { background:#D1ECF1; color:#0C5460; padding:2px 8px; border-radius:12px; font-size:0.75rem; font-weight:700; }
+    .badge-aberto  { background:#FFF3CD; color:#856404; padding:2px 8px; border-radius:12px; font-size:0.75rem; font-weight:700; }
+    .badge-fin     { background:#D4EDDA; color:#155724; padding:2px 8px; border-radius:12px; font-size:0.75rem; font-weight:700; }
+    .badge-cancel  { background:#F8D7DA; color:#721C24; padding:2px 8px; border-radius:12px; font-size:0.75rem; font-weight:700; }
+
+    /* ── Atendentes — cards de perfil ── */
+    .atendente-cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 1rem;
+    }
+    .atendente-card {
+      background: #fff;
+      border: 1.5px solid #eee;
+      border-radius: 12px;
+      padding: 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    .atendente-card-header {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    .atendente-initials {
+      width: 44px; height: 44px;
+      border-radius: 50%;
+      background: #C41E3A;
+      color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 1rem;
+      flex-shrink: 0;
+    }
+    .atendente-card-name { font-weight: 700; font-size: 0.95rem; color: #1A1A1A; }
+    .atendente-card-login { font-size: 0.78rem; color: #888; }
+    .atendente-card-meta { font-size: 0.78rem; color: #666; display: flex; align-items: center; gap: 0.3rem; }
+    .badge-gerente  { background:#FFF3CD; color:#856404; padding:2px 8px; border-radius:12px; font-size:0.72rem; font-weight:700; }
+    .badge-atendente{ background:#D4EDDA; color:#155724; padding:2px 8px; border-radius:12px; font-size:0.72rem; font-weight:700; }
+    .badge-ativo    { background:#D4EDDA; color:#155724; padding:2px 8px; border-radius:12px; font-size:0.72rem; font-weight:600; }
+    .badge-inativo  { background:#F8D7DA; color:#721C24; padding:2px 8px; border-radius:12px; font-size:0.72rem; font-weight:600; }
+
+    /* ── Produtos — card grid layout ── */
+    .produtos-cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 1rem;
+    }
+    .produto-mgmt-card {
+      background: #fff;
+      border: 1.5px solid #eee;
+      border-radius: 12px;
+      overflow: hidden;
+      position: relative;
+    }
+    .produto-mgmt-img {
+      height: 120px;
+      background: #f5f5f5;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 2.6rem;
+      overflow: hidden;
+      border-radius: 8px 8px 0 0;
+    }
+    .produto-mgmt-body { padding: 0.9rem 1rem; }
+    .produto-mgmt-cat  { font-size: 0.68rem; font-weight:700; color:#C41E3A; text-transform:uppercase; letter-spacing:0.08em; margin-bottom:2px; }
+    .produto-mgmt-name { font-weight:700; font-size:0.95rem; color:#1A1A1A; margin-bottom:4px; }
+    .produto-mgmt-desc { font-size:0.78rem; color:#888; margin-bottom:8px; line-height:1.4; }
+    .produto-mgmt-price{ font-family:'Syne',sans-serif; font-weight:700; font-size:1.1rem; color:#C41E3A; }
+    .produto-mgmt-footer{ display:flex; justify-content:space-between; align-items:center; padding:0.6rem 1rem; border-top:1px solid #f0f0f0; }
+    .badge-estoque { font-size:0.7rem; font-weight:600; color:#155724; background:#D4EDDA; padding:2px 7px; border-radius:10px; }
+    .badge-esgotado{ font-size:0.7rem; font-weight:600; color:#721C24; background:#F8D7DA; padding:2px 7px; border-radius:10px; }
+    .produto-mgmt-actions { display:flex; gap:0.4rem; }
+
+    /* ── Sincronização — status banner ── */
+    .sync-status-banner {
+      background: #f0faf4;
+      border: 1.5px solid #b2dfdb;
+      border-radius: 12px;
+      padding: 1.25rem 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+    }
+    .sync-status-banner .sync-info { display:flex; align-items:center; gap:1rem; }
+    .sync-status-banner .sync-icon { font-size:2.5rem; }
+    .sync-status-title { font-weight:700; font-size:1.05rem; color:#1b5e20; }
+    .sync-status-sub   { font-size:0.82rem; color:#555; margin-top:2px; }
+    .sync-status-banner .sync-actions { display:flex; gap:0.75rem; flex-wrap:wrap; }
+    .btn-outline {
+      padding: 0.5rem 1.1rem;
+      border: 1.5px solid #C41E3A;
+      background: #fff;
+      color: #C41E3A;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 0.88rem;
+      cursor: pointer;
+      transition: background 0.18s;
+    }
+    .btn-outline:hover { background: rgba(196,30,58,0.06); }
   </style>
 </head>
 <body>
@@ -347,13 +634,18 @@
     <div class="header-inner">
       <div class="header-left">
         <button class="sidebar-toggle" id="sidebarToggle" aria-label="Menu">☰</button>
-        <img src="logo-foodtruck.png" alt="Food Truck System logo" class="site-logo" />
-        <h1><span>FOOD TRUCK</span> System</h1>
+        <img src="/imagens/logo%20food%20truck%20system.png" alt="Food Truck System logo" class="site-logo" onerror="this.style.display='none'" />
+        <h1><span>Food Truck</span> System</h1>
       </div>
+      <span class="header-breadcrumb" id="headerBreadcrumb"></span>
       <div class="header-right">
-        <button id="syncBackupBtn" class="btn btn-secondary" title="Gerar backup manual">🔄 Backup</button>
-        <button id="openBackupsBtn" class="btn btn-primary" title="Listar backups">📁 Backups</button>
-        <button id="logoutBtn" class="btn btn-danger" title="Sair">🚪 Sair</button>
+        <div class="header-user">
+          <div style="text-align:right">
+            <div class="header-user-name" id="headerUserName">Usuário</div>
+            <div class="header-user-role" id="headerUserRole">—</div>
+          </div>
+          <div class="header-avatar" id="headerAvatar">U</div>
+        </div>
       </div>
     </div>
   </header>
@@ -366,53 +658,25 @@
 
     <!-- ===== SIDEBAR ===== -->
     <aside class="sidebar" id="sidebar">
-      <div class="sidebar-user">
-        <div class="sidebar-avatar">A</div>
-        <div>
-          <div class="sidebar-username">Administrador</div>
-          <div class="sidebar-role">admin</div>
-        </div>
-      </div>
 
-      <!-- Grupo: Administração -->
+      <!-- Grupo: Menu Principal (todos os perfis) -->
       <div class="sidebar-group">
-        <div class="sidebar-group-label">Administração</div>
+        <div class="sidebar-group-label">Menu Principal</div>
         <nav>
           <ul>
-            <li>
-              <a href="#admin-dashboard" class="nav-link active" data-section="admin-dashboard">
+            <li data-role="gerente">
+              <a href="#admin-dashboard" class="nav-link" data-section="admin-dashboard" data-role="gerente" data-breadcrumb="Dashboard">
                 <span class="nav-icon">📊</span> Dashboard
               </a>
             </li>
             <li>
-              <a href="#admin-usuarios" class="nav-link" data-section="admin-usuarios">
-                <span class="nav-icon">👤</span> Usuários
+              <a href="#pedidos" class="nav-link active" data-section="pedidos" data-breadcrumb="Atendimento · Novo Pedido">
+                <span class="nav-icon">🧾</span> Atendimento
               </a>
             </li>
             <li>
-              <a href="#atendentes" class="nav-link" data-section="atendentes">
-                <span class="nav-icon">👥</span> Atendentes
-              </a>
-            </li>
-          </ul>
-        </nav>
-      </div>
-
-      <div class="sidebar-divider"></div>
-
-      <!-- Grupo: Atendimento -->
-      <div class="sidebar-group">
-        <div class="sidebar-group-label">Atendimento</div>
-        <nav>
-          <ul>
-            <li>
-              <a href="#pedidos" class="nav-link" data-section="pedidos">
-                <span class="nav-icon">📝</span> Novo Pedido
-              </a>
-            </li>
-            <li>
-              <a href="#vendas" class="nav-link" data-section="vendas">
-                <span class="nav-icon">💰</span> Pedidos &amp; Vendas
+              <a href="#vendas" class="nav-link" data-section="vendas" data-breadcrumb="Atendimento · Pedidos &amp; Vendas">
+                <span class="nav-icon">💰</span> Vendas
                 <span id="vendasBadge" class="nav-badge hidden" aria-live="polite">0</span>
               </a>
             </li>
@@ -420,26 +684,70 @@
         </nav>
       </div>
 
-      <div class="sidebar-divider"></div>
+      <div class="sidebar-divider" data-role="gerente"></div>
 
-      <!-- Grupo: Gestão -->
-      <div class="sidebar-group">
-        <div class="sidebar-group-label">Gestão</div>
+      <!-- Grupo: Gerenciamento (somente gerente) -->
+      <div class="sidebar-group" data-role="gerente">
+        <div class="sidebar-group-label">Gerenciamento</div>
         <nav>
           <ul>
             <li>
-              <a href="#produtos" class="nav-link" data-section="produtos">
-                <span class="nav-icon">🍔</span> Produtos
+              <a href="#produtos" class="nav-link" data-section="produtos" data-role="gerente" data-breadcrumb="Gerenciamento · Produtos">
+                <span class="nav-icon">📦</span> Produtos
               </a>
             </li>
             <li>
-              <a href="#mesas" class="nav-link" data-section="mesas">
+              <a href="#atendentes" class="nav-link" data-section="atendentes" data-role="gerente" data-breadcrumb="Gerenciamento · Atendentes">
+                <span class="nav-icon">👥</span> Atendentes
+              </a>
+            </li>
+            <li>
+              <a href="#mesas" class="nav-link" data-section="mesas" data-role="gerente" data-breadcrumb="Gerenciamento · Mesas">
                 <span class="nav-icon">🪑</span> Mesas
+              </a>
+            </li>
+            <li>
+              <a href="#estoque" class="nav-link" data-section="estoque" data-role="gerente" data-breadcrumb="Gerenciamento · Estoque">
+                <span class="nav-icon">🏪</span> Estoque
               </a>
             </li>
           </ul>
         </nav>
       </div>
+
+      <div class="sidebar-divider" data-role="gerente"></div>
+
+      <!-- Grupo: Administração (gerente vê tudo; atendente só Sincronização) -->
+      <div class="sidebar-group">
+        <div class="sidebar-group-label">Administração</div>
+        <nav>
+          <ul>
+            <li data-role="gerente">
+              <a href="#relatorios" class="nav-link" data-section="relatorios" data-role="gerente" data-breadcrumb="Relatórios · Visão Geral">
+                <span class="nav-icon">📋</span> Relatórios
+              </a>
+            </li>
+            <li>
+              <a href="#sincronizacao" class="nav-link" data-section="sincronizacao" data-breadcrumb="Administração · Sincronização">
+                <span class="nav-icon">🔄</span> Sincronização
+              </a>
+            </li>
+            <li data-role="gerente">
+              <a href="#backups" class="nav-link" data-section="backups" data-role="gerente" data-breadcrumb="Administração · Backups">
+                <span class="nav-icon">💾</span> Backups
+              </a>
+            </li>
+          </ul>
+        </nav>
+      </div>
+
+      <!-- Sair do sistema -->
+      <div class="sidebar-logout">
+        <a id="logoutBtn" href="#" title="Sair do sistema">
+          <span class="nav-icon">🚪</span> Sair do sistema
+        </a>
+      </div>
+
     </aside>
 
     <!-- ===== CONTEÚDO PRINCIPAL ===== -->
@@ -447,64 +755,91 @@
       <div id="alertContainer"></div>
 
       <!-- ======================================
-           SEÇÃO: ADMIN DASHBOARD
+           SEÇÃO: DASHBOARD
       ======================================= -->
-      <section id="admin-dashboard" class="section active">
-        <div class="card">
-          <h2>📊 Dashboard — Relatórios e Análises</h2>
+      <section id="admin-dashboard" class="section">
 
-          <div class="admin-stats">
-            <div class="admin-stat-card">
-              <span class="stat-label">Quantidade de Vendas</span>
-              <span class="stat-val" id="statVendas">—</span>
+        <div class="page-header">
+          <div>
+            <h2 class="page-title">Dashboard</h2>
+            <p class="page-subtitle" id="dashSubtitle">Resumo do dia</p>
+          </div>
+        </div>
+
+        <!-- 4 stat cards -->
+        <div class="admin-stats" style="grid-template-columns:repeat(auto-fill,minmax(200px,1fr));">
+          <div class="admin-stat-card">
+            <span class="stat-label">Faturamento hoje</span>
+            <span class="stat-val" id="statFaturamento">R$ —</span>
+            <span style="font-size:0.78rem;color:#27ae60;" id="statFaturamentoVar"></span>
+          </div>
+          <div class="admin-stat-card">
+            <span class="stat-label">Pedidos realizados</span>
+            <span class="stat-val" id="statVendas">—</span>
+            <span style="font-size:0.78rem;color:#27ae60;" id="statVendasVar"></span>
+          </div>
+          <div class="admin-stat-card">
+            <span class="stat-label">Produtos em estoque</span>
+            <span class="stat-val" id="statEstoque">—</span>
+            <span style="font-size:0.78rem;color:#e74c3c;" id="statEstoqueVar"></span>
+          </div>
+          <div class="admin-stat-card">
+            <span class="stat-label">Mesas ocupadas</span>
+            <span class="stat-val" id="statMesas">—</span>
+            <span style="font-size:0.78rem;color:#888;" id="statMesasVar"></span>
+          </div>
+        </div>
+
+        <!-- Pedidos recentes + Acesso rápido -->
+        <div style="display:grid; grid-template-columns:1fr 260px; gap:1.5rem; align-items:start;">
+
+          <div class="card" style="margin-bottom:0;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+              <h3 style="font-size:1rem; color:#1A1A1A; margin:0;">Pedidos recentes</h3>
+              <a href="#" class="nav-link" data-section="vendas" style="font-size:0.82rem; color:#C41E3A; font-weight:600; text-decoration:none;">Ver todos →</a>
             </div>
-            <div class="admin-stat-card">
-              <span class="stat-label">Faturamento Total</span>
-              <span class="stat-val" id="statFaturamento">R$ —</span>
-            </div>
-            <div class="admin-stat-card">
-              <span class="stat-label">Ticket Médio</span>
-              <span class="stat-val" id="statTicket">R$ —</span>
+            <div class="table-container" style="margin-top:0;">
+              <table id="dashPedidosTable">
+                <thead>
+                  <tr><th>#</th><th>Mesa</th><th>Atendente</th><th>Total</th><th>Pagamento</th><th>Status</th></tr>
+                </thead>
+                <tbody id="dashPedidosBody">
+                  <tr><td colspan="6" style="text-align:center;color:#aaa;padding:1.5rem;">Carregando...</td></tr>
+                </tbody>
+              </table>
             </div>
           </div>
 
-          <div class="chart-grid-wrapper">
-            <div class="card">
-              <h3 class="chart-title">Faturamento por Dia</h3>
-              <div class="chart-controls">
-                <label>Período:</label>
-                <select id="filtroPeriodo" title="Filtro de período">
-                  <option value="preset:day">Hoje</option>
-                  <option value="preset:week">Últimos 7 dias</option>
-                  <option value="preset:month">Mês atual</option>
-                  <option value="custom">Personalizado</option>
-                  <option value="selectMonth">Escolher mês</option>
-                </select>
-                <input type="date" id="periodStart" class="hidden-inline" title="Data início">
-                <input type="date" id="periodEnd" class="hidden-inline" title="Data fim">
-                <select id="selectMonth" class="hidden-inline" title="Selecionar mês"></select>
-                <button class="btn btn-secondary" id="applyPeriodo">Aplicar</button>
-              </div>
-              <canvas id="chartVendasDia"></canvas>
-            </div>
-
-            <div class="card">
-              <h3 class="chart-title">Vendas por Pagamento</h3>
-              <canvas id="chartPagamento"></canvas>
+          <div class="card" style="margin-bottom:0;">
+            <h3 style="font-size:1rem; color:#1A1A1A; margin-bottom:0.9rem;">Acesso rápido</h3>
+            <div class="quick-access-grid">
+              <a href="#" class="quick-card nav-link" data-section="pedidos">
+                <span class="quick-card-icon">🧾</span>
+                <span class="quick-card-label">Novo Pedido</span>
+              </a>
+              <a href="#" class="quick-card nav-link" data-section="produtos">
+                <span class="quick-card-icon">📦</span>
+                <span class="quick-card-label">Add. Produto</span>
+              </a>
+              <a href="#" class="quick-card nav-link" data-section="atendentes">
+                <span class="quick-card-icon">👤</span>
+                <span class="quick-card-label">Novo Atendente</span>
+              </a>
+              <a href="#" class="quick-card nav-link" data-section="sincronizacao">
+                <span class="quick-card-icon">🔄</span>
+                <span class="quick-card-label">Sincronizar</span>
+              </a>
+              <a href="#" class="quick-card nav-link" data-section="relatorios">
+                <span class="quick-card-icon">📋</span>
+                <span class="quick-card-label">Relatório</span>
+              </a>
+              <a href="#" class="quick-card nav-link" data-section="backups">
+                <span class="quick-card-icon">💾</span>
+                <span class="quick-card-label">Backup</span>
+              </a>
             </div>
           </div>
 
-          <div class="card">
-            <h3 class="chart-title">Vendas por Atendente</h3>
-            <div class="chart-controls">
-              <label>Atendente:</label>
-              <select id="selectAtendente" title="Selecionar atendente">
-                <option value="">Todos</option>
-              </select>
-              <button class="btn btn-secondary" id="applyAtendente">Aplicar</button>
-            </div>
-            <canvas id="chartAtendente"></canvas>
-          </div>
         </div>
       </section>
 
@@ -566,35 +901,28 @@
            SEÇÃO: ATENDENTES
       ======================================= -->
       <section id="atendentes" class="section">
-        <div class="card">
-          <h2>👥 Gerenciamento de Atendentes</h2>
-
-          <div class="btn-group">
-            <button class="btn btn-primary" onclick="openAtendenteModal()">➕ Novo Atendente</button>
-            <button class="btn btn-secondary" onclick="loadAtendentes()">🔄 Atualizar Lista</button>
+        <div class="page-header">
+          <div>
+            <h2 class="page-title">👥 Atendentes</h2>
+            <p class="page-subtitle">Cadastro e controle de acesso — RF07</p>
           </div>
+          <button class="btn btn-primary" onclick="openAtendenteModal()">+ Novo Atendente</button>
+        </div>
 
-          <div class="loading" id="loadingAtendentes">
-            <div class="spinner"></div>
-            Carregando atendentes...
-          </div>
+        <div class="card" style="padding:1rem 1.5rem; margin-bottom:1rem;">
+          <input type="text" id="atendenteSearchInput" placeholder="🔎 Buscar atendente..." style="width:100%;padding:0.5rem 0.9rem;border:1.5px solid #e0e0e0;border-radius:8px;font-size:0.9rem;" oninput="filtrarAtendentes(this.value)">
+        </div>
 
-          <div class="table-container">
-            <table id="atendenteTable">
-              <thead>
-                <tr>
-                  <th>ID</th>
-                  <th>Nome</th>
-                  <th>CPF</th>
-                  <th>Telefone</th>
-                  <th>Login</th>
-                  <th>Tipo</th>
-                  <th>Ações</th>
-                </tr>
-              </thead>
-              <tbody id="atendenteTableBody"></tbody>
-            </table>
-          </div>
+        <div class="loading" id="loadingAtendentes">
+          <div class="spinner"></div>
+          Carregando atendentes...
+        </div>
+
+        <div class="atendente-cards-grid" id="atendenteCardsGrid"></div>
+
+        <!-- Tabela oculta mantida para compatibilidade com app.js -->
+        <div style="display:none;">
+          <table id="atendenteTable"><tbody id="atendenteTableBody"></tbody></table>
         </div>
       </section>
 
@@ -602,41 +930,34 @@
            SEÇÃO: PRODUTOS
       ======================================= -->
       <section id="produtos" class="section">
-        <div class="card">
-          <h2>🍔 Gerenciamento de Produtos</h2>
-
-          <div class="btn-group">
-            <button class="btn btn-primary" onclick="openProdutoModal()">➕ Novo Produto</button>
-            <div class="flex-gap">
-              <input id="produtoSearchInput" class="search-input" type="text" placeholder="Pesquisar produtos..." title="Pesquisar produtos">
-              <button id="produtoSearchBtn" class="btn btn-info">🔎 Buscar</button>
-              <button id="produtoClearBtn" class="btn btn-light" title="Limpar pesquisa">✖️</button>
-              <button class="btn btn-secondary" onclick="loadProdutos()">🔄 Atualizar Lista</button>
-              <span id="produtoResultsCount" class="produto-results-count" aria-live="polite"></span>
-            </div>
+        <div class="page-header">
+          <div>
+            <h2 class="page-title">📦 Produtos</h2>
+            <p class="page-subtitle">Cardápio e controle de estoque — RF06</p>
           </div>
+          <button class="btn btn-primary" onclick="openProdutoModal()">+ Novo Produto</button>
+        </div>
 
-          <div class="loading" id="loadingProdutos">
-            <div class="spinner"></div>
-            Carregando produtos...
+        <div class="card" style="padding:1rem 1.5rem; margin-bottom:1rem;">
+          <div style="display:flex;gap:0.75rem;flex-wrap:wrap;align-items:center;">
+            <input id="produtoSearchInput" type="text" placeholder="🔎 Buscar produto..." style="flex:1;min-width:180px;padding:0.5rem 0.9rem;border:1.5px solid #e0e0e0;border-radius:8px;font-size:0.9rem;" oninput="filtrarProdutosMgmt(this.value)" title="Pesquisar produtos">
+            <div id="produtoCatTabs" style="display:flex;gap:0.4rem;flex-wrap:wrap;"></div>
           </div>
+        </div>
 
-          <div class="table-container">
-            <table id="produtoTable">
-              <thead>
-                <tr>
-                  <th>ID</th>
-                  <th>Nome</th>
-                  <th>Categoria</th>
-                  <th>Preço</th>
-                  <th>Estoque</th>
-                  <th>Status</th>
-                  <th>Ações</th>
-                </tr>
-              </thead>
-              <tbody id="produtoTableBody"></tbody>
-            </table>
-          </div>
+        <div class="loading" id="loadingProdutos">
+          <div class="spinner"></div>
+          Carregando produtos...
+        </div>
+
+        <div class="produtos-cards-grid" id="produtoCardsGrid"></div>
+
+        <!-- Tabela oculta mantida para compatibilidade -->
+        <div style="display:none;">
+          <table id="produtoTable"><tbody id="produtoTableBody"></tbody></table>
+          <span id="produtoResultsCount"></span>
+          <button id="produtoSearchBtn"></button>
+          <button id="produtoClearBtn"></button>
         </div>
       </section>
 
@@ -644,14 +965,15 @@
            SEÇÃO: MESAS
       ======================================= -->
       <section id="mesas" class="section">
-        <div class="card">
-          <h2>🪑 Gerenciamento de Mesas</h2>
-
-          <div class="btn-group">
-            <button class="btn btn-primary" onclick="openMesaModal()">➕ Nova Mesa</button>
-            <button class="btn btn-secondary" onclick="loadMesas()">🔄 Atualizar Lista</button>
+        <div class="page-header">
+          <div>
+            <h2 class="page-title">🪑 Mesas</h2>
+            <p class="page-subtitle">Gerenciamento de mesas</p>
           </div>
+          <button class="btn btn-primary" onclick="openMesaModal()">+ Nova Mesa</button>
+        </div>
 
+        <div class="card">
           <div class="loading" id="loadingMesas">
             <div class="spinner"></div>
             Carregando mesas...
@@ -676,18 +998,19 @@
       <!-- ======================================
            SEÇÃO: NOVO PEDIDO (ATENDIMENTO)
       ======================================= -->
-      <section id="pedidos" class="section">
+      <section id="pedidos" class="section active">
         <div class="atendimento-layout">
 
           <!-- Cardápio -->
           <div>
             <div class="card">
-              <h2>🍔 Cardápio — Selecione os Produtos</h2>
-
-              <!-- Busca no cardápio -->
-              <div class="cardapio-search-bar">
-                <input type="text" id="cardapioSearch" placeholder="🔎  Buscar produto no cardápio..." class="cardapio-search-input" oninput="filtrarCardapio(this.value)">
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:1rem;margin-bottom:1rem;flex-wrap:wrap;">
+                <h2 style="margin:0;font-size:1.4rem;">Cardápio</h2>
+                <input type="text" id="cardapioSearch" placeholder="Buscar produto..." class="cardapio-search-input" style="max-width:240px;" oninput="filtrarCardapio(this.value)">
               </div>
+
+              <!-- Abas de categoria -->
+              <div id="cardapioCatTabs" style="display:flex;gap:0.4rem;flex-wrap:wrap;margin-bottom:1rem;"></div>
 
               <div class="loading" id="loadingCardapio">
                 <div class="spinner"></div>
@@ -700,20 +1023,17 @@
           <!-- Carrinho (coluna direita, sticky) -->
           <div class="carrinho-sticky">
             <div class="card">
-              <h2>🛒 Carrinho do Pedido</h2>
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;">
+                <h2 style="margin:0;font-size:1.2rem;">🛒 Carrinho</h2>
+                <span id="carrinhoCount" style="background:#C41E3A;color:#fff;border-radius:12px;padding:2px 10px;font-size:0.78rem;font-weight:700;">0 itens</span>
+              </div>
 
               <div class="carrinho-header">
                 <div class="form-grid form-grid-tight">
                   <div class="form-group">
-                    <label>Mesa *</label>
+                    <label>Mesa: *</label>
                     <select id="carrinhoMesa" required title="Mesa do carrinho">
                       <option value="">Selecione a mesa...</option>
-                    </select>
-                  </div>
-                  <div class="form-group">
-                    <label>Atendente *</label>
-                    <select id="carrinhoAtendente" required title="Atendente do carrinho">
-                      <option value="">Selecione o atendente...</option>
                     </select>
                   </div>
                   <div class="form-group">
@@ -726,6 +1046,10 @@
                       <option value="dinheiro">Dinheiro</option>
                     </select>
                   </div>
+                  <!-- Atendente oculto (preenchido automaticamente) -->
+                  <select id="carrinhoAtendente" style="display:none;" title="Atendente do carrinho">
+                    <option value="">Selecione o atendente...</option>
+                  </select>
                 </div>
               </div>
 
@@ -736,15 +1060,30 @@
                 </div>
               </div>
 
-              <div class="carrinho-total">
-                <div class="total-info">
-                  <span class="total-label">Total do Pedido:</span>
-                  <span class="total-valor" id="carrinhoTotal">R$ 0,00</span>
+              <!-- Totalizador -->
+              <div style="border-top:1px solid #eee;padding-top:0.9rem;margin-top:0.5rem;">
+                <div style="display:flex;justify-content:space-between;font-size:0.88rem;color:#666;margin-bottom:4px;">
+                  <span>Subtotal</span><span id="carrinhoSubtotal">R$ 0,00</span>
                 </div>
-                <div class="btn-group">
-                  <button class="btn btn-danger" onclick="limparCarrinho()">🗑️ Limpar</button>
-                  <button class="btn btn-success" onclick="finalizarPedido()">✅ Finalizar</button>
+                <div style="display:flex;align-items:center;justify-content:space-between;font-size:0.88rem;color:#666;margin-bottom:10px;gap:8px;">
+                  <label for="carrinhoDesconto" style="flex-shrink:0;margin:0;">Desconto</label>
+                  <div style="display:flex;align-items:center;gap:4px;">
+                    <select id="carrinhoDescontoTipo" style="font-size:0.8rem;padding:3px 6px;border:1px solid #ddd;border-radius:6px;background:#fafafa;" onchange="atualizarCarrinho()" title="Tipo de desconto">
+                      <option value="fixo">R$</option>
+                      <option value="percent">%</option>
+                    </select>
+                    <input id="carrinhoDesconto" type="number" min="0" step="0.01" placeholder="0,00"
+                      style="width:80px;font-size:0.88rem;padding:4px 8px;border:1px solid #ddd;border-radius:6px;text-align:right;background:#fafafa;"
+                      oninput="atualizarCarrinho()" title="Valor do desconto">
+                  </div>
+                  <span style="color:#C41E3A;min-width:64px;text-align:right;" id="carrinhoDescontoValor">— R$ 0,00</span>
                 </div>
+                <div style="display:flex;justify-content:space-between;font-size:1.05rem;font-weight:700;color:#1A1A1A;margin-bottom:1rem;">
+                  <span>TOTAL</span>
+                  <span id="carrinhoTotal" style="color:#C41E3A;font-family:'Syne',sans-serif;font-size:1.2rem;">R$ 0,00</span>
+                </div>
+                <button class="btn btn-success" style="width:100%;margin-bottom:0.5rem;padding:0.75rem;" onclick="finalizarPedido()">✅ Confirmar Pedido</button>
+                <button class="btn btn-danger" style="width:100%;padding:0.6rem;background:transparent;color:#C41E3A;border:1.5px solid #C41E3A;" onclick="limparCarrinho()">🗑️ Limpar Carrinho</button>
               </div>
             </div>
           </div>
@@ -833,6 +1172,228 @@
                 </tr>
               </thead>
               <tbody id="vendaTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ======================================
+           SEÇÃO: SINCRONIZAÇÃO
+      ======================================= -->
+      <section id="sincronizacao" class="section">
+
+        <div class="page-header">
+          <div>
+            <h2 class="page-title">🔄 Sincronização</h2>
+            <p class="page-subtitle">Atualização de dados entre dispositivos — RF08</p>
+          </div>
+        </div>
+
+        <!-- Banner de status -->
+        <div class="sync-status-banner">
+          <div class="sync-info">
+            <span class="sync-icon">🔄</span>
+            <div>
+              <div class="sync-status-title" id="syncStatusTitle">✅ Sistema sincronizado</div>
+              <div class="sync-status-sub" id="syncStatusSub">Todos os dispositivos estão com os dados atualizados</div>
+              <div style="font-size:0.75rem;color:#888;margin-top:4px;" id="syncLastInfo"></div>
+            </div>
+          </div>
+          <div class="sync-actions">
+            <button class="btn-outline" id="refreshSyncBtn">Ver histórico</button>
+            <button class="btn btn-primary" id="syncNowBtn">🔄 Sincronizar agora</button>
+          </div>
+        </div>
+
+        <!-- 4 stat cards -->
+        <div class="admin-stats" style="grid-template-columns:repeat(auto-fill,minmax(160px,1fr));margin-bottom:1.5rem;">
+          <div class="admin-stat-card">
+            <span class="stat-label">Sincronizações hoje</span>
+            <span class="stat-val" id="syncTotal">—</span>
+          </div>
+          <div class="admin-stat-card">
+            <span class="stat-label">Com sucesso</span>
+            <span class="stat-val" id="syncSuccess" style="color:#27ae60;">—</span>
+          </div>
+          <div class="admin-stat-card">
+            <span class="stat-label">Com pendências</span>
+            <span class="stat-val" id="syncPending" style="color:#e67e22;">—</span>
+          </div>
+          <div class="admin-stat-card">
+            <span class="stat-label">Último backup</span>
+            <span class="stat-val" id="syncLastDate" style="font-size:0.95rem;">—</span>
+          </div>
+        </div>
+
+        <!-- Histórico -->
+        <div class="card">
+          <h3 style="font-size:1rem;margin-bottom:1rem;color:#1A1A1A;">Histórico de sincronizações</h3>
+          <div class="loading" id="loadingSinc">
+            <div class="spinner"></div>
+            Carregando...
+          </div>
+          <div class="table-container">
+            <table id="sincTable">
+              <thead>
+                <tr><th>#</th><th>Nome</th><th>Data / Hora</th><th>Status</th><th>Ações</th></tr>
+              </thead>
+              <tbody id="sincTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ======================================
+           SEÇÃO: RELATÓRIOS
+      ======================================= -->
+      <section id="relatorios" class="section">
+        <div class="page-header">
+          <div>
+            <h2 class="page-title">📋 Relatórios</h2>
+            <p class="page-subtitle">Visão geral de vendas e desempenho do período</p>
+          </div>
+          <div class="btn-group">
+            <button class="btn btn-secondary" onclick="exportarExcel()">📊 Exportar Excel</button>
+            <button class="btn btn-danger" onclick="exportarPDF()">📄 Exportar PDF</button>
+          </div>
+        </div>
+
+        <div class="card" style="padding:1rem 1.5rem; margin-bottom:1rem;">
+          <div style="display:flex; align-items:center; gap:1rem; flex-wrap:wrap;">
+            <label style="font-weight:600; font-size:0.9rem;">Período:</label>
+            <input type="date" id="relatorioStart" title="Data início" style="padding:0.4rem 0.7rem; border:1.5px solid #e0e0e0; border-radius:6px;">
+            <span style="color:#888;">até</span>
+            <input type="date" id="relatorioEnd" title="Data fim" style="padding:0.4rem 0.7rem; border:1.5px solid #e0e0e0; border-radius:6px;">
+            <button class="btn btn-primary" style="padding:0.5rem 1rem;" onclick="loadRelatorios()">Aplicar</button>
+          </div>
+        </div>
+
+        <div class="admin-stats">
+          <div class="admin-stat-card">
+            <span class="stat-label">Faturamento Total</span>
+            <span class="stat-val" id="relFaturamento">R$ —</span>
+            <span style="font-size:0.78rem; color:#27ae60;" id="relFaturamentoVar"></span>
+          </div>
+          <div class="admin-stat-card">
+            <span class="stat-label">Total de Pedidos</span>
+            <span class="stat-val" id="relPedidos">—</span>
+            <span style="font-size:0.78rem; color:#27ae60;" id="relPedidosVar"></span>
+          </div>
+          <div class="admin-stat-card">
+            <span class="stat-label">Pedidos Concluídos</span>
+            <span class="stat-val" id="relConcluidos">—</span>
+            <span style="font-size:0.78rem; color:#888;" id="relConcluidosPct"></span>
+          </div>
+          <div class="admin-stat-card">
+            <span class="stat-label">Ticket Médio</span>
+            <span class="stat-val" id="relTicket">R$ —</span>
+          </div>
+        </div>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:1.5rem; flex-wrap:wrap;">
+          <div class="card">
+            <h3 style="font-size:1rem; margin-bottom:1rem; color:#333;">Vendas por Dia</h3>
+            <canvas id="chartRelVendas"></canvas>
+          </div>
+          <div class="card">
+            <h3 style="font-size:1rem; margin-bottom:1rem; color:#333;">Últimos Pedidos</h3>
+            <div class="table-container">
+              <table id="relUltimosPedidos">
+                <thead>
+                  <tr>
+                    <th>#</th><th>Mesa</th><th>Atendente</th><th>Valor</th><th>Status</th>
+                  </tr>
+                </thead>
+                <tbody id="relUltimosPedidosBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ======================================
+           SEÇÃO: ESTOQUE
+      ======================================= -->
+      <section id="estoque" class="section">
+        <div class="page-header">
+          <div>
+            <h2 class="page-title">🏪 Estoque</h2>
+            <p class="page-subtitle">Controle de estoque dos produtos</p>
+          </div>
+          <button class="btn btn-primary" onclick="navegarPara('produtos')">+ Gerenciar Produtos</button>
+        </div>
+
+        <div class="admin-stats">
+          <div class="admin-stat-card">
+            <span class="stat-label">Total de Produtos</span>
+            <span class="stat-val" id="estTotalProd">—</span>
+          </div>
+          <div class="admin-stat-card">
+            <span class="stat-label">Em Estoque</span>
+            <span class="stat-val" id="estEmEstoque" style="color:#27ae60;">—</span>
+          </div>
+          <div class="admin-stat-card">
+            <span class="stat-label">Esgotados</span>
+            <span class="stat-val" id="estEsgotados" style="color:#e74c3c;">—</span>
+          </div>
+        </div>
+
+        <div class="card">
+          <div style="display:flex; align-items:center; gap:1rem; margin-bottom:1rem; flex-wrap:wrap;">
+            <input type="text" id="estoqueSearch" placeholder="🔎 Buscar produto..." style="padding:0.5rem 0.9rem; border:1.5px solid #e0e0e0; border-radius:8px; font-size:0.9rem; flex:1; min-width:200px;" oninput="filtrarEstoque(this.value)">
+            <button class="btn btn-secondary" style="padding:0.5rem 1rem;" onclick="loadEstoque()">🔁 Atualizar</button>
+          </div>
+
+          <div class="loading" id="loadingEstoque">
+            <div class="spinner"></div>
+            Carregando estoque...
+          </div>
+
+          <div class="table-container">
+            <table id="estoqueTable">
+              <thead>
+                <tr>
+                  <th>Produto</th>
+                  <th>Categoria</th>
+                  <th>Preço</th>
+                  <th>Estoque</th>
+                  <th>Status</th>
+                  <th>Ações</th>
+                </tr>
+              </thead>
+              <tbody id="estoqueTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ======================================
+           SEÇÃO: BACKUPS
+      ======================================= -->
+      <section id="backups" class="section">
+        <div class="page-header">
+          <div>
+            <h2 class="page-title">💾 Backups</h2>
+            <p class="page-subtitle">Gerenciamento de backups do sistema</p>
+          </div>
+          <button class="btn btn-primary" id="newBackupBtn">+ Novo Backup</button>
+        </div>
+
+        <div class="card">
+          <div class="loading" id="loadingBackupsSec">
+            <div class="spinner"></div>
+            Carregando backups...
+          </div>
+          <div class="table-container">
+            <table id="backupsSecTable">
+              <thead>
+                <tr>
+                  <th>Nome</th>
+                  <th>Data / Hora</th>
+                  <th>Ações</th>
+                </tr>
+              </thead>
+              <tbody id="backupsSecBody"></tbody>
             </table>
           </div>
         </div>

@@ -1,13 +1,21 @@
-/* Paleta de Cores - Branco, Vermelho e Dourado */
+/* ── Google Fonts ── */
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap');
+
+/* ── Design System — Food Truck System ── */
 :root {
-  --primary-red: #C41E3A;
-  --primary-gold: #DAA520;
-  --dark-gold: #B8860B;
-  --light-gold: #FFD700;
-  --white: #FFFFFF;
-  --light-gray: #F5F5F5;
-  --dark-gray: #333333;
-  --border-color: #E0E0E0;
+  --primary-red:   #C41E3A;
+  --burg:          #A01830;
+  --primary-gold:  #FFD700;
+  --dark-gold:     #DAA520;
+  --light-gold:    #FFD700;
+  --white:         #FFFFFF;
+  --light-gray:    #F5F5F5;
+  --mid-gray:      #E0E0E0;
+  --dark-gray:     #1A1A1A;
+  --muted:         #6B6B6B;
+  --border-color:  #E0E0E0;
+  --font-heading:  'Syne', sans-serif;
+  --font-body:     'DM Sans', sans-serif;
 }
 
 * {
@@ -17,10 +25,14 @@
 }
 
 body {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background: linear-gradient(135deg, #F5F5F5 0%, #FFFFFF 100%);
+  font-family: var(--font-body);
+  background: var(--light-gray);
   color: var(--dark-gray);
   line-height: 1.6;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
 }
 
 /* Header */
@@ -35,14 +47,16 @@ header {
 }
 
 header h1 {
+  font-family: var(--font-heading);
   font-size: 1.5rem;
-  font-weight: 700;
+  font-weight: 800;
   display: flex;
   align-items: center;
   gap: 0.5rem;
   margin: 0;
   flex-wrap: nowrap;
   word-break: keep-all;
+  letter-spacing: -0.3px;
 }
 
 /* Logo no header */
@@ -476,17 +490,19 @@ tbody td {
 /* Actions */
 .actions {
   display: flex;
-  gap: 0.5rem;
+  flex-wrap: wrap;
+  gap: 0.35rem;
 }
 
 .action-btn {
-  padding: 0.4rem 0.8rem;
+  padding: 0.3rem 0.6rem;
   border: none;
   border-radius: 6px;
   cursor: pointer;
-  font-size: 0.85rem;
+  font-size: 0.78rem;
   font-weight: 600;
   transition: all 0.2s ease;
+  white-space: nowrap;
 }
 
 .action-edit {
