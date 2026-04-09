@@ -5,22 +5,38 @@ module.exports = {
   async login(req, res) {
     try {
       const { username, password } = req.body || {};
-      const ADMIN_USER = process.env.AUTH_USER || 'admin';
-      const ADMIN_PASS = process.env.AUTH_PASS || 'admin';
 
       if (!username || !password) {
-        return res.status(400).json({ success: false, message: 'username and password required' });
+        return res.status(400).json({ success: false, message: 'Usuário e senha são obrigatórios.' });
       }
 
-      if (username === ADMIN_USER && password === ADMIN_PASS) {
-        // No real session here — frontend will store a flag in localStorage.
-        return res.json({ success: true, message: 'Autenticado' });
+      const GERENTE_LOGIN = process.env.GERENTE_LOGIN || 'admin';
+      const GERENTE_SENHA = process.env.GERENTE_SENHA || 'admin123';
+      const ATENDENTE_LOGIN = process.env.ATENDENTE_LOGIN || 'funcionario';
+      const ATENDENTE_SENHA = process.env.ATENDENTE_SENHA || 'func123';
+
+      if (username === GERENTE_LOGIN && password === GERENTE_SENHA) {
+        return res.json({
+          success: true,
+          role: 'gerente',
+          nome: 'Administrador',
+          message: 'Autenticado como Gerente'
+        });
       }
 
-      return res.status(401).json({ success: false, message: 'Credenciais inválidas' });
+      if (username === ATENDENTE_LOGIN && password === ATENDENTE_SENHA) {
+        return res.json({
+          success: true,
+          role: 'atendente',
+          nome: 'Funcionário',
+          message: 'Autenticado como Atendente'
+        });
+      }
+
+      return res.status(401).json({ success: false, message: 'Usuário ou senha inválidos.' });
     } catch (err) {
-      console.error('Erro em auth.login', err);
-      return res.status(500).json({ success: false, message: 'Erro interno' });
+      console.error('Erro em auth.login:', err);
+      return res.status(500).json({ success: false, message: 'Erro interno no servidor.' });
     }
   }
 };

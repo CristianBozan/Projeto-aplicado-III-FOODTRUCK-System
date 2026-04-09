@@ -1,82 +1,426 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Login - Food Truck System</title>
-  <link rel="stylesheet" href="style.css">
+  <title>Login — Food Truck System</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
   <style>
-    /* Pequeno estilo local para a tela de login */
-    /* Page layout: left image, right login */
-    .login-page { display:flex; min-height:100vh; }
-  /* left 50% / right 50% to bring the login closer to center */
-  /* increase left image width to reduce white area on the right */
-  .left-panel { flex: 1 1 65%; background-color: #d92b2b; background-image: url("login-bg.png"); background-size: cover; background-position: center; background-repeat: no-repeat; position:relative; }
-  /* subtle dark overlay for readability */
-  .left-panel::before { content: ''; position: absolute; inset: 0; background: rgba(0,0,0,0.12); }
-  .right-panel { flex: 0 0 35%; display:flex; align-items:center; justify-content:flex-start; padding:1rem 1.5rem; }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-    /* Pequeno estilo local para a tela de login */
-  /* slightly larger login window but closer to the center */
-  /* use relative width so the login window scales nicely (90% of column, capped) */
-  .login-wrapper { width:90%; max-width:900px; margin:1.5rem auto; }
-  /* make the login card white for contrast over the red background */
-  .login-card { padding:2.5rem; border-radius:14px; box-shadow:0 12px 36px rgba(0,0,0,0.22); background-color: #ffffff; color: #111; }
-  .login-card h2 { color: #d92b2b; }
-  .login-card label { color: #333; font-weight:700; font-size:1.05rem; }
-  .login-card input { display:block; width:100%; padding:0.8rem 1rem; margin-top:0.35rem; margin-bottom:0.9rem; border-radius:8px; border:1px solid rgba(0,0,0,0.12); background: #fff; color:#111; box-shadow: inset 0 1px 2px rgba(0,0,0,0.02); font-size:1rem; }
-  .login-card .btn { min-width:6rem; font-size:1rem; padding:0.6rem 1rem; }
-  .login-note { color:#444; font-size:1rem; }
-    .login-card h2 { color:var(--primary-red); margin-bottom:1rem; font-size:1.9rem; }
-    .login-logo { display:block; margin:0 auto 1rem; width:140px; height:auto; }
-    @media (max-width:480px) { .login-logo { width:80px; } }
+    :root {
+      --red:   #C41E3A;
+      --burg:  #A01830;
+      --gold:  #FFD700;
+      --white: #FFFFFF;
+      --bg:    #F5F5F5;
+      --text:  #1A1A1A;
+      --muted: #6B6B6B;
+      --border:#E0E0E0;
+    }
 
-    /* Responsive: collapse to single column on small screens */
-    @media (max-width:900px) {
-      .login-page { flex-direction:column; }
-      .left-panel { display:none; }
-      .right-panel { flex: 1 1 auto; padding:2rem; }
-      .login-wrapper { margin:4rem auto; transform:none; width:92%; }
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
     }
-    @media (min-width:1200px) {
-      .login-wrapper { transform: translateX(-4%); }
-    }
-    @media (max-width:480px) {
-      .login-card h2 { font-size:1.4rem; }
-      .login-card label { font-size:0.95rem; }
-      .login-card input { font-size:0.95rem; }
-      .login-card .btn { font-size:0.95rem; }
-      .login-logo { width:100px; }
-    }
-    .login-actions { display:flex; gap:0.75rem; margin-top:1rem }
 
-    .login-note { margin-top:1rem; color:#666; font-size:0.9rem }
+    /* ── PAINEL ESQUERDO ── */
+    .left {
+      width: 42%;
+      min-height: 100vh;
+      background-color: var(--red);
+      /* Quando a imagem for adicionada, ela aparece aqui automaticamente */
+      background-image: url('/imagens/fundo%20solido%20para%20a%20tela%20de%20login.png');
+      background-size: cover;
+      background-position: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+      padding: 56px 48px 32px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Overlay vermelho semi-transparente sobre a imagem de fundo */
+    .left::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: rgba(196, 30, 58, 0.82);
+      z-index: 0;
+    }
+
+    /* Círculo decorativo */
+    .left-deco {
+      position: absolute;
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 0;
+    }
+    .left-deco-1 {
+      width: 480px; height: 480px;
+      background: rgba(255,255,255,0.06);
+      top: -140px; right: -140px;
+    }
+    .left-deco-2 {
+      width: 280px; height: 280px;
+      background: rgba(255,255,255,0.04);
+      bottom: -80px; left: -70px;
+    }
+
+    /* Logo */
+    .brand-logo-box {
+      width: 90px; height: 90px;
+      background: var(--gold);
+      border-radius: 20px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 2.6rem;
+      position: relative; z-index: 1;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+    }
+
+    .brand-name {
+      font-family: 'Syne', sans-serif;
+      font-size: 2.2rem;
+      font-weight: 800;
+      color: var(--white);
+      text-align: center;
+      letter-spacing: -0.5px;
+      line-height: 1.15;
+      position: relative; z-index: 1;
+    }
+    .brand-name span { color: var(--gold); display: block; }
+
+    .brand-tagline {
+      font-size: 0.88rem;
+      color: rgba(255,255,255,0.72);
+      text-align: center;
+      max-width: 260px;
+      line-height: 1.6;
+      position: relative; z-index: 1;
+    }
+
+    /* Feature pills */
+    .feature-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: center;
+      position: relative; z-index: 1;
+      margin-top: 8px;
+    }
+    .pill {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      background: rgba(255,255,255,0.13);
+      border: 1px solid rgba(255,255,255,0.22);
+      color: #fff;
+      border-radius: 20px;
+      padding: 5px 12px;
+      font-size: 0.78rem;
+      font-weight: 500;
+    }
+
+    .left-footer {
+      position: absolute;
+      bottom: 16px;
+      font-size: 0.7rem;
+      color: rgba(255,255,255,0.38);
+      text-align: center;
+      z-index: 1;
+    }
+
+    /* ── PAINEL DIREITO ── */
+    .right {
+      width: 58%;
+      min-height: 100vh;
+      background: var(--white);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 48px 40px;
+    }
+
+    .login-box {
+      width: 100%;
+      max-width: 400px;
+    }
+
+    .login-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.85rem;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+
+    .login-sub {
+      font-size: 0.9rem;
+      color: var(--muted);
+      margin-bottom: 32px;
+    }
+
+    .form-group {
+      margin-bottom: 18px;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 7px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .input-wrap {
+      position: relative;
+    }
+
+    .input-wrap input {
+      width: 100%;
+      padding: 11px 42px 11px 14px;
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.95rem;
+      color: var(--text);
+      background: var(--white);
+      transition: border-color 0.2s;
+      outline: none;
+    }
+    .input-wrap input:focus { border-color: var(--red); }
+    .input-wrap input::placeholder { color: #BDBDBD; }
+
+    .input-icon {
+      position: absolute;
+      right: 13px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #BDBDBD;
+      font-size: 1rem;
+      cursor: default;
+      user-select: none;
+    }
+    .input-icon.toggle-pass { cursor: pointer; }
+    .input-icon.toggle-pass:hover { color: var(--red); }
+
+    /* Checkbox row */
+    .check-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 22px;
+      font-size: 0.85rem;
+    }
+    .check-row label {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      cursor: pointer;
+      color: var(--muted);
+    }
+    .check-row input[type=checkbox] {
+      accent-color: var(--red);
+      width: 15px; height: 15px;
+    }
+    .check-row a {
+      color: var(--red);
+      text-decoration: none;
+      font-weight: 600;
+    }
+    .check-row a:hover { text-decoration: underline; }
+
+    /* Botão */
+    .btn-login {
+      width: 100%;
+      padding: 13px;
+      background: var(--red);
+      color: var(--white);
+      border: none;
+      border-radius: 8px;
+      font-family: 'Syne', sans-serif;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+      letter-spacing: 0.01em;
+    }
+    .btn-login:hover  { background: var(--burg); }
+    .btn-login:active { transform: scale(0.98); }
+    .btn-login:disabled { background: #ccc; cursor: not-allowed; }
+
+    /* Erro */
+    .login-error {
+      background: #FFEBEE;
+      border: 1px solid #EF9A9A;
+      color: #C62828;
+      padding: 10px 14px;
+      border-radius: 8px;
+      font-size: 0.88rem;
+      margin-top: 12px;
+      display: none;
+    }
+
+    /* Perfis box */
+    .perfis-box {
+      margin-top: 24px;
+      background: #FFFDE7;
+      border: 1.5px solid #FFD700;
+      border-radius: 10px;
+      padding: 14px 16px;
+    }
+    .perfis-title {
+      font-size: 0.68rem;
+      font-weight: 700;
+      color: #856404;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 10px;
+    }
+    .perfis-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 5px 0;
+      border-bottom: 1px solid rgba(0,0,0,0.05);
+    }
+    .perfis-row:last-child { border-bottom: none; }
+    .perfis-row-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text);
+    }
+    .perfis-row-right {
+      font-size: 0.78rem;
+      color: var(--muted);
+    }
+
+    /* Footer */
+    .login-footer {
+      margin-top: 32px;
+      text-align: center;
+      font-size: 0.75rem;
+      color: #BDBDBD;
+    }
+
+    /* Responsivo */
+    @media (max-width: 768px) {
+      body { flex-direction: column; }
+      .left {
+        width: 100%;
+        min-height: auto;
+        padding: 32px 24px;
+        flex-direction: row;
+        gap: 14px;
+        justify-content: flex-start;
+        align-items: center;
+      }
+      .left::before { background: rgba(196,30,58,0.88); }
+      .left-deco { display: none; }
+      .brand-logo-box { width: 52px; height: 52px; font-size: 1.6rem; border-radius: 12px; flex-shrink: 0; }
+      .brand-name { font-size: 1.3rem; text-align: left; }
+      .brand-name span { display: inline; }
+      .brand-tagline, .feature-pills, .left-footer { display: none; }
+      .right { width: 100%; min-height: auto; padding: 32px 24px; }
+    }
   </style>
 </head>
 <body>
-  <div class="login-page">
-    <div class="left-panel" aria-hidden="true"></div>
-    <div class="right-panel">
-      <div class="container login-wrapper">
-        <div class="card login-card">
-  <img src="logo-foodtruck.png" alt="Logo Food Truck" class="login-logo" />
-  <h2>Entrar — Food Truck System</h2>
-      <form id="loginForm">
+
+  <!-- ── PAINEL ESQUERDO ── -->
+  <div class="left">
+
+    <!-- Decorações de fundo (ficam abaixo do overlay) -->
+    <div class="left-deco left-deco-1"></div>
+    <div class="left-deco left-deco-2"></div>
+
+    <!-- Logo da empresa (substituída automaticamente quando o arquivo existir) -->
+    <div class="brand-logo-box" style="position:relative;z-index:1;">
+      <img src="/imagens/logo%20food%20truck%20system.png" alt="Food Truck System"
+           style="width:100%;height:100%;object-fit:contain;border-radius:16px;"
+           onerror="this.style.display='none';this.parentElement.innerHTML='🚚'">
+    </div>
+
+    <div class="brand-name">
+      Food Truck
+      <span>System</span>
+    </div>
+
+    <p class="brand-tagline">
+      Sistema de gerenciamento de vendas e estoque para o Food Truck do Sr. Elpídio — Guaramirim/SC
+    </p>
+
+    <div class="feature-pills">
+      <span class="pill">🏪 Estoque</span>
+      <span class="pill">📋 Pedidos</span>
+      <span class="pill">📊 Relatórios</span>
+      <span class="pill">🔄 Sincronização</span>
+    </div>
+
+    <div class="left-footer">Projeto Aplicado III — Equipe 10 · SENAI SC</div>
+  </div>
+
+  <!-- ── PAINEL DIREITO ── -->
+  <div class="right">
+    <div class="login-box">
+      <h1 class="login-title">Bem-vindo de volta 👋</h1>
+      <p class="login-sub">Faça login para acessar o sistema</p>
+
+      <form id="loginForm" novalidate>
         <div class="form-group">
-          <label>Usuário</label>
-          <input id="loginUser" type="text" required placeholder="Usuário">
+          <label for="loginUser">Login / Usuário</label>
+          <div class="input-wrap">
+            <input id="loginUser" type="text" placeholder="Digite seu usuário" autocomplete="username" required>
+            <span class="input-icon">👤</span>
+          </div>
         </div>
+
         <div class="form-group">
-          <label>Senha</label>
-          <input id="loginPass" type="password" required placeholder="Senha">
+          <label for="loginPass">Senha</label>
+          <div class="input-wrap">
+            <input id="loginPass" type="password" placeholder="••••••••" autocomplete="current-password" required>
+            <span class="input-icon toggle-pass" id="togglePass" title="Mostrar/ocultar senha">👁️</span>
+          </div>
         </div>
-        <div class="login-actions">
-          <button type="submit" class="btn btn-primary">Entrar</button>
+
+        <div class="check-row">
+          <label>
+            <input type="checkbox" id="manterConectado">
+            Manter conectado
+          </label>
+          <a href="#">Esqueci a senha</a>
         </div>
+
+        <button type="submit" class="btn-login" id="btnEntrar">🔑 Entrar no sistema</button>
+        <div class="login-error" id="loginError"></div>
       </form>
-  <div class="login-note">Usuário padrão: <code>admin</code> / Senha: <code>admin</code> (alterável via .env)</div>
+
+      <!-- Perfis de acesso -->
+      <div class="perfis-box">
+        <div class="perfis-title">Perfis de acesso</div>
+        <div class="perfis-row">
+          <div class="perfis-row-left">👤 Gerente (Proprietário)</div>
+          <div class="perfis-row-right">Acesso completo</div>
+        </div>
+        <div class="perfis-row">
+          <div class="perfis-row-left">👤 Atendente</div>
+          <div class="perfis-row-right">Pedidos e vendas</div>
         </div>
       </div>
+
+      <p class="login-footer">Projeto Aplicado III — Equipe 10 | SENAI SC | 2026</p>
     </div>
   </div>
 
@@ -84,24 +428,57 @@
     const API_URL = window.location.protocol === 'file:'
       ? 'http://localhost:3000'
       : window.location.origin;
-    const form = document.getElementById('loginForm');
 
-    form.addEventListener('submit', (e) => {
-      e.preventDefault();
-      const username = document.getElementById('loginUser').value.trim();
-      const password = document.getElementById('loginPass').value;
-      // Autenticação local simples (fallback) — compara com credenciais padrão
-      const DEFAULT_USER = 'admin';
-      const DEFAULT_PASS = 'admin';
-      if (username === DEFAULT_USER && password === DEFAULT_PASS) {
-        localStorage.setItem('loggedIn', '1');
-        window.location = 'index.html';
-        return;
-      }
-      alert('Credenciais inválidas (use admin / admin ou configure AUTH_USER/AUTH_PASS)');
+    const form     = document.getElementById('loginForm');
+    const errDiv   = document.getElementById('loginError');
+    const btnEntrar = document.getElementById('btnEntrar');
+
+    // Toggle de visibilidade da senha
+    document.getElementById('togglePass').addEventListener('click', () => {
+      const inp = document.getElementById('loginPass');
+      inp.type = inp.type === 'password' ? 'text' : 'password';
     });
 
-    // Demo button removed for production; keep simple login handler above.
+    function showError(msg) { errDiv.textContent = msg; errDiv.style.display = 'block'; }
+    function hideError()    { errDiv.style.display = 'none'; }
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      hideError();
+
+      const username = document.getElementById('loginUser').value.trim();
+      const password = document.getElementById('loginPass').value;
+
+      if (!username || !password) { showError('Preencha usuário e senha.'); return; }
+
+      btnEntrar.disabled = true;
+      btnEntrar.textContent = 'Entrando...';
+
+      try {
+        const res = await fetch(`${API_URL}/auth/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password })
+        });
+
+        const data = await res.json();
+
+        if (data.success) {
+          localStorage.setItem('loggedIn', '1');
+          localStorage.setItem('userRole', data.role);
+          localStorage.setItem('userName', data.nome);
+          window.location.href = 'index.html';
+        } else {
+          showError(data.message || 'Usuário ou senha inválidos.');
+          btnEntrar.disabled = false;
+          btnEntrar.textContent = '🔑 Entrar no sistema';
+        }
+      } catch (err) {
+        showError('Não foi possível conectar ao servidor. Verifique se o sistema está rodando.');
+        btnEntrar.disabled = false;
+        btnEntrar.textContent = '🔑 Entrar no sistema';
+      }
+    });
   </script>
 </body>
 </html>

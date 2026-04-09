@@ -1,8 +1,8 @@
 {
   "name": "foodtruck-system",
-  "version": "1.0.0",
-  "description": "",
-  "main": "i ndex.js",
+  "version": "3.0.0",
+  "description": "Sistema de gerenciamento de vendas e estoque para food trucks — Projeto Aplicado III · Equipe 10 · SENAI SC",
+  "main": "src/app.js",
   "scripts": {
     "start": "node src/app.js",
     "dev": "nodemon src/app.js"
