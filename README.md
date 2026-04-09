@@ -105,9 +105,12 @@ A aplicação utiliza uma API REST em Node.js (Express + Sequelize) e um fronten
 ### 4.1 Autenticação e Controle de Acesso
 
 - Login com usuário e senha via tela dedicada (`login.html`).
-- Perfis de acesso: **gerente** e **atendente** (RF09).
-- Credenciais padrão: usuário `admin` / senha `admin` (configurável via `.env`).
+- Perfis de acesso: **gerente** (acesso total) e **atendente** (operacional) (RF09).
+- Credenciais padrão configuráveis via `.env`:
+  - Gerente: `admin` / `admin123`
+  - Atendente: `funcionario` / `func123`
 - Proteção de rotas sensíveis via middleware de autenticação.
+- Sidebar e funcionalidades adaptadas automaticamente conforme o perfil logado.
 
 ### 4.2 Painel Administrativo
 
@@ -130,7 +133,8 @@ A aplicação utiliza uma API REST em Node.js (Express + Sequelize) e um fronten
 ### 4.5 Pedidos e Atendimento
 
 - Abertura de pedidos vinculados a mesa, atendente e lista de itens (RF04).
-- Interface de atendimento com cardápio organizado por categoria (RF02), busca por nome e carrinho lateral.
+- Interface de atendimento com cardápio organizado por categoria (RF02), busca por nome e carrinho lateral com scroll.
+- Carrinho com controle de quantidade por item, subtotal em tempo real e campo de **desconto** (valor fixo R$ ou percentual %).
 - Envio de pedidos à cozinha.
 - Finalização automática como "pago" ao encerrar atendimento (RF03).
 - Decremento automático de estoque ao registrar itens.
@@ -175,6 +179,7 @@ A aplicação utiliza uma API REST em Node.js (Express + Sequelize) e um fronten
 
 - **Entrypoint**: `src/app.js`
   - Configuração de middlewares globais (`express.json`, arquivos estáticos).
+  - Servindo a pasta `public/` na raiz e a pasta `Imagens/` no caminho `/imagens` (logo e fundo da tela de login).
   - Registro de todas as rotas.
   - Agendamento do backup automático via `node-cron`.
   - Sincronização do banco com `sequelize.sync()` antes de iniciar o servidor.
@@ -205,6 +210,7 @@ Módulos disponíveis:
 | `/relatorios` | `relatorioRoutes.js` | `relatorioController.js` |
 | `/backups` | `backupRoutes.js` | `backupController.js` |
 | `/auditoria/estoque` | `auditoriaRoutes.js` | `auditoriaController.js` |
+| `/sincronizacoes` | `sincronizacaoRoutes.js` | `sincronizacaoController.js` |
 
 ### 5.4 Middleware
 
@@ -214,15 +220,14 @@ Módulos disponíveis:
 ### 5.5 Frontend
 
 - Pasta `public/`:
-  - `login.html`: tela de login com layout dividido (imagem + formulário).
-  - `index.html`: interface principal com sidebar lateral, dashboard, e todas as seções do sistema (SPA via sections).
-  - `style.css`: estilos globais (paleta vermelho/dourado/branco, responsivo).
-  - `script.js`: lógica de frontend — consumo da API via `fetch`, atualização dinâmica de interface, modais e interações do usuário.
-  - `logo-foodtruck.png`: logotipo do sistema.
-  - `login-bg.png`: imagem de background da tela de login.
+  - `login.html`: tela de login com layout dois painéis — esquerdo (imagem de fundo + logo + pills de funcionalidades) e direito (formulário).
+  - `index.html`: interface principal — SPA com sidebar branca, header fixo com breadcrumb e avatar, e todas as seções do sistema (dashboard, atendimento, vendas, produtos, atendentes, mesas, estoque, relatórios, sincronização, backups).
+  - `style.css`: estilos globais (paleta vermelho/dourado/branco, responsivo para desktop, tablet e mobile).
+  - `app.js`: lógica principal do frontend — consumo da API via `fetch`, renderização dinâmica de cards e tabelas, modais, filtros, carrinho com desconto e interações do usuário.
 
-- Pasta `src/views/`:
-  - `app.js`: arquivo de view auxiliar do backend.
+- Pasta `Imagens/` (fora de `public/`, servida via `/imagens`):
+  - `logo food truck system.png`: logotipo da empresa exibido no header e na tela de login.
+  - `fundo solido para a tela de login.png`: imagem de fundo do painel esquerdo da tela de login.
 
 ---
 
@@ -243,13 +248,14 @@ foodtruck-system-v3/
 │   ├── test_create_pedido.js
 │   ├── test_pedido_venda.js
 │   └── test_preserve_atendente.js
+├── Imagens/                    # Imagens da empresa (servidas via /imagens)
+│   ├── logo food truck system.png
+│   └── fundo solido para a tela de login.png
 ├── public/                     # Frontend estático
-│   ├── index.html              # Tela principal (dashboard + todas as seções)
+│   ├── index.html              # Tela principal (SPA — todas as seções)
 │   ├── login.html              # Tela de login
 │   ├── style.css               # Estilos globais
-│   ├── script.js               # Lógica de frontend
-│   ├── logo-foodtruck.png
-│   └── login-bg.png
+│   └── app.js                  # Lógica principal do frontend
 └── src/                        # Código-fonte do backend
     ├── app.js                  # Entrypoint do servidor
     ├── config/
@@ -265,7 +271,8 @@ foodtruck-system-v3/
     │   ├── vendaController.js
     │   ├── relatorioController.js
     │   ├── backupController.js
-    │   └── auditoriaController.js
+    │   ├── auditoriaController.js
+    │   └── sincronizacaoController.js
     ├── middleware/
     │   └── requireBackupAuth.js
     ├── models/
@@ -276,21 +283,21 @@ foodtruck-system-v3/
     │   ├── Mesa.js
     │   ├── Pedido.js
     │   ├── Produto.js
+    │   ├── Sincronizacao.js
     │   └── Venda.js
-    ├── routes/
-    │   ├── authRoutes.js
-    │   ├── adminRoutes.js
-    │   ├── atendenteRoutes.js
-    │   ├── produtoRoutes.js
-    │   ├── mesaRoutes.js
-    │   ├── pedidoRoutes.js
-    │   ├── itemPedidoRoutes.js
-    │   ├── vendaRoutes.js
-    │   ├── relatorioRoutes.js
-    │   ├── backupRoutes.js
-    │   └── auditoriaRoutes.js
-    └── views/
-        └── app.js
+    └── routes/
+        ├── authRoutes.js
+        ├── adminRoutes.js
+        ├── atendenteRoutes.js
+        ├── produtoRoutes.js
+        ├── mesaRoutes.js
+        ├── pedidoRoutes.js
+        ├── itemPedidoRoutes.js
+        ├── vendaRoutes.js
+        ├── relatorioRoutes.js
+        ├── backupRoutes.js
+        ├── auditoriaRoutes.js
+        └── sincronizacaoRoutes.js
 ```
 
 ---
@@ -339,7 +346,9 @@ npm start
 
 O servidor iniciará na porta `3000`. Acesse em: `http://localhost:3000`
 
-Login padrão: usuário `admin` / senha `admin`.
+Credenciais padrão:
+- Gerente: usuário `admin` / senha `admin123`
+- Atendente: usuário `funcionario` / senha `func123`
 
 ---
 
