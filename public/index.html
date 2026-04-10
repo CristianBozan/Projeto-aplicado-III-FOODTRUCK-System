@@ -1264,7 +1264,8 @@
             <input type="date" id="relatorioStart" title="Data início" style="padding:0.4rem 0.7rem; border:1.5px solid #e0e0e0; border-radius:6px;">
             <span style="color:#888;">até</span>
             <input type="date" id="relatorioEnd" title="Data fim" style="padding:0.4rem 0.7rem; border:1.5px solid #e0e0e0; border-radius:6px;">
-            <button class="btn btn-primary" style="padding:0.5rem 1rem;" onclick="loadRelatorios()">Aplicar</button>
+            <button class="btn btn-primary" style="padding:0.5rem 1rem;" onclick="loadRelatorios()">🔍 Aplicar</button>
+            <button class="btn btn-secondary" style="padding:0.5rem 1rem;" onclick="document.getElementById('relatorioStart').value='';document.getElementById('relatorioEnd').value='';loadRelatorios()">✕ Limpar</button>
           </div>
         </div>
 
@@ -1301,7 +1302,7 @@
               <table id="relUltimosPedidos">
                 <thead>
                   <tr>
-                    <th>#</th><th>Mesa</th><th>Atendente</th><th>Valor</th><th>Status</th>
+                    <th>#</th><th>Mesa</th><th>Atendente</th><th>Valor</th><th>Status</th><th>Data</th>
                   </tr>
                 </thead>
                 <tbody id="relUltimosPedidosBody"></tbody>
