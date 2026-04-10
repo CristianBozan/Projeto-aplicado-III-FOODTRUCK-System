@@ -3,6 +3,9 @@ const app = express();
 const sequelize = require("./config/database");
 const path = require("path");
 const cron = require("node-cron");
+const helmet = require("helmet");
+const cors = require("cors");
+const rateLimit = require("express-rate-limit");
 require("dotenv").config();
 
 // Rotas
@@ -20,8 +23,18 @@ const auditoriaRoutes       = require("./routes/auditoriaRoutes");
 const sincronizacaoRoutes   = require("./routes/sincronizacaoRoutes");
 const backupController      = require("./controllers/backupController");
 
+// Segurança
+app.use(helmet({ contentSecurityPolicy: false })); // CSP desativado para servir HTML estático
+app.use(cors({ origin: process.env.ALLOWED_ORIGINS || '*' }));
+
+// Rate limiting — login mais restrito
+const limiterGeral = rateLimit({ windowMs: 15 * 60 * 1000, max: 200 });
+const limiterLogin = rateLimit({ windowMs: 15 * 60 * 1000, max: 20, message: { error: 'Muitas tentativas de login. Tente novamente em 15 minutos.' } });
+app.use('/auth/login', limiterLogin);
+app.use(limiterGeral);
+
 // Middlewares
-app.use(express.json());
+app.use(express.json({ limit: '10kb' }));
 app.use(express.static(path.join(__dirname, "../public")));
 app.use('/imagens', express.static(path.join(__dirname, '../../Imagens')));
 
