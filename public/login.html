@@ -467,6 +467,8 @@
           localStorage.setItem('loggedIn', '1');
           localStorage.setItem('userRole', data.role);
           localStorage.setItem('userName', data.nome);
+          localStorage.setItem('userId', data.userId || '');
+          if (data.userId) localStorage.setItem('carrinho_atendente', String(data.userId));
           window.location.href = 'index.html';
         } else {
           showError(data.message || 'Usuário ou senha inválidos.');
