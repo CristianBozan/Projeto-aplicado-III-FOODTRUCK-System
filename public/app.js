@@ -179,7 +179,15 @@ function navegarPara(sectionId) {
 // ── Relatórios ──
 async function loadRelatorios() {
   try {
-    const resp = await fetch(`${API_URL}/pedidos`);
+    // Lê os filtros de data do painel de relatórios
+    const startEl = document.getElementById('relatorioStart');
+    const endEl   = document.getElementById('relatorioEnd');
+    const params  = [];
+    if (startEl && startEl.value) params.push(`start=${encodeURIComponent(startEl.value)}`);
+    if (endEl   && endEl.value)   params.push(`end=${encodeURIComponent(endEl.value)}`);
+    const qs = params.length ? `?${params.join('&')}` : '';
+
+    const resp = await fetch(`${API_URL}/pedidos${qs}`);
     if (!resp.ok) return;
     const data = await resp.json();
     const pedidos = data.pedidos || data || [];
@@ -198,17 +206,61 @@ async function loadRelatorios() {
     // Últimos pedidos
     const tbody = document.getElementById('relUltimosPedidosBody');
     if (tbody) {
-      const recentes = [...pedidos].sort((a,b) => b.id - a.id).slice(0,6);
+      const recentes = [...pedidos].slice(0, 6);
       tbody.innerHTML = recentes.map(p => {
         const statusCls = p.status === 'pago' ? 'badge-pago' : p.status === 'finalizado' ? 'badge-fin' : p.status === 'cancelado' ? 'badge-cancel' : 'badge-aberto';
+        const dataHora  = p.data_hora ? new Date(p.data_hora).toLocaleString('pt-BR', {dateStyle:'short', timeStyle:'short'}) : '—';
         return `<tr>
-          <td>#${String(p.id).padStart(4,'0')}</td>
-          <td>${escapeHtml(p.Mesa?.numero || p.mesa_id || '—')}</td>
+          <td>#${String(p.id_pedido || p.id || 0).padStart(4,'0')}</td>
+          <td>${escapeHtml(p.Mesa?.numero != null ? String(p.Mesa.numero) : (p.mesa_id ? String(p.mesa_id) : '—'))}</td>
           <td>${escapeHtml(p.Atendente?.nome || '—')}</td>
           <td>R$ ${parseFloat(p.total||0).toLocaleString('pt-BR',{minimumFractionDigits:2})}</td>
           <td><span class="${statusCls}">${p.status}</span></td>
+          <td style="font-size:0.78rem;color:#888;">${dataHora}</td>
         </tr>`;
       }).join('');
+    }
+
+    // Gráfico: vendas por dia
+    const canvas = document.getElementById('chartRelVendas');
+    if (canvas) {
+      // Agrupa pedidos pagos/finalizados por dia
+      const porDia = {};
+      pagos.forEach(p => {
+        if (!p.data_hora) return;
+        const dia = new Date(p.data_hora).toLocaleDateString('pt-BR');
+        porDia[dia] = (porDia[dia] || 0) + parseFloat(p.total || 0);
+      });
+      // Ordena por data real
+      const labels = Object.keys(porDia).sort((a, b) => {
+        const [da, ma, ya] = a.split('/').map(Number);
+        const [db, mb, yb] = b.split('/').map(Number);
+        return new Date(ya, ma-1, da) - new Date(yb, mb-1, db);
+      });
+      const valores = labels.map(l => porDia[l]);
+
+      if (window._chartRelVendas) window._chartRelVendas.destroy();
+      window._chartRelVendas = new Chart(canvas, {
+        type: 'bar',
+        data: {
+          labels,
+          datasets: [{
+            label: 'Faturamento (R$)',
+            data: valores,
+            backgroundColor: 'rgba(196,30,58,0.7)',
+            borderColor: '#C41E3A',
+            borderWidth: 1,
+            borderRadius: 4
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: { legend: { display: false } },
+          scales: {
+            y: { beginAtZero: true, ticks: { callback: v => 'R$ ' + v.toLocaleString('pt-BR') } }
+          }
+        }
+      });
     }
   } catch (err) {
     console.error('Erro em loadRelatorios:', err);

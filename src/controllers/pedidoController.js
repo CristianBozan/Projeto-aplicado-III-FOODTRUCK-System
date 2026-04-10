@@ -9,7 +9,37 @@ const sequelize = require("../config/database");
 module.exports = {
   async listar(req, res) {
     try {
-      const pedidos = await Pedido.findAll({ include: [Mesa, Atendente] });
+      const { Op } = require('sequelize');
+      const where = {};
+
+      const { start, end, preset, month } = req.query;
+
+      if (preset) {
+        const now = new Date();
+        if (preset === 'day') {
+          const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+          where.data_hora = { [Op.gte]: startOfDay };
+        } else if (preset === 'week') {
+          const startOfWeek = new Date(now);
+          startOfWeek.setDate(now.getDate() - 6);
+          startOfWeek.setHours(0, 0, 0, 0);
+          where.data_hora = { [Op.gte]: startOfWeek };
+        } else if (preset === 'month') {
+          const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+          where.data_hora = { [Op.gte]: startOfMonth };
+        }
+      } else if (month) {
+        const [y, m] = month.split('-').map(Number);
+        const startOfMonth = new Date(y, m - 1, 1);
+        const endOfMonth = new Date(y, m, 1);
+        where.data_hora = { [Op.gte]: startOfMonth, [Op.lt]: endOfMonth };
+      } else if (start || end) {
+        where.data_hora = {};
+        if (start) where.data_hora[Op.gte] = new Date(start + 'T00:00:00');
+        if (end)   where.data_hora[Op.lte] = new Date(end   + 'T23:59:59');
+      }
+
+      const pedidos = await Pedido.findAll({ where, include: [Mesa, Atendente], order: [['data_hora', 'DESC']] });
       res.json(pedidos);
     } catch (err) {
       res.status(500).json({ error: err.message });
