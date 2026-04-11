@@ -1,11 +1,13 @@
 const express = require("express");
 const router = express.Router();
 const itemPedidoController = require("../controllers/itemPedidoController");
-console.log("itemPedidoController:", itemPedidoController);
+const requireAuth = require("../middleware/requireAuth");
 
-router.get("/", itemPedidoController.listar);
+router.use(requireAuth);
+
+router.get("/",    itemPedidoController.listar);
 router.get("/:id", itemPedidoController.buscarPorId);
-router.post("/", itemPedidoController.criar);
+router.post("/",   itemPedidoController.criar);
 router.put("/:id", itemPedidoController.atualizar);
 router.delete("/:id", itemPedidoController.deletar);
 

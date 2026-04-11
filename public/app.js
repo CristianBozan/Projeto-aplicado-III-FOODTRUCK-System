@@ -3,6 +3,17 @@ const API_URL = window.location.protocol === 'file:'
   ? 'http://localhost:3000'
   : window.location.origin;
 
+// Helper de fetch autenticado — injeta Authorization: Bearer <token> automaticamente
+function apiFetch(url, options = {}) {
+  const token = localStorage.getItem('authToken');
+  const headers = Object.assign({}, options.headers || {});
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+  if (options.body && typeof options.body === 'string' && !headers['Content-Type']) {
+    headers['Content-Type'] = 'application/json';
+  }
+  return fetch(url, Object.assign({}, options, { headers }));
+}
+
 // Carrinho de compras global
  
 let carrinho = [];
@@ -89,8 +100,11 @@ document.addEventListener("DOMContentLoaded", () => {
     const logoutBtn = document.getElementById('logoutBtn');
     if (logoutBtn) logoutBtn.addEventListener('click', () => {
       localStorage.removeItem('loggedIn');
+      localStorage.removeItem('authToken');
       localStorage.removeItem('userRole');
       localStorage.removeItem('userName');
+      localStorage.removeItem('userId');
+      localStorage.removeItem('carrinho_atendente');
       window.location.href = 'login.html';
     });
 
@@ -187,7 +201,7 @@ async function loadRelatorios() {
     if (endEl   && endEl.value)   params.push(`end=${encodeURIComponent(endEl.value)}`);
     const qs = params.length ? `?${params.join('&')}` : '';
 
-    const resp = await fetch(`${API_URL}/pedidos${qs}`);
+    const resp = await apiFetch(`${API_URL}/pedidos${qs}`);
     if (!resp.ok) return;
     const data = await resp.json();
     const pedidos = data.pedidos || data || [];
@@ -276,7 +290,7 @@ async function loadEstoque() {
   const tbody = document.getElementById('estoqueTableBody');
   if (loading) loading.style.display = 'flex';
   try {
-    const resp = await fetch(`${API_URL}/produtos`);
+    const resp = await apiFetch(`${API_URL}/produtos`);
     if (!resp.ok) throw new Error();
     const data = await resp.json();
     const produtos = data.produtos || data || [];
@@ -328,7 +342,7 @@ async function loadBackupsSection() {
   if (tbody) tbody.innerHTML = '';
   try {
     const headers = await getBackupAuthHeaders();
-    const resp = await fetch(`${API_URL}/backups`, { headers: headers||{} });
+    const resp = await apiFetch(`${API_URL}/backups`, { headers: headers||{} });
     if (!resp.ok) throw new Error();
     const data = await resp.json();
     const list = data.backups || [];
@@ -368,7 +382,7 @@ async function loadSincronizacoes() {
   try {
     const authHeaders = await getBackupAuthHeaders();
     const headers = authHeaders ? authHeaders : {};
-    const resp = await fetch(`${API_URL}/backups`, { headers });
+    const resp = await apiFetch(`${API_URL}/backups`, { headers });
 
     if (!resp.ok) {
       if (statusEl) { statusEl.textContent = 'Erro ao carregar'; statusEl.style.color = '#e74c3c'; }
@@ -437,7 +451,7 @@ async function syncBackup() {
     btn.disabled = true;
     btn.textContent = '⏳ Criando backup...';
 
-    const resp = await fetch(`${API_URL}/backups`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ nome }) });
+    const resp = await apiFetch(`${API_URL}/backups`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ nome }) });
     if (!resp.ok) {
       const err = await resp.json().catch(() => null);
       showAlert(err?.message || 'Erro ao executar backup', 'error');
@@ -489,7 +503,7 @@ async function fetchBackups() {
   try {
     const authHeaders = await getBackupAuthHeaders();
     const headers = authHeaders ? authHeaders : {};
-    const resp = await fetch(`${API_URL}/backups`, { headers });
+    const resp = await apiFetch(`${API_URL}/backups`, { headers });
     if (!resp.ok) {
       const err = await resp.json().catch(() => null);
       showAlert(err?.message || 'Erro ao listar backups', 'error');
@@ -570,7 +584,7 @@ async function viewBackup(id) {
   try {
     const headers = await getBackupAuthHeaders();
     const opts = headers ? { headers } : {};
-    const resp = await fetch(`${API_URL}/backups/${id}`, opts);
+    const resp = await apiFetch(`${API_URL}/backups/${id}`, opts);
     if (!resp.ok) {
       const err = await resp.json().catch(()=>null);
       showAlert(err?.message || 'Erro ao buscar backup', 'error');
@@ -598,7 +612,7 @@ async function restoreBackup(id) {
 
     const headers = await getBackupAuthHeaders();
     const opts = { method: 'POST', headers: Object.assign({ 'Content-Type': 'application/json' }, headers || {}), body: JSON.stringify({ mode }) };
-    const resp = await fetch(`${API_URL}/backups/${id}/restore`, opts);
+    const resp = await apiFetch(`${API_URL}/backups/${id}/restore`, opts);
     if (!resp.ok) {
       const err = await resp.json().catch(()=>null);
       showAlert(err?.message || 'Erro ao restaurar backup', 'error');
@@ -810,13 +824,13 @@ async function loadDashboard() {
     }
 
     // Resumo geral
-    const resumo = await fetch(`${API_URL}/relatorios/resumo`).then(r => r.json());
+    const resumo = await apiFetch(`${API_URL}/relatorios/resumo`).then(r => r.json());
     const setEl = (id,v) => { const el=document.getElementById(id); if(el) el.textContent=v; };
     setEl("statVendas", resumo.quantidade_vendas || 0);
     setEl("statFaturamento", `R$ ${parseFloat(resumo.faturamento_total || 0).toLocaleString('pt-BR',{minimumFractionDigits:2})}`);
     // Ticket → statEstoque é novo; manter compatibilidade
     try {
-      const prodResp = await fetch(`${API_URL}/produtos`);
+      const prodResp = await apiFetch(`${API_URL}/produtos`);
       if (prodResp.ok) {
         const prodData = await prodResp.json();
         const prods = prodData.produtos || prodData || [];
@@ -826,7 +840,7 @@ async function loadDashboard() {
       }
     } catch(e){}
     try {
-      const mesaResp = await fetch(`${API_URL}/mesas`);
+      const mesaResp = await apiFetch(`${API_URL}/mesas`);
       if (mesaResp.ok) {
         const mesaData = await mesaResp.json();
         const mesas = mesaData.mesas || mesaData || [];
@@ -838,7 +852,7 @@ async function loadDashboard() {
 
     // Pedidos recentes no dashboard
     try {
-      const pedResp = await fetch(`${API_URL}/pedidos`);
+      const pedResp = await apiFetch(`${API_URL}/pedidos`);
       if (pedResp.ok) {
         const pedData = await pedResp.json();
         const pedidos = (pedData.pedidos || pedData || []).sort((a,b)=>b.id-a.id).slice(0,5);
@@ -871,7 +885,7 @@ async function loadDashboard() {
 
     const periodQuery = buildPeriodoQuery();
     // busca vendas por dia e normaliza vários possíveis formatos de resposta do backend
-    const vendasDiaRaw = await fetch(`${API_URL}/relatorios/vendas-por-dia${periodQuery}`).then(r => r.json());
+    const vendasDiaRaw = await apiFetch(`${API_URL}/relatorios/vendas-por-dia${periodQuery}`).then(r => r.json());
     const vendasDia = Array.isArray(vendasDiaRaw) ? vendasDiaRaw : (vendasDiaRaw && vendasDiaRaw.data ? vendasDiaRaw.data : []);
 
     const normalized = (vendasDia || []).map(item => {
@@ -955,7 +969,7 @@ async function loadDashboard() {
     }
 
     // Vendas por pagamento
-    const vendasPagamento = await fetch(`${API_URL}/relatorios/vendas-por-pagamento`).then(r => r.json());
+    const vendasPagamento = await apiFetch(`${API_URL}/relatorios/vendas-por-pagamento`).then(r => r.json());
   const labelsPag = vendasPagamento.map(d => (d.forma_pagamento || '').toUpperCase());
   const valoresPag = vendasPagamento.map(d => parseFloat(d.total_vendas));
 
@@ -1090,7 +1104,7 @@ async function loadAtendentes() {
   if (loading) loading.classList.add("show");
 
   try {
-    const response = await fetch(`${API_URL}/atendentes`);
+    const response = await apiFetch(`${API_URL}/atendentes`);
     const atendentes = await response.json();
     window._atendentesAll = atendentes;
     renderAtendenteCards(atendentes);
@@ -1154,7 +1168,7 @@ function openAtendenteModal(id = null) {
   if (id) {
     title.textContent = "Editar Atendente";
     // Carrega dados do atendente
-    fetch(`${API_URL}/atendentes/${id}`)
+    apiFetch(`${API_URL}/atendentes/${id}`)
       .then(r => r.json())
       .then(atendente => {
         document.getElementById("atendenteId").value = atendente.id_atendente;
@@ -1191,12 +1205,12 @@ async function openFinalizarModal(pedidoId) {
     // Get pedido from cache or fetch
     let pedido = (window.cachedPedidos || []).find(p => String(p.id_pedido) === String(pedidoId));
     if (!pedido) {
-      const r = await fetch(`${API_URL}/pedidos/${pedidoId}`);
+      const r = await apiFetch(`${API_URL}/pedidos/${pedidoId}`);
       if (r.ok) pedido = await r.json();
     }
 
     // Fetch all itempedidos and filter by pedido
-  const ir = await fetch(`${API_URL}/itens-pedido`);
+  const ir = await apiFetch(`${API_URL}/itens-pedido`);
     let itens = [];
     if (ir.ok) {
       const all = await ir.json();
@@ -1254,7 +1268,7 @@ if (finalizarForm) {
     if (!forma) return showAlert('Selecione a forma de pagamento', 'error');
 
     try {
-      const response = await fetch(`${API_URL}/pedidos/${id}`, {
+      const response = await apiFetch(`${API_URL}/pedidos/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: 'finalizado', forma_pagamento: forma })
@@ -1311,7 +1325,7 @@ document.getElementById("atendenteForm").addEventListener("submit", async (e) =>
     const url = id ? `${API_URL}/atendentes/${id}` : `${API_URL}/atendentes`;
     const method = id ? "PUT" : "POST";
     
-    const response = await fetch(url, {
+    const response = await apiFetch(url, {
       method,
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data)
@@ -1335,7 +1349,7 @@ async function deleteAtendente(id) {
   if (!confirm("Tem certeza que deseja excluir este atendente?")) return;
   
   try {
-    const response = await fetch(`${API_URL}/atendentes/${id}`, { method: "DELETE" });
+    const response = await apiFetch(`${API_URL}/atendentes/${id}`, { method: "DELETE" });
     
     if (response.ok) {
       showAlert("Atendente excluído com sucesso!", "success");
@@ -1357,7 +1371,7 @@ async function loadVendasPorAtendente(top = null, atendenteId = null) {
     if (top && Number.isInteger(top) && top > 0) params.push(`top=${encodeURIComponent(top)}`);
     if (atendenteId) params.push(`atendente=${encodeURIComponent(atendenteId)}`);
     if (params.length) url += `?${params.join('&')}`;
-    const resp = await fetch(url);
+    const resp = await apiFetch(url);
     if (!resp.ok) {
       console.warn('Resposta não OK ao buscar vendas por atendente');
       return;
@@ -1401,7 +1415,7 @@ async function populateAtendentesSelect() {
     if (!sel) return;
     // se já foi populado (mais de 1 option), não repopular
     if (sel.options.length > 1) return;
-    const resp = await fetch(`${API_URL}/atendentes`);
+    const resp = await apiFetch(`${API_URL}/atendentes`);
     if (!resp.ok) return;
     const data = await resp.json();
     data.forEach(a => {
@@ -1456,7 +1470,7 @@ async function loadProdutos() {
   if (loading) loading.classList.add('show');
 
   try {
-    const resp = await fetch(`${API_URL}/produtos`);
+    const resp = await apiFetch(`${API_URL}/produtos`);
     if (!resp.ok) { showAlert('Erro ao carregar produtos', 'error'); return; }
     const raw = await resp.json();
     const produtos = Array.isArray(raw) ? raw : (raw.produtos || []);
@@ -1554,7 +1568,7 @@ function searchProdutos() {
     if (countEl) countEl.textContent = '';
 
     try {
-      const resp = await fetch(`${API_URL}/produtos?search=${encodeURIComponent(q)}`);
+      const resp = await apiFetch(`${API_URL}/produtos?search=${encodeURIComponent(q)}`);
       if (!resp.ok) {
         showAlert('Erro ao buscar produtos', 'error');
         return;
@@ -1612,7 +1626,7 @@ function openProdutoModal(id = null) {
   
   if (id) {
     title.textContent = "Editar Produto";
-    fetch(`${API_URL}/produtos/${id}`)
+    apiFetch(`${API_URL}/produtos/${id}`)
       .then(r => r.json())
       .then(produto => {
         document.getElementById("produtoId").value = produto.id_produto;
@@ -1653,7 +1667,7 @@ document.getElementById("produtoForm").addEventListener("submit", async (e) => {
     const url = id ? `${API_URL}/produtos/${id}` : `${API_URL}/produtos`;
     const method = id ? "PUT" : "POST";
     
-    const response = await fetch(url, {
+    const response = await apiFetch(url, {
       method,
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data)
@@ -1676,7 +1690,7 @@ async function deleteProduto(id) {
   if (!confirm("Tem certeza que deseja excluir este produto?")) return;
   
   try {
-    const response = await fetch(`${API_URL}/produtos/${id}`, { method: "DELETE" });
+    const response = await apiFetch(`${API_URL}/produtos/${id}`, { method: "DELETE" });
     
     if (response.ok) {
       showAlert("Produto excluído com sucesso!", "success");
@@ -1699,7 +1713,7 @@ async function loadMesas() {
   tbody.innerHTML = "";
   
     try {
-      const response = await fetch(`${API_URL}/mesas`);
+      const response = await apiFetch(`${API_URL}/mesas`);
       const mesas = await response.json();
     
       // Listamos todas as mesas cadastradas (mostrando também o status)
@@ -1739,7 +1753,7 @@ function openMesaModal(id = null) {
   
   if (id) {
     title.textContent = "Editar Mesa";
-    fetch(`${API_URL}/mesas/${id}`)
+    apiFetch(`${API_URL}/mesas/${id}`)
       .then(r => r.json())
       .then(mesa => {
         document.getElementById("mesaId").value = mesa.id_mesa;
@@ -1770,7 +1784,7 @@ document.getElementById("mesaForm").addEventListener("submit", async (e) => {
     const url = id ? `${API_URL}/mesas/${id}` : `${API_URL}/mesas`;
     const method = id ? "PUT" : "POST";
     
-    const response = await fetch(url, {
+    const response = await apiFetch(url, {
       method,
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data)
@@ -1793,7 +1807,7 @@ async function deleteMesa(id) {
   if (!confirm("Tem certeza que deseja excluir esta mesa?")) return;
   
   try {
-    const response = await fetch(`${API_URL}/mesas/${id}`, { method: "DELETE" });
+    const response = await apiFetch(`${API_URL}/mesas/${id}`, { method: "DELETE" });
     
     if (response.ok) {
       showAlert("Mesa excluída com sucesso!", "success");
@@ -1824,7 +1838,7 @@ async function loadPedidos() {
   tbody.innerHTML = "";
   
   try {
-    const response = await fetch(`${API_URL}/pedidos`);
+    const response = await apiFetch(`${API_URL}/pedidos`);
     const pedidos = await response.json();
 
     // Cache local dos pedidos para filtros/ordenacao e badge
@@ -1862,7 +1876,7 @@ async function loadCardapio() {
   grid.innerHTML = "";
 
   try {
-    const response = await fetch(`${API_URL}/produtos`);
+    const response = await apiFetch(`${API_URL}/produtos`);
     const raw = await response.json();
     const produtos = Array.isArray(raw) ? raw : (raw.produtos || []);
 
@@ -1956,7 +1970,7 @@ function filtrarCardapioCat(cat) {
 // Adiciona produto ao carrinho
 async function adicionarAoCarrinho(idProduto) {
   try {
-    const response = await fetch(`${API_URL}/produtos/${idProduto}`);
+    const response = await apiFetch(`${API_URL}/produtos/${idProduto}`);
     const produto = await response.json();
     
     // Verifica se já está no carrinho
@@ -2124,7 +2138,7 @@ function limparCarrinho() {
 // Carrega mesas para o carrinho
 async function loadMesasCarrinho() {
   try {
-    const response = await fetch(`${API_URL}/mesas`);
+    const response = await apiFetch(`${API_URL}/mesas`);
     const mesas = await response.json();
     const select = document.getElementById("carrinhoMesa");
 
@@ -2171,7 +2185,7 @@ async function loadMesasCarrinho() {
 // Carrega atendentes para o carrinho
 async function loadAtendentesCarrinho() {
   try {
-    const response = await fetch(`${API_URL}/atendentes`);
+    const response = await apiFetch(`${API_URL}/atendentes`);
     const atendentes = await response.json();
     const select = document.getElementById("carrinhoAtendente");
 
@@ -2322,7 +2336,7 @@ async function finalizarPedido() {
     // anexa os itens ao payload para criação atômica no backend
     pedidoData.itens = carrinho.map(i => ({ id_produto: i.id_produto, quantidade: i.quantidade }));
 
-    const response = await fetch(`${API_URL}/pedidos`, {
+    const response = await apiFetch(`${API_URL}/pedidos`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(pedidoData)
@@ -2341,7 +2355,7 @@ async function finalizarPedido() {
 
     // Atualiza status da mesa para ocupada (somente se não for pedido para viagem)
     if (idMesa !== 'viagem') {
-      await fetch(`${API_URL}/mesas/${idMesa}`, {
+      await apiFetch(`${API_URL}/mesas/${idMesa}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status: "ocupada" })
@@ -2413,7 +2427,7 @@ async function openPedidoModal(id = null) {
   
   if (id) {
     title.textContent = "Editar Pedido";
-    fetch(`${API_URL}/pedidos/${id}`)
+    apiFetch(`${API_URL}/pedidos/${id}`)
       .then(r => r.json())
       .then(pedido => {
         document.getElementById("pedidoId").value = pedido.id_pedido;
@@ -2439,7 +2453,7 @@ async function openPedidoModal(id = null) {
         // Mostrar informação caso já exista uma venda vinculada a esse pedido
         try {
           const vendaInfoEl = document.getElementById('pedidoVendaInfo');
-          fetch(`${API_URL}/vendas`)
+          apiFetch(`${API_URL}/vendas`)
             .then(r => r.json())
             .then(vendas => {
               const venda = vendas.find(v => v.id_pedido == pedido.id_pedido || (v.Pedido && v.Pedido.id_pedido == pedido.id_pedido));
@@ -2465,7 +2479,7 @@ async function openPedidoModal(id = null) {
 
 async function loadMesasSelect() {
   try {
-    const response = await fetch(`${API_URL}/mesas`);
+    const response = await apiFetch(`${API_URL}/mesas`);
     const mesas = await response.json();
     const select = document.getElementById("pedidoMesa");
     
@@ -2490,7 +2504,7 @@ async function loadMesasSelect() {
 
 async function loadAtendentesSelect() {
   try {
-    const response = await fetch(`${API_URL}/atendentes`);
+    const response = await apiFetch(`${API_URL}/atendentes`);
     const atendentes = await response.json();
     const select = document.getElementById("pedidoAtendente");
     
@@ -2535,7 +2549,7 @@ document.getElementById("pedidoForm").addEventListener("submit", async (e) => {
     const url = id ? `${API_URL}/pedidos/${id}` : `${API_URL}/pedidos`;
     const method = id ? "PUT" : "POST";
     
-    const response = await fetch(url, {
+    const response = await apiFetch(url, {
       method,
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data)
@@ -2577,7 +2591,7 @@ async function deletePedido(id) {
   if (!confirm("Tem certeza que deseja excluir este pedido?")) return;
   
   try {
-    const response = await fetch(`${API_URL}/pedidos/${id}`, { method: "DELETE" });
+    const response = await apiFetch(`${API_URL}/pedidos/${id}`, { method: "DELETE" });
     
     if (response.ok) {
       showAlert("Pedido excluído com sucesso!", "success");
@@ -2600,7 +2614,7 @@ async function loadVendas() {
   tbody.innerHTML = "";
   
   try {
-    const response = await fetch(`${API_URL}/vendas`);
+    const response = await apiFetch(`${API_URL}/vendas`);
     const vendas = await response.json();
     
     if (vendas.length === 0) {
@@ -2652,7 +2666,7 @@ async function openVendaModal() {
 
 async function loadPedidosSelect() {
   try {
-    const response = await fetch(`${API_URL}/pedidos`);
+    const response = await apiFetch(`${API_URL}/pedidos`);
     const pedidos = await response.json();
     const select = document.getElementById("vendaPedido");
     
@@ -2678,7 +2692,7 @@ document.getElementById("vendaForm").addEventListener("submit", async (e) => {
   };
   
   try {
-    const response = await fetch(`${API_URL}/vendas`, {
+    const response = await apiFetch(`${API_URL}/vendas`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data)
@@ -2703,7 +2717,7 @@ async function deleteVenda(id) {
   if (!confirm("Tem certeza que deseja excluir esta venda?")) return;
   
   try {
-    const response = await fetch(`${API_URL}/vendas/${id}`, { method: "DELETE" });
+    const response = await apiFetch(`${API_URL}/vendas/${id}`, { method: "DELETE" });
     
     if (response.ok) {
       showAlert("Venda excluída com sucesso!", "success");

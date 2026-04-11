@@ -465,6 +465,7 @@
 
         if (data.success) {
           localStorage.setItem('loggedIn', '1');
+          localStorage.setItem('authToken', data.token || '');
           localStorage.setItem('userRole', data.role);
           localStorage.setItem('userName', data.nome);
           localStorage.setItem('userId', data.userId || '');
