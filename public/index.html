@@ -1147,33 +1147,11 @@
           </div>
         </div>
 
-        <div class="card">
-          <h2>💰 Gerenciamento de Vendas</h2>
-
-          <div class="btn-group">
-            <button class="btn btn-secondary" onclick="loadVendas()">🔄 Atualizar Lista</button>
-          </div>
-
-          <div class="loading" id="loadingVendas">
-            <div class="spinner"></div>
-            Carregando vendas...
-          </div>
-
-          <div class="table-container">
-            <table id="vendaTable">
-              <thead>
-                <tr>
-                  <th>ID</th>
-                  <th>Data/Hora</th>
-                  <th>ID Pedido</th>
-                  <th>Valor Total</th>
-                  <th>Forma de Pagamento</th>
-                  <th>Ações</th>
-                </tr>
-              </thead>
-              <tbody id="vendaTableBody"></tbody>
-            </table>
-          </div>
+        <!-- Vendas são registradas automaticamente ao finalizar pedido — visíveis nos Relatórios -->
+        <!-- Elementos ocultos mantidos para compatibilidade com loadVendas() -->
+        <div style="display:none">
+          <div id="loadingVendas"></div>
+          <tbody id="vendaTableBody"></tbody>
         </div>
       </section>
 

@@ -523,6 +523,35 @@ tbody td {
   background: #8B1228;
 }
 
+/* Botão Cancelar — laranja/âmbar, menos agressivo que excluir */
+.action-cancel {
+  background: #E67E22;
+  color: var(--white);
+}
+.action-cancel:hover  { background: #CA6F1E; }
+.action-cancel:active { transform: scale(0.97); }
+
+/* Botão Finalizar — verde com destaque maior */
+.action-success {
+  background: #27AE60;
+  color: var(--white);
+}
+.action-success:hover  { background: #1E8449; }
+.action-success:active { transform: scale(0.97); }
+
+.btn-finalizar {
+  font-weight: 700;
+  padding: 0.35rem 0.85rem;
+  font-size: 0.85rem;
+}
+
+/* Botão desabilitado durante loading */
+.action-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
 .action-view {
   background: #007BFF;
   color: var(--white);

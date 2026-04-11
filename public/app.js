@@ -701,21 +701,29 @@ function renderPedidosFromCache() {
 
   filtered.forEach(pedido => {
     const tr = document.createElement('tr');
-    const dataHora = new Date(pedido.data_hora).toLocaleString('pt-BR');
-    const mesaLabel = pedido.id_mesa ? `Mesa ${pedido.Mesa?.numero_mesa}` : 'Para Viagem';
+    const dataHora = pedido.data_hora ? new Date(pedido.data_hora).toLocaleString('pt-BR') : '—';
+    const mesaLabel = pedido.id_mesa ? `Mesa ${pedido.Mesa?.numero || pedido.Mesa?.numero_mesa || pedido.id_mesa}` : 'Para Viagem';
+
+    const encerrado = pedido.status === 'pago' || pedido.status === 'cancelado';
+
+    // Botões condicionais por status
+    const btnEditar    = `<button class="action-btn action-edit" onclick="editPedido(${pedido.id_pedido})" title="Editar pedido">✏️ Editar</button>`;
+    const btnFinalizar = !encerrado
+      ? `<button class="action-btn action-success btn-finalizar" onclick="openFinalizarModal(${pedido.id_pedido})" title="Finalizar e registrar pagamento">✅ Finalizar</button>`
+      : '';
+    const btnCancelar  = !encerrado
+      ? `<button class="action-btn action-cancel" onclick="cancelarPedido(${pedido.id_pedido})" title="Cancelar pedido (não apaga)">✖ Cancelar</button>`
+      : '';
+
     tr.innerHTML = `
-      <td>${pedido.id_pedido}</td>
+      <td>#${String(pedido.id_pedido).padStart(4,'0')}</td>
       <td>${dataHora}</td>
-      <td>${mesaLabel}</td>
-      <td>${pedido.Atendente?.nome || '-'}</td>
+      <td>${escapeHtml(mesaLabel)}</td>
+      <td>${escapeHtml(pedido.Atendente?.nome || '—')}</td>
       <td><span class="status-badge status-${pedido.status}">${pedido.status}</span></td>
-      <td>${pedido.forma_pagamento || '-'}</td>
-      <td>R$ ${parseFloat(pedido.total).toFixed(2)}</td>
-      <td class="actions">
-        <button class="action-btn action-edit" onclick="editPedido(${pedido.id_pedido})">✏️ Editar</button>
-        <button class="action-btn action-success" onclick="openFinalizarModal(${pedido.id_pedido})">✅ Finalizar</button>
-        <button class="action-btn action-delete" onclick="deletePedido(${pedido.id_pedido})">🗑️ Excluir</button>
-      </td>
+      <td>${pedido.forma_pagamento || '—'}</td>
+      <td>R$ ${parseFloat(pedido.total || 0).toFixed(2)}</td>
+      <td class="actions">${btnEditar}${btnFinalizar}${btnCancelar}</td>
     `;
     tbody.appendChild(tr);
   });
@@ -762,12 +770,7 @@ function closeModal(modalId) {
   document.getElementById(modalId).classList.remove("active");
 }
 
-// Fecha modal ao clicar fora
-window.addEventListener("click", (e) => {
-  if (e.target.classList.contains("modal")) {
-    e.target.classList.remove("active");
-  }
-});
+// Modais NÃO fecham ao clicar fora — evita perda de dados acidental
 
 // Mostra modal simples listando itens criados após criação do pedido
 function showItensCriadosModal(itens, pedidoId = null) {
@@ -1267,39 +1270,29 @@ if (finalizarForm) {
     if (!id) return showAlert('Pedido inválido', 'error');
     if (!forma) return showAlert('Selecione a forma de pagamento', 'error');
 
+    const btnSubmit = finalizarForm.querySelector('[type="submit"]');
+    if (btnSubmit) { btnSubmit.disabled = true; btnSubmit.textContent = 'Finalizando...'; }
+
     try {
-      const response = await apiFetch(`${API_URL}/pedidos/${id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+      const response = await apiFetch(`${API_URL}/pedidos/${id}/status`, {
+        method: 'PATCH',
         body: JSON.stringify({ status: 'finalizado', forma_pagamento: forma })
       });
 
       if (!response.ok) {
-        const err = await response.json().catch(() => null);
-        showAlert(err?.message || 'Erro ao finalizar pedido', 'error');
+        const err = await response.json().catch(() => ({}));
+        showAlert(err?.error || err?.message || 'Erro ao finalizar pedido', 'error');
         return;
       }
 
-      const respJson = await response.json();
-      const vendaCriada = respJson?.vendaCriada || respJson?.result?.vendaCriada || null;
-
-      showAlert('Pedido finalizado com sucesso!', 'success');
+      showAlert('Pedido finalizado e venda registrada!', 'success');
       closeModal('finalizarModal');
-
-      if (vendaCriada) {
-        loadVendas();
-        document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
-        const vendasLink = document.querySelector('.nav-link[data-section="vendas"]');
-        if (vendasLink) vendasLink.classList.add('active');
-        document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-        const vendasSection = document.getElementById('vendas');
-        if (vendasSection) vendasSection.classList.add('active');
-      } else {
-        loadPedidos();
-      }
+      loadPedidos();
     } catch (err) {
       console.error('Erro ao finalizar pedido via modal:', err);
-      showAlert(err.message || 'Erro ao finalizar pedido', 'error');
+      showAlert('Erro ao finalizar pedido', 'error');
+    } finally {
+      if (btnSubmit) { btnSubmit.disabled = false; btnSubmit.textContent = '✅ Finalizar'; }
     }
   });
 }
@@ -2587,12 +2580,38 @@ document.getElementById("pedidoForm").addEventListener("submit", async (e) => {
   }
 });
 
+async function cancelarPedido(id) {
+  if (!confirm(`Cancelar o pedido #${String(id).padStart(4,'0')}?\n\nO pedido ficará registrado com status "cancelado" e não será apagado.`)) return;
+
+  // Feedback visual imediato no botão
+  const btn = document.querySelector(`button[onclick="cancelarPedido(${id})"]`);
+  if (btn) { btn.disabled = true; btn.textContent = 'Cancelando...'; }
+
+  try {
+    const response = await apiFetch(`${API_URL}/pedidos/${id}/status`, {
+      method: 'PATCH',
+      body: JSON.stringify({ status: 'cancelado' })
+    });
+
+    if (response.ok) {
+      showAlert(`Pedido #${String(id).padStart(4,'0')} cancelado.`, 'success');
+      loadPedidos();
+    } else {
+      const data = await response.json().catch(() => ({}));
+      showAlert(data.error || 'Erro ao cancelar pedido.', 'error');
+      if (btn) { btn.disabled = false; btn.textContent = '✖ Cancelar'; }
+    }
+  } catch (error) {
+    console.error('Erro ao cancelar pedido:', error);
+    showAlert('Erro ao cancelar pedido.', 'error');
+    if (btn) { btn.disabled = false; btn.textContent = '✖ Cancelar'; }
+  }
+}
+
 async function deletePedido(id) {
-  if (!confirm("Tem certeza que deseja excluir este pedido?")) return;
-  
+  if (!confirm("Tem certeza que deseja excluir este pedido permanentemente?")) return;
   try {
     const response = await apiFetch(`${API_URL}/pedidos/${id}`, { method: "DELETE" });
-    
     if (response.ok) {
       showAlert("Pedido excluído com sucesso!", "success");
       loadPedidos();
@@ -2600,7 +2619,6 @@ async function deletePedido(id) {
       showAlert("Erro ao excluir pedido", "error");
     }
   } catch (error) {
-    console.error("Erro:", error);
     showAlert("Erro ao excluir pedido", "error");
   }
 }
