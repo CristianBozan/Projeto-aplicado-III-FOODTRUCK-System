@@ -1,8 +1,12 @@
 const express = require('express');
 const router = express.Router();
 const auditoriaController = require('../controllers/auditoriaController');
+const requireAuth = require('../middleware/requireAuth');
+const requireRole = require('../middleware/requireRole');
 
-// GET / -> lista logs de estoque
+router.use(requireAuth);
+router.use(requireRole('gerente'));
+
 router.get('/', auditoriaController.listar);
 
 module.exports = router;

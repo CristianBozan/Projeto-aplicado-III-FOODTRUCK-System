@@ -235,6 +235,55 @@ module.exports = {
     }
   },
 
+  async atualizarStatus(req, res) {
+    try {
+      const { id } = req.params;
+      const { status, forma_pagamento } = req.body || {};
+
+      const statusValidos = ['aberto', 'finalizado', 'cancelado', 'pago'];
+      if (!status || !statusValidos.includes(status)) {
+        return res.status(400).json({ error: `Status inválido. Use: ${statusValidos.join(', ')}` });
+      }
+
+      const pedido = await Pedido.findByPk(id);
+      if (!pedido) return res.status(404).json({ message: 'Pedido não encontrado' });
+
+      const result = await sequelize.transaction(async (t) => {
+        let vendaCriada = null;
+
+        if (status === 'cancelado') {
+          await pedido.update({ status: 'cancelado' }, { transaction: t });
+          if (pedido.id_mesa) {
+            await Mesa.update({ status: 'livre' }, { where: { id_mesa: pedido.id_mesa }, transaction: t });
+          }
+        } else if (status === 'finalizado') {
+          const forma = forma_pagamento || pedido.forma_pagamento;
+          if (forma) {
+            vendaCriada = await Venda.create({
+              id_pedido: pedido.id_pedido,
+              forma_pagamento: forma,
+              valor_total: pedido.total
+            }, { transaction: t });
+            await pedido.update({ status: 'pago', forma_pagamento: forma }, { transaction: t });
+          } else {
+            await pedido.update({ status: 'finalizado' }, { transaction: t });
+          }
+          if (pedido.id_mesa) {
+            await Mesa.update({ status: 'livre' }, { where: { id_mesa: pedido.id_mesa }, transaction: t });
+          }
+        } else {
+          await pedido.update({ status }, { transaction: t });
+        }
+
+        return { status: pedido.status, vendaCriada };
+      });
+
+      res.json({ message: 'Status atualizado com sucesso', result });
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  },
+
   async deletar(req, res) {
     try {
       const { id } = req.params;

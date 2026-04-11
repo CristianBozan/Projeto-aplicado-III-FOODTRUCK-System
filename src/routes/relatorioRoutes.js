@@ -1,10 +1,13 @@
 const express = require("express");
 const router = express.Router();
 const relatorioController = require("../controllers/relatorioController");
+const requireAuth = require("../middleware/requireAuth");
 
-router.get("/vendas-por-dia", relatorioController.vendasPorDia);
+router.use(requireAuth);
+
+router.get("/vendas-por-dia",       relatorioController.vendasPorDia);
 router.get("/vendas-por-pagamento", relatorioController.vendasPorPagamento);
 router.get("/vendas-por-atendente", relatorioController.vendasPorAtendente);
-router.get("/resumo", relatorioController.resumo);
+router.get("/resumo",               relatorioController.resumo);
 
 module.exports = router;
