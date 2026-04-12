@@ -85,6 +85,10 @@ document.addEventListener("DOMContentLoaded", () => {
     const openBackupsBtn = document.getElementById('openBackupsBtn');
     if (openBackupsBtn) openBackupsBtn.addEventListener('click', openBackupsModal);
 
+    // Perfil: submit do formulário
+    const perfilForm = document.getElementById('perfilForm');
+    if (perfilForm) perfilForm.addEventListener('submit', salvarPerfil);
+
     // Logout: limpa todas as chaves de sessão
     const logoutBtn = document.getElementById('logoutBtn');
     if (logoutBtn) logoutBtn.addEventListener('click', () => {
@@ -689,6 +693,45 @@ function showAlert(message, type = "success") {
     alert.classList.remove("show");
     setTimeout(() => alert.remove(), 300);
   }, 3000);
+}
+
+// ========== PERFIL DO USUÁRIO ==========
+function openPerfilModal() {
+  const nome = localStorage.getItem('userName') || '';
+  const nomeEl = document.getElementById('perfilNome');
+  const erroEl = document.getElementById('perfilError');
+  if (nomeEl) nomeEl.value = nome;
+  if (erroEl) { erroEl.style.display = 'none'; erroEl.textContent = ''; }
+  document.getElementById('perfilModal').classList.add('active');
+  if (nomeEl) nomeEl.focus();
+}
+
+function salvarPerfil(e) {
+  e.preventDefault();
+  const nomeEl = document.getElementById('perfilNome');
+  const erroEl = document.getElementById('perfilError');
+
+  const nome = nomeEl ? nomeEl.value.trim() : '';
+
+  if (!nome) {
+    erroEl.textContent = 'O nome não pode estar vazio.';
+    erroEl.style.display = 'block';
+    return;
+  }
+
+  erroEl.style.display = 'none';
+
+  localStorage.setItem('userName', nome);
+  const headerName = document.getElementById('headerUserName');
+  const headerAvatar = document.getElementById('headerAvatar');
+  if (headerName) headerName.textContent = nome;
+  if (headerAvatar) {
+    const initials = nome.split(' ').slice(0,2).map(w => w[0] || '').join('').toUpperCase() || 'U';
+    headerAvatar.textContent = initials;
+  }
+
+  closeModal('perfilModal');
+  showAlert('Perfil atualizado com sucesso!', 'success');
 }
 
 // ========== MODAIS ==========
