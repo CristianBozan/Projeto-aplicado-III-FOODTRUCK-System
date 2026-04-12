@@ -159,12 +159,123 @@
     }
     .sidebar-logout a:hover { color: #C41E3A !important; }
 
+    /* ---- BOTÃO RECOLHER SIDEBAR (desktop) ---- */
+    .sidebar-collapse-btn {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      padding: 0.55rem 0.9rem;
+      border-bottom: 1px solid #EEEEEE;
+    }
+    .sidebar-collapse-btn button {
+      background: none;
+      border: 1px solid #E0E0E0;
+      border-radius: 6px;
+      cursor: pointer;
+      color: #888;
+      font-size: 0.8rem;
+      padding: 0.25rem 0.5rem;
+      line-height: 1;
+      transition: background 150ms, color 150ms;
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+    }
+    .sidebar-collapse-btn button:hover {
+      background: rgba(196,30,58,0.07);
+      color: #C41E3A;
+      border-color: rgba(196,30,58,0.3);
+    }
+
+    /* ---- SIDEBAR COLAPSADA ---- */
+    .sidebar.collapsed {
+      width: 52px;
+      min-width: 52px;
+      overflow: visible;
+    }
+    .sidebar.collapsed .sidebar-group-label,
+    .sidebar.collapsed .nav-label,
+    .sidebar.collapsed .nav-badge,
+    .sidebar.collapsed .sidebar-logout a span:not(.nav-icon),
+    .sidebar.collapsed .sidebar-collapse-btn span.btn-label {
+      display: none !important;
+    }
+    .sidebar.collapsed .sidebar-collapse-btn {
+      justify-content: center;
+      padding: 0.55rem 0;
+    }
+    .sidebar.collapsed .sidebar-group {
+      padding: 0.6rem 0 0.3rem !important;
+    }
+    .sidebar.collapsed .sidebar-divider {
+      margin: 0.3rem 0.5rem;
+    }
+    .sidebar.collapsed .sidebar-logout {
+      padding: 0.5rem 0;
+    }
+    .sidebar.collapsed .sidebar-logout a {
+      justify-content: center !important;
+      padding: 0.6rem 0 !important;
+    }
+    .sidebar.collapsed nav a {
+      justify-content: center !important;
+      padding: 0.6rem 0 !important;
+      border-left: 3px solid transparent !important;
+      border-radius: 0 !important;
+      position: relative;
+    }
+    .sidebar.collapsed nav a .nav-icon {
+      opacity: 0.75;
+      font-size: 1.1rem;
+    }
+    /* Tooltip ao passar o mouse na sidebar colapsada */
+    .sidebar.collapsed nav a::after {
+      content: attr(data-tooltip);
+      position: absolute;
+      left: calc(100% + 8px);
+      top: 50%;
+      transform: translateY(-50%);
+      background: #333;
+      color: #fff;
+      padding: 0.25rem 0.6rem;
+      border-radius: 5px;
+      font-size: 0.78rem;
+      white-space: nowrap;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 120ms;
+      z-index: 2000;
+    }
+    .sidebar.collapsed nav a:hover::after { opacity: 1; }
+    .sidebar.collapsed .sidebar-logout a::after {
+      content: "Sair do sistema";
+      position: absolute;
+      left: calc(100% + 8px);
+      top: 50%;
+      transform: translateY(-50%);
+      background: #333;
+      color: #fff;
+      padding: 0.25rem 0.6rem;
+      border-radius: 5px;
+      font-size: 0.78rem;
+      white-space: nowrap;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 120ms;
+      z-index: 2000;
+    }
+    .sidebar.collapsed .sidebar-logout a:hover::after { opacity: 1; }
+
     /* ---- MAIN CONTENT ---- */
     .main-content {
       margin-left: 240px;
       flex: 1;
       padding: 2rem;
       min-width: 0;
+      transition: margin-left 0.3s ease;
+    }
+    .main-content.sidebar-collapsed {
+      margin-left: 52px;
     }
 
     /* ---- HAMBURGER (mobile) ---- */
@@ -322,7 +433,8 @@
       .sidebar.open { transform: translateX(0); }
       .sidebar-overlay.open { display: block; }
       .sidebar-toggle { display: block; }
-      .main-content { margin-left: 0; padding: 1rem; }
+      .sidebar-collapse-btn { display: none; }
+      .main-content { margin-left: 0 !important; padding: 1rem; }
       .admin-stats { grid-template-columns: 1fr 1fr; }
       /* Header: esconde textos longos */
       .header-breadcrumb { display: none; }
@@ -673,24 +785,31 @@
     <!-- ===== SIDEBAR ===== -->
     <aside class="sidebar" id="sidebar">
 
+      <!-- Botão recolher/expandir (desktop) -->
+      <div class="sidebar-collapse-btn">
+        <button id="sidebarCollapseBtn" title="Recolher menu" aria-label="Recolher menu">
+          <span>◀</span><span class="btn-label"> Recolher</span>
+        </button>
+      </div>
+
       <!-- Grupo: Menu Principal (todos os perfis) -->
       <div class="sidebar-group">
         <div class="sidebar-group-label">Menu Principal</div>
         <nav>
           <ul>
             <li data-role="gerente">
-              <a href="#admin-dashboard" class="nav-link" data-section="admin-dashboard" data-role="gerente" data-breadcrumb="Dashboard">
-                <span class="nav-icon">📊</span> Dashboard
+              <a href="#admin-dashboard" class="nav-link" data-section="admin-dashboard" data-role="gerente" data-breadcrumb="Dashboard" data-tooltip="Dashboard">
+                <span class="nav-icon">📊</span><span class="nav-label"> Dashboard</span>
               </a>
             </li>
             <li>
-              <a href="#pedidos" class="nav-link active" data-section="pedidos" data-breadcrumb="Atendimento · Novo Pedido">
-                <span class="nav-icon">🧾</span> Atendimento
+              <a href="#pedidos" class="nav-link active" data-section="pedidos" data-breadcrumb="Atendimento · Novo Pedido" data-tooltip="Atendimento">
+                <span class="nav-icon">🧾</span><span class="nav-label"> Atendimento</span>
               </a>
             </li>
             <li>
-              <a href="#vendas" class="nav-link" data-section="vendas" data-breadcrumb="Atendimento · Pedidos &amp; Vendas">
-                <span class="nav-icon">💰</span> Vendas
+              <a href="#vendas" class="nav-link" data-section="vendas" data-breadcrumb="Atendimento · Pedidos &amp; Vendas" data-tooltip="Vendas">
+                <span class="nav-icon">💰</span><span class="nav-label"> Vendas</span>
                 <span id="vendasBadge" class="nav-badge hidden" aria-live="polite">0</span>
               </a>
             </li>
@@ -706,23 +825,23 @@
         <nav>
           <ul>
             <li>
-              <a href="#produtos" class="nav-link" data-section="produtos" data-role="gerente" data-breadcrumb="Gerenciamento · Produtos">
-                <span class="nav-icon">📦</span> Produtos
+              <a href="#produtos" class="nav-link" data-section="produtos" data-role="gerente" data-breadcrumb="Gerenciamento · Produtos" data-tooltip="Produtos">
+                <span class="nav-icon">📦</span><span class="nav-label"> Produtos</span>
               </a>
             </li>
             <li>
-              <a href="#atendentes" class="nav-link" data-section="atendentes" data-role="gerente" data-breadcrumb="Gerenciamento · Atendentes">
-                <span class="nav-icon">👥</span> Atendentes
+              <a href="#atendentes" class="nav-link" data-section="atendentes" data-role="gerente" data-breadcrumb="Gerenciamento · Atendentes" data-tooltip="Atendentes">
+                <span class="nav-icon">👥</span><span class="nav-label"> Atendentes</span>
               </a>
             </li>
             <li>
-              <a href="#mesas" class="nav-link" data-section="mesas" data-role="gerente" data-breadcrumb="Gerenciamento · Mesas">
-                <span class="nav-icon">🪑</span> Mesas
+              <a href="#mesas" class="nav-link" data-section="mesas" data-role="gerente" data-breadcrumb="Gerenciamento · Mesas" data-tooltip="Mesas">
+                <span class="nav-icon">🪑</span><span class="nav-label"> Mesas</span>
               </a>
             </li>
             <li>
-              <a href="#estoque" class="nav-link" data-section="estoque" data-role="gerente" data-breadcrumb="Gerenciamento · Estoque">
-                <span class="nav-icon">🏪</span> Estoque
+              <a href="#estoque" class="nav-link" data-section="estoque" data-role="gerente" data-breadcrumb="Gerenciamento · Estoque" data-tooltip="Estoque">
+                <span class="nav-icon">🏪</span><span class="nav-label"> Estoque</span>
               </a>
             </li>
           </ul>
@@ -737,18 +856,18 @@
         <nav>
           <ul>
             <li data-role="gerente">
-              <a href="#relatorios" class="nav-link" data-section="relatorios" data-role="gerente" data-breadcrumb="Relatórios · Visão Geral">
-                <span class="nav-icon">📋</span> Relatórios
+              <a href="#relatorios" class="nav-link" data-section="relatorios" data-role="gerente" data-breadcrumb="Relatórios · Visão Geral" data-tooltip="Relatórios">
+                <span class="nav-icon">📋</span><span class="nav-label"> Relatórios</span>
               </a>
             </li>
             <li>
-              <a href="#sincronizacao" class="nav-link" data-section="sincronizacao" data-breadcrumb="Administração · Sincronização">
-                <span class="nav-icon">🔄</span> Sincronização
+              <a href="#sincronizacao" class="nav-link" data-section="sincronizacao" data-breadcrumb="Administração · Sincronização" data-tooltip="Sincronização">
+                <span class="nav-icon">🔄</span><span class="nav-label"> Sincronização</span>
               </a>
             </li>
             <li data-role="gerente">
-              <a href="#backups" class="nav-link" data-section="backups" data-role="gerente" data-breadcrumb="Administração · Backups">
-                <span class="nav-icon">💾</span> Backups
+              <a href="#backups" class="nav-link" data-section="backups" data-role="gerente" data-breadcrumb="Administração · Backups" data-tooltip="Backups">
+                <span class="nav-icon">💾</span><span class="nav-label"> Backups</span>
               </a>
             </li>
           </ul>
@@ -1757,6 +1876,27 @@
     sidebarOverlay.addEventListener('click', () => {
       sidebar.classList.remove('open');
       sidebarOverlay.classList.remove('open');
+    });
+
+    // ---- SIDEBAR COLLAPSE (desktop) ----
+    const mainContent       = document.querySelector('.main-content');
+    const collapseBtn       = document.getElementById('sidebarCollapseBtn');
+
+    function applySidebarCollapse(collapsed) {
+      sidebar.classList.toggle('collapsed', collapsed);
+      mainContent.classList.toggle('sidebar-collapsed', collapsed);
+      collapseBtn.title       = collapsed ? 'Expandir menu' : 'Recolher menu';
+      collapseBtn.setAttribute('aria-label', collapsed ? 'Expandir menu' : 'Recolher menu');
+      collapseBtn.querySelector('span:first-child').textContent = collapsed ? '▶' : '◀';
+    }
+
+    // Restaura estado salvo
+    if (localStorage.getItem('sidebarCollapsed') === '1') applySidebarCollapse(true);
+
+    collapseBtn.addEventListener('click', () => {
+      const collapsed = !sidebar.classList.contains('collapsed');
+      applySidebarCollapse(collapsed);
+      localStorage.setItem('sidebarCollapsed', collapsed ? '1' : '0');
     });
 
     // ---- NAVEGAÇÃO POR SEÇÃO ----
