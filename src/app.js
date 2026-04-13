@@ -23,7 +23,13 @@ const syncService           = require("./services/syncService");
 // Middlewares
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "../public")));
-app.use('/imagens', express.static(path.join(__dirname, '../../Imagens')));
+
+// Pasta de imagens local — opcional, não existe em produção na nuvem
+const fs = require('fs');
+const imagensPath = path.join(__dirname, '../../Imagens');
+if (fs.existsSync(imagensPath)) {
+  app.use('/imagens', express.static(imagensPath));
+}
 
 // Registro de rotas
 app.use("/auth",              authRoutes);
