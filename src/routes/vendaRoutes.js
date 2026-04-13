@@ -1,10 +1,12 @@
 const express = require("express");
 const router = express.Router();
 const vendaController = require("../controllers/vendaController");
+const requireAuth = require("../middleware/requireAuth");
+const requireRole = require("../middleware/requireRole");
 
-router.get("/", vendaController.listar);
-router.get("/:id", vendaController.buscarPorId);
-router.post("/", vendaController.criar);
-router.delete("/:id", vendaController.deletar);
+router.get("/",    requireAuth, vendaController.listar);
+router.get("/:id", requireAuth, vendaController.buscarPorId);
+router.post("/",   requireAuth, vendaController.criar);
+router.delete("/:id", requireAuth, requireRole('gerente'), vendaController.deletar);
 
 module.exports = router;

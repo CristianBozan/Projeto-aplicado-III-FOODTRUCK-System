@@ -1,11 +1,13 @@
 const express = require("express");
 const router = express.Router();
 const mesaController = require("../controllers/mesaController");
+const requireAuth = require("../middleware/requireAuth");
+const requireRole = require("../middleware/requireRole");
 
-router.get("/", mesaController.listar);
-router.get("/:id", mesaController.buscarPorId);
-router.post("/", mesaController.criar);
-router.put("/:id", mesaController.atualizar);
-router.delete("/:id", mesaController.deletar);
+router.get("/",    requireAuth, mesaController.listar);
+router.get("/:id", requireAuth, mesaController.buscarPorId);
+router.post("/",   requireAuth, requireRole('gerente'), mesaController.criar);
+router.put("/:id", requireAuth, mesaController.atualizar);
+router.delete("/:id", requireAuth, requireRole('gerente'), mesaController.deletar);
 
 module.exports = router;

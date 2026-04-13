@@ -467,6 +467,7 @@
           localStorage.setItem('loggedIn', '1');
           localStorage.setItem('userRole', data.role);
           localStorage.setItem('userName', data.nome);
+          localStorage.setItem('authToken', data.token);
           window.location.href = 'index.html';
         } else {
           showError(data.message || 'Usuário ou senha inválidos.');
