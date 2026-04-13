@@ -96,6 +96,24 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
+  // ── Sidebar: recolher/expandir ──
+  const sidebarCollapseBtn = document.getElementById('sidebarCollapseBtn');
+  const sidebar = document.getElementById('sidebar');
+  if (sidebarCollapseBtn && sidebar) {
+    // Restaurar estado salvo
+    if (localStorage.getItem('sidebarCollapsed') === '1') {
+      sidebar.classList.add('collapsed');
+      sidebarCollapseBtn.title = 'Expandir menu';
+      sidebarCollapseBtn.setAttribute('aria-label', 'Expandir menu');
+    }
+    sidebarCollapseBtn.addEventListener('click', () => {
+      const isCollapsed = sidebar.classList.toggle('collapsed');
+      localStorage.setItem('sidebarCollapsed', isCollapsed ? '1' : '0');
+      sidebarCollapseBtn.title = isCollapsed ? 'Expandir menu' : 'Recolher menu';
+      sidebarCollapseBtn.setAttribute('aria-label', isCollapsed ? 'Expandir menu' : 'Recolher menu');
+    });
+  }
+
   // ── Botões de backup no header ──
   try {
     const syncBtn = document.getElementById('syncBackupBtn');
@@ -107,12 +125,14 @@ document.addEventListener("DOMContentLoaded", () => {
     const perfilForm = document.getElementById('perfilForm');
     if (perfilForm) perfilForm.addEventListener('submit', salvarPerfil);
 
-    // Logout: limpa todas as chaves de sessão
+    // Logout: limpa todas as chaves de sessão (incluindo token JWT)
     const logoutBtn = document.getElementById('logoutBtn');
     if (logoutBtn) logoutBtn.addEventListener('click', () => {
       localStorage.removeItem('loggedIn');
       localStorage.removeItem('userRole');
       localStorage.removeItem('userName');
+      localStorage.removeItem('authToken');
+      sessionStorage.removeItem('backupToken');
       window.location.href = 'login.html';
     });
 
@@ -670,7 +690,7 @@ function renderPedidosFromCache() {
       <td class="actions">
         <button class="action-btn action-edit" onclick="editPedido(${pedido.id_pedido})">✏️ Editar</button>
         <button class="action-btn action-success" onclick="openFinalizarModal(${pedido.id_pedido})">✅ Finalizar</button>
-        <button class="action-btn action-delete" onclick="deletePedido(${pedido.id_pedido})">🗑️ Excluir</button>
+        <button class="action-btn action-delete" onclick="cancelarPedido(${pedido.id_pedido})" ${pedido.status === 'cancelado' ? 'disabled title="Já cancelado"' : ''}>✖ Cancelar</button>
       </td>
     `;
     tbody.appendChild(tr);
@@ -716,36 +736,93 @@ function showAlert(message, type = "success") {
 // ========== PERFIL DO USUÁRIO ==========
 function openPerfilModal() {
   const nome = localStorage.getItem('userName') || '';
-  const nomeEl = document.getElementById('perfilNome');
-  const erroEl = document.getElementById('perfilError');
-  if (nomeEl) nomeEl.value = nome;
+  const login = localStorage.getItem('userLogin') || '';
+  const nomeEl  = document.getElementById('perfilNome');
+  const loginEl = document.getElementById('perfilLogin');
+  const senhaEl = document.getElementById('perfilSenha');
+  const confirmEl = document.getElementById('perfilSenhaConfirm');
+  const erroEl  = document.getElementById('perfilError');
+
+  if (nomeEl)  nomeEl.value  = nome;
+  if (loginEl) loginEl.value = login;
+  if (senhaEl)    senhaEl.value = '';
+  if (confirmEl)  confirmEl.value = '';
   if (erroEl) { erroEl.style.display = 'none'; erroEl.textContent = ''; }
+
   document.getElementById('perfilModal').classList.add('active');
   if (nomeEl) nomeEl.focus();
 }
 
-function salvarPerfil(e) {
+async function salvarPerfil(e) {
   e.preventDefault();
-  const nomeEl = document.getElementById('perfilNome');
-  const erroEl = document.getElementById('perfilError');
+  const nomeEl    = document.getElementById('perfilNome');
+  const loginEl   = document.getElementById('perfilLogin');
+  const senhaEl   = document.getElementById('perfilSenha');
+  const confirmEl = document.getElementById('perfilSenhaConfirm');
+  const erroEl    = document.getElementById('perfilError');
+  const saveBtn   = document.getElementById('perfilSaveBtn');
 
-  const nome = nomeEl ? nomeEl.value.trim() : '';
+  const nome  = nomeEl  ? nomeEl.value.trim()  : '';
+  const login = loginEl ? loginEl.value.trim() : '';
+  const senha = senhaEl ? senhaEl.value : '';
+  const confirm = confirmEl ? confirmEl.value : '';
 
-  if (!nome) {
-    erroEl.textContent = 'O nome não pode estar vazio.';
+  const mostrarErro = (msg) => {
+    erroEl.textContent = msg;
     erroEl.style.display = 'block';
-    return;
-  }
+  };
 
   erroEl.style.display = 'none';
 
+  if (!nome) return mostrarErro('O nome não pode estar vazio.');
+  if (senha && senha.length < 4) return mostrarErro('A nova senha deve ter ao menos 4 caracteres.');
+  if (senha && senha !== confirm) return mostrarErro('As senhas não coincidem.');
+
+  // Atualiza localStorage imediatamente (nome/login são locais)
   localStorage.setItem('userName', nome);
-  const headerName = document.getElementById('headerUserName');
+  if (login) localStorage.setItem('userLogin', login);
+
+  const headerName   = document.getElementById('headerUserName');
   const headerAvatar = document.getElementById('headerAvatar');
   if (headerName) headerName.textContent = nome;
   if (headerAvatar) {
-    const initials = nome.split(' ').slice(0,2).map(w => w[0] || '').join('').toUpperCase() || 'U';
+    const initials = nome.split(' ').slice(0, 2).map(w => w[0] || '').join('').toUpperCase() || 'U';
     headerAvatar.textContent = initials;
+  }
+
+  // Se há senha nova, tenta atualizar via API (apenas atendentes do banco)
+  if (senha) {
+    try {
+      saveBtn.disabled = true;
+      saveBtn.textContent = 'Salvando...';
+
+      const userLogin = login || localStorage.getItem('userLogin') || '';
+      // Busca atendente pelo login para obter id
+      const resp = await authFetch(`${API_URL}/atendentes`);
+      if (resp.ok) {
+        const atendentes = await resp.json();
+        const atendente = atendentes.find(a => a.login === userLogin);
+        if (atendente) {
+          const upd = await authFetch(`${API_URL}/atendentes/${atendente.id_atendente}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ senha })
+          });
+          if (!upd.ok) {
+            const err = await upd.json().catch(() => ({}));
+            mostrarErro(err.message || 'Erro ao atualizar senha.');
+            saveBtn.disabled = false;
+            saveBtn.textContent = '💾 Salvar';
+            return;
+          }
+        }
+      }
+    } catch (err) {
+      console.warn('Erro ao atualizar senha via API:', err.message);
+    } finally {
+      saveBtn.disabled = false;
+      saveBtn.textContent = '💾 Salvar';
+    }
   }
 
   closeModal('perfilModal');
@@ -757,12 +834,7 @@ function closeModal(modalId) {
   document.getElementById(modalId).classList.remove("active");
 }
 
-// Fecha modal ao clicar fora
-window.addEventListener("click", (e) => {
-  if (e.target.classList.contains("modal")) {
-    e.target.classList.remove("active");
-  }
-});
+// Modais NÃO fecham ao clicar fora — evita perda de dados (use botão Cancelar/Fechar)
 
 // Mostra modal simples listando itens criados após criação do pedido
 function showItensCriadosModal(itens, pedidoId = null) {
@@ -2582,12 +2654,35 @@ document.getElementById("pedidoForm").addEventListener("submit", async (e) => {
   }
 });
 
+async function cancelarPedido(id) {
+  if (!confirm("Cancelar este pedido? O registro será mantido com status 'cancelado'.")) return;
+
+  try {
+    const response = await authFetch(`${API_URL}/pedidos/${id}/status`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status: "cancelado" })
+    });
+
+    if (response.ok) {
+      showAlert("Pedido cancelado com sucesso!", "success");
+      loadPedidos();
+    } else {
+      const data = await response.json().catch(() => ({}));
+      showAlert(data.message || "Erro ao cancelar pedido", "error");
+    }
+  } catch (error) {
+    console.error("Erro:", error);
+    showAlert("Erro ao cancelar pedido", "error");
+  }
+}
+
 async function deletePedido(id) {
-  if (!confirm("Tem certeza que deseja excluir este pedido?")) return;
-  
+  if (!confirm("Tem certeza que deseja EXCLUIR permanentemente este pedido?")) return;
+
   try {
     const response = await authFetch(`${API_URL}/pedidos/${id}`, { method: "DELETE" });
-    
+
     if (response.ok) {
       showAlert("Pedido excluído com sucesso!", "success");
       loadPedidos();

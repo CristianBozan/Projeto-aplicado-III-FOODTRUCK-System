@@ -4,7 +4,7 @@ const backupController = require('../controllers/backupController');
 const requireAuth = require('../middleware/requireAuth');
 const requireRole = require('../middleware/requireRole');
 
-const gerenteOnly = [requireAuth, requireRole('gerente')];
+const gerenteOnly = [requireAuth, requireRole('gerente', 'admin')];
 
 router.post('/',           ...gerenteOnly, backupController.criar);
 router.get('/',            ...gerenteOnly, backupController.listar);

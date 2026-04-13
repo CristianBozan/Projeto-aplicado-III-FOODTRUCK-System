@@ -6,8 +6,8 @@ const requireRole = require("../middleware/requireRole");
 
 router.get("/",    requireAuth, produtoController.listar);
 router.get("/:id", requireAuth, produtoController.buscarPorId);
-router.post("/",   requireAuth, requireRole('gerente'), produtoController.criar);
-router.put("/:id", requireAuth, requireRole('gerente'), produtoController.atualizar);
-router.delete("/:id", requireAuth, requireRole('gerente'), produtoController.deletar);
+router.post("/",   requireAuth, requireRole('gerente', 'admin'), produtoController.criar);
+router.put("/:id", requireAuth, requireRole('gerente', 'admin'), produtoController.atualizar);
+router.delete("/:id", requireAuth, requireRole('gerente', 'admin'), produtoController.deletar);
 
 module.exports = router;

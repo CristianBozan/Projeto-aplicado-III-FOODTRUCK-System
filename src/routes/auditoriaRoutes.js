@@ -4,6 +4,6 @@ const auditoriaController = require('../controllers/auditoriaController');
 const requireAuth = require('../middleware/requireAuth');
 const requireRole = require('../middleware/requireRole');
 
-router.get('/', requireAuth, requireRole('gerente'), auditoriaController.listar);
+router.get('/', requireAuth, requireRole('gerente', 'admin'), auditoriaController.listar);
 
 module.exports = router;
