@@ -1,9 +1,12 @@
 const Atendente = require("../models/Atendente");
 
+// Campos retornados nas respostas (senha nunca exposta)
+const ATRIBUTOS_PUBLICOS = ['id_atendente', 'nome', 'cpf', 'telefone', 'login', 'tipo_usuario'];
+
 module.exports = {
   async listar(req, res) {
     try {
-      const atendentes = await Atendente.findAll();
+      const atendentes = await Atendente.findAll({ attributes: ATRIBUTOS_PUBLICOS });
       res.json(atendentes);
     } catch (err) {
       res.status(500).json({ error: err.message });
@@ -12,7 +15,7 @@ module.exports = {
 
   async buscarPorId(req, res) {
     try {
-      const atendente = await Atendente.findByPk(req.params.id);
+      const atendente = await Atendente.findByPk(req.params.id, { attributes: ATRIBUTOS_PUBLICOS });
       if (!atendente) return res.status(404).json({ message: "Atendente não encontrado" });
       res.json(atendente);
     } catch (err) {
@@ -23,7 +26,8 @@ module.exports = {
   async criar(req, res) {
     try {
       const novo = await Atendente.create(req.body);
-      res.status(201).json(novo);
+      const { senha: _s, ...semSenha } = novo.toJSON();
+      res.status(201).json(semSenha);
     } catch (err) {
       res.status(500).json({ error: err.message });
     }

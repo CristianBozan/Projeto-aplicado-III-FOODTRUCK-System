@@ -205,6 +205,58 @@ module.exports = {
     }
   },
 
+  async atualizarStatus(req, res) {
+    try {
+      const { id } = req.params;
+      const { status, forma_pagamento } = req.body;
+
+      const statusPermitidos = ['aberto', 'finalizado', 'cancelado', 'pago'];
+      if (!status || !statusPermitidos.includes(status)) {
+        return res.status(400).json({ message: `Status inválido. Use: ${statusPermitidos.join(', ')}` });
+      }
+
+      const pedido = await Pedido.findByPk(id);
+      if (!pedido) return res.status(404).json({ message: 'Pedido não encontrado' });
+
+      const result = await sequelize.transaction(async (t) => {
+        const payload = { status };
+        if (forma_pagamento) payload.forma_pagamento = forma_pagamento;
+
+        const updated = await pedido.update(payload, { transaction: t });
+        let vendaCriada = null;
+
+        // Libera mesa quando finalizado ou cancelado
+        if (status === 'finalizado' || status === 'cancelado') {
+          const mesaId = updated.id_mesa || pedido.id_mesa;
+          if (mesaId) {
+            await Mesa.update({ status: 'livre' }, { where: { id_mesa: mesaId }, transaction: t });
+          }
+        }
+
+        // Cria venda automaticamente ao finalizar com forma de pagamento
+        if (status === 'finalizado' && forma_pagamento) {
+          vendaCriada = await Venda.create({
+            id_pedido: updated.id_pedido,
+            forma_pagamento,
+            valor_total: updated.total
+          }, { transaction: t });
+
+          await updated.update({ status: 'pago' }, { transaction: t });
+
+          if (updated.id_mesa) {
+            await Mesa.update({ status: 'livre' }, { where: { id_mesa: updated.id_mesa }, transaction: t });
+          }
+        }
+
+        return { updated, vendaCriada };
+      });
+
+      res.json({ message: 'Status atualizado com sucesso', result });
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  },
+
   async deletar(req, res) {
     try {
       const { id } = req.params;

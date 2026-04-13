@@ -18,7 +18,7 @@ const relatorioRoutes       = require("./routes/relatorioRoutes");
 const backupRoutes          = require("./routes/backupRoutes");
 const auditoriaRoutes       = require("./routes/auditoriaRoutes");
 const sincronizacaoRoutes   = require("./routes/sincronizacaoRoutes");
-const backupController      = require("./controllers/backupController");
+const syncService           = require("./services/syncService");
 
 // Middlewares
 app.use(express.json());
@@ -49,13 +49,6 @@ sequelize.sync().then(() => {
     console.log(`Food Truck System v3.0 rodando em http://localhost:${PORT}`);
   });
 
-  // Backup automático diário às 05:00
-  cron.schedule("0 5 * * *", async () => {
-    try {
-      await backupController.createBackup(null);
-      console.log("Backup automático criado:", new Date().toISOString());
-    } catch (err) {
-      console.error("Erro no backup automático:", err.message);
-    }
-  }, { timezone: "America/Sao_Paulo" });
+  // Backup automático diário às 05:00 via syncService
+  cron.schedule("0 5 * * *", () => syncService.backupAutomatico(), { timezone: "America/Sao_Paulo" });
 });

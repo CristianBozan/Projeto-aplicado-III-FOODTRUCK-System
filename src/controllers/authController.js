@@ -14,6 +14,9 @@ module.exports = {
         return res.status(400).json({ success: false, message: 'Usuário e senha são obrigatórios.' });
       }
 
+      // Credenciais por papel — definidas via variáveis de ambiente
+      const ADMIN_LOGIN     = process.env.ADMIN_LOGIN     || 'superadmin';
+      const ADMIN_SENHA     = process.env.ADMIN_SENHA     || 'super123';
       const GERENTE_LOGIN   = process.env.GERENTE_LOGIN   || 'admin';
       const GERENTE_SENHA   = process.env.GERENTE_SENHA   || 'admin123';
       const ATENDENTE_LOGIN = process.env.ATENDENTE_LOGIN || 'funcionario';
@@ -22,12 +25,15 @@ module.exports = {
       let role = null;
       let nome = null;
 
-      if (username === GERENTE_LOGIN && password === GERENTE_SENHA) {
+      if (username === ADMIN_LOGIN && password === ADMIN_SENHA) {
+        role = 'admin';
+        nome = 'Super Admin';
+      } else if (username === GERENTE_LOGIN && password === GERENTE_SENHA) {
         role = 'gerente';
-        nome = 'Administrador';
+        nome = 'Gerente';
       } else if (username === ATENDENTE_LOGIN && password === ATENDENTE_SENHA) {
         role = 'atendente';
-        nome = 'Funcionário';
+        nome = 'Atendente';
       }
 
       if (!role) {
@@ -36,12 +42,13 @@ module.exports = {
 
       const token = jwt.sign({ username, role, nome }, JWT_SECRET, { expiresIn: JWT_EXPIRES });
 
+      const roleLabel = { admin: 'Super Admin', gerente: 'Gerente', atendente: 'Atendente' }[role];
       return res.json({
         success: true,
         token,
         role,
         nome,
-        message: `Autenticado como ${role === 'gerente' ? 'Gerente' : 'Atendente'}`
+        message: `Autenticado como ${roleLabel}`
       });
     } catch (err) {
       console.error('Erro em auth.login:', err);
