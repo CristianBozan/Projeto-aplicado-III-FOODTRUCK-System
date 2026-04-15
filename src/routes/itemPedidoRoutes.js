@@ -3,10 +3,12 @@ const router = express.Router();
 const itemPedidoController = require("../controllers/itempedidoController");
 const requireAuth = require("../middleware/requireAuth");
 
-router.get("/",    requireAuth, itemPedidoController.listar);h
-router.get("/:id", requireAuth, itemPedidoController.buscarPorId);
-router.post("/",   requireAuth, itemPedidoController.criar);
-router.put("/:id", requireAuth, itemPedidoController.atualizar);
-router.delete("/:id", requireAuth, itemPedidoController.deletar);
+router.use(requireAuth);
+
+router.get("/",    itemPedidoController.listar);
+router.get("/:id", itemPedidoController.buscarPorId);
+router.post("/",   itemPedidoController.criar);
+router.put("/:id", itemPedidoController.atualizar);
+router.delete("/:id", itemPedidoController.deletar);
 
 module.exports = router;
