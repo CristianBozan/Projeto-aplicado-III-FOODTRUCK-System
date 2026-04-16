@@ -21,7 +21,7 @@ const relatorioRoutes       = require("./routes/relatorioRoutes");
 const backupRoutes          = require("./routes/backupRoutes");
 const auditoriaRoutes       = require("./routes/auditoriaRoutes");
 const sincronizacaoRoutes   = require("./routes/sincronizacaoRoutes");
-const backupController      = require("./controllers/backupController");
+const syncService           = require("./services/syncService");
 
 // Segurança
 app.use(helmet({ contentSecurityPolicy: false })); // CSP desativado para servir HTML estático
@@ -36,7 +36,13 @@ app.use(limiterGeral);
 // Middlewares
 app.use(express.json({ limit: '10kb' }));
 app.use(express.static(path.join(__dirname, "../public")));
-app.use('/imagens', express.static(path.join(__dirname, '../../Imagens')));
+
+// Pasta de imagens local — opcional, não existe em produção na nuvem
+const fs = require('fs');
+const imagensPath = path.join(__dirname, '../../Imagens');
+if (fs.existsSync(imagensPath)) {
+  app.use('/imagens', express.static(imagensPath));
+}
 
 // Registro de rotas
 app.use("/auth",              authRoutes);
@@ -62,13 +68,6 @@ sequelize.sync().then(() => {
     console.log(`Food Truck System v3.0 rodando em http://localhost:${PORT}`);
   });
 
-  // Backup automático diário às 05:00
-  cron.schedule("0 5 * * *", async () => {
-    try {
-      await backupController.createBackup(null);
-      console.log("Backup automático criado:", new Date().toISOString());
-    } catch (err) {
-      console.error("Erro no backup automático:", err.message);
-    }
-  }, { timezone: "America/Sao_Paulo" });
+  // Backup automático diário às 05:00 via syncService
+  cron.schedule("0 5 * * *", () => syncService.backupAutomatico(), { timezone: "America/Sao_Paulo" });
 });

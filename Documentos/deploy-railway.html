@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Deploy — Food Truck System v3.1</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f5f5f5;
+      color: #222;
+      line-height: 1.7;
+    }
+
+    header {
+      background: linear-gradient(135deg, #C41E3A, #8B0000);
+      color: #fff;
+      padding: 2.5rem 2rem 2rem;
+      text-align: center;
+    }
+
+    header h1 { font-size: 2rem; margin-bottom: 0.3rem; }
+    header p  { font-size: 1rem; opacity: 0.85; }
+
+    .badge {
+      display: inline-block;
+      background: #FFD700;
+      color: #333;
+      font-size: 0.78rem;
+      font-weight: 700;
+      padding: 0.2rem 0.7rem;
+      border-radius: 20px;
+      margin-top: 0.6rem;
+    }
+
+    main {
+      max-width: 860px;
+      margin: 2rem auto;
+      padding: 0 1.2rem 3rem;
+    }
+
+    .intro {
+      background: #fff;
+      border-left: 5px solid #C41E3A;
+      padding: 1.2rem 1.5rem;
+      border-radius: 0 8px 8px 0;
+      margin-bottom: 2rem;
+      font-size: 0.97rem;
+    }
+
+    .intro strong { color: #C41E3A; }
+
+    /* Seções */
+    .section {
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+      margin-bottom: 1.8rem;
+      overflow: hidden;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+      background: #C41E3A;
+      color: #fff;
+      padding: 0.9rem 1.4rem;
+    }
+
+    .step-num {
+      background: #fff;
+      color: #C41E3A;
+      font-weight: 800;
+      font-size: 1rem;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .section-header h2 { font-size: 1.05rem; font-weight: 600; }
+
+    .section-body { padding: 1.3rem 1.5rem; }
+
+    p { margin-bottom: 0.8rem; }
+
+    ul, ol {
+      padding-left: 1.5rem;
+      margin-bottom: 0.8rem;
+    }
+
+    li { margin-bottom: 0.4rem; }
+
+    /* Caixas de código */
+    pre {
+      background: #1e1e1e;
+      color: #d4d4d4;
+      padding: 1rem 1.2rem;
+      border-radius: 6px;
+      font-size: 0.88rem;
+      overflow-x: auto;
+      margin: 0.8rem 0;
+      line-height: 1.6;
+    }
+
+    code {
+      background: #f0f0f0;
+      color: #C41E3A;
+      padding: 0.15rem 0.4rem;
+      border-radius: 4px;
+      font-size: 0.88rem;
+    }
+
+    pre code {
+      background: none;
+      color: inherit;
+      padding: 0;
+    }
+
+    /* Comentários no SQL / código */
+    .cm  { color: #6A9955; }
+    .kw  { color: #569cd6; }
+    .str { color: #ce9178; }
+    .var { color: #9cdcfe; }
+
+    /* Tabela de variáveis */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+      margin: 0.8rem 0;
+    }
+
+    th {
+      background: #f0f0f0;
+      text-align: left;
+      padding: 0.55rem 0.8rem;
+      border-bottom: 2px solid #ddd;
+    }
+
+    td {
+      padding: 0.5rem 0.8rem;
+      border-bottom: 1px solid #eee;
+      vertical-align: top;
+    }
+
+    td code { font-size: 0.82rem; }
+
+    tr:last-child td { border-bottom: none; }
+
+    /* Alertas */
+    .alert {
+      display: flex;
+      gap: 0.7rem;
+      align-items: flex-start;
+      padding: 0.9rem 1.1rem;
+      border-radius: 7px;
+      font-size: 0.9rem;
+      margin: 0.8rem 0;
+    }
+
+    .alert-info    { background: #E3F2FD; border-left: 4px solid #1976D2; }
+    .alert-warning { background: #FFF8E1; border-left: 4px solid #F9A825; }
+    .alert-success { background: #E8F5E9; border-left: 4px solid #388E3C; }
+
+    .alert-icon { font-size: 1.1rem; flex-shrink: 0; margin-top: 0.1rem; }
+
+    /* Checklist final */
+    .checklist { list-style: none; padding-left: 0; }
+
+    .checklist li {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      padding: 0.45rem 0;
+      border-bottom: 1px solid #f0f0f0;
+      font-size: 0.93rem;
+    }
+
+    .checklist li:last-child { border-bottom: none; }
+
+    .check-icon {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: #E8F5E9;
+      color: #388E3C;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+      flex-shrink: 0;
+      font-weight: 700;
+    }
+
+    footer {
+      text-align: center;
+      padding: 2rem 1rem;
+      font-size: 0.83rem;
+      color: #888;
+    }
+
+    footer strong { color: #C41E3A; }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>🚀 Guia de Deploy — Food Truck System</h1>
+  <p>Projeto Aplicado III · Equipe 10 · SENAI SC</p>
+  <span class="badge">v3.1 · Railway + MySQL</span>
+</header>
+
+<main>
+
+  <div class="intro">
+    Este documento descreve o passo a passo para colocar o <strong>Food Truck System v3.1</strong>
+    em produção utilizando o <strong>Railway</strong> como plataforma de hospedagem gratuita,
+    com backend Node.js e banco de dados MySQL na nuvem.
+  </div>
+
+  <!-- PASSO 1 -->
+  <div class="section">
+    <div class="section-header">
+      <div class="step-num">1</div>
+      <h2>Criar conta no Railway</h2>
+    </div>
+    <div class="section-body">
+      <p>Acesse <strong>railway.app</strong> e crie uma conta gratuita usando o GitHub.</p>
+      <ol>
+        <li>Acesse <code>https://railway.app</code></li>
+        <li>Clique em <strong>"Login"</strong> → <strong>"Login with GitHub"</strong></li>
+        <li>Autorize o acesso do Railway à sua conta GitHub</li>
+      </ol>
+      <div class="alert alert-info">
+        <span class="alert-icon">ℹ️</span>
+        <span>O plano gratuito do Railway oferece <strong>$5 de crédito/mês</strong>, suficiente para este projeto rodar continuamente.</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- PASSO 2 -->
+  <div class="section">
+    <div class="section-header">
+      <div class="step-num">2</div>
+      <h2>Criar o projeto e conectar o repositório</h2>
+    </div>
+    <div class="section-body">
+      <ol>
+        <li>No painel do Railway, clique em <strong>"New Project"</strong></li>
+        <li>Selecione <strong>"Deploy from GitHub repo"</strong></li>
+        <li>Escolha o repositório: <code>CristianBozan/Projeto-aplicado-III-FOODTRUCK-System</code></li>
+        <li>Clique em <strong>"Deploy Now"</strong></li>
+      </ol>
+      <p>O Railway detecta automaticamente o <code>package.json</code> e executa <code>npm start</code>.</p>
+      <div class="alert alert-warning">
+        <span class="alert-icon">⚠️</span>
+        <span>O deploy vai falhar neste momento pois o banco ainda não está configurado. Isso é esperado — continue para o passo 3.</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- PASSO 3 -->
+  <div class="section">
+    <div class="section-header">
+      <div class="step-num">3</div>
+      <h2>Adicionar banco de dados MySQL</h2>
+    </div>
+    <div class="section-body">
+      <ol>
+        <li>Dentro do projeto no Railway, clique em <strong>"+ New"</strong></li>
+        <li>Selecione <strong>"Database"</strong> → <strong>"MySQL"</strong></li>
+        <li>Aguarde o banco ser provisionado (cerca de 30 segundos)</li>
+        <li>Clique no serviço MySQL → aba <strong>"Connect"</strong></li>
+        <li>Anote os dados de conexão: <code>Host</code>, <code>Port</code>, <code>User</code>, <code>Password</code>, <code>Database</code></li>
+      </ol>
+      <div class="alert alert-success">
+        <span class="alert-icon">✅</span>
+        <span>O Railway injeta a variável <code>DATABASE_URL</code> automaticamente no serviço Node.js quando o banco é criado no mesmo projeto.</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- PASSO 4 -->
+  <div class="section">
+    <div class="section-header">
+      <div class="step-num">4</div>
+      <h2>Criar as tabelas no banco de dados</h2>
+    </div>
+    <div class="section-body">
+      <p>Utilize o arquivo <code>sql/schema.sql</code> do repositório para criar todas as tabelas.</p>
+
+      <p><strong>Opção A — Via terminal (recomendado):</strong></p>
+      <pre><code>mysql -h SEU_HOST -P SEU_PORT -u SEU_USER -p SEU_DATABASE &lt; sql/schema.sql</code></pre>
+
+      <p><strong>Opção B — Via Query Editor do Railway:</strong></p>
+      <ol>
+        <li>No painel do MySQL, clique na aba <strong>"Data"</strong></li>
+        <li>Clique em <strong>"Query"</strong></li>
+        <li>Cole o conteúdo do arquivo <code>sql/schema.sql</code> e execute</li>
+      </ol>
+
+      <p>Após executar, verifique se as tabelas foram criadas:</p>
+      <pre><code>SHOW TABLES;</code></pre>
+
+      <p>Resultado esperado:</p>
+      <pre><code>atendentes
+backups
+estoque_logs
+itens_pedido
+mesas
+pedidos
+produtos
+sincronizacoes
+vendas</code></pre>
+    </div>
+  </div>
+
+  <!-- PASSO 5 -->
+  <div class="section">
+    <div class="section-header">
+      <div class="step-num">5</div>
+      <h2>Configurar variáveis de ambiente</h2>
+    </div>
+    <div class="section-body">
+      <p>No painel do serviço Node.js no Railway, clique em <strong>"Variables"</strong> e adicione:</p>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Variável</th>
+            <th>Valor</th>
+            <th>Descrição</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>NODE_ENV</code></td>
+            <td><code>production</code></td>
+            <td>Ativa modo produção (SSL no banco)</td>
+          </tr>
+          <tr>
+            <td><code>JWT_SECRET</code></td>
+            <td><em>chave longa e aleatória</em></td>
+            <td>Segredo para assinar tokens JWT</td>
+          </tr>
+          <tr>
+            <td><code>JWT_EXPIRES</code></td>
+            <td><code>8h</code></td>
+            <td>Validade do token de sessão</td>
+          </tr>
+          <tr>
+            <td><code>ADMIN_LOGIN</code></td>
+            <td><code>superadmin</code></td>
+            <td>Login do Super Admin</td>
+          </tr>
+          <tr>
+            <td><code>ADMIN_SENHA</code></td>
+            <td><em>sua senha</em></td>
+            <td>Senha do Super Admin</td>
+          </tr>
+          <tr>
+            <td><code>GERENTE_LOGIN</code></td>
+            <td><code>admin</code></td>
+            <td>Login do Gerente</td>
+          </tr>
+          <tr>
+            <td><code>GERENTE_SENHA</code></td>
+            <td><em>sua senha</em></td>
+            <td>Senha do Gerente</td>
+          </tr>
+          <tr>
+            <td><code>ATENDENTE_LOGIN</code></td>
+            <td><code>funcionario</code></td>
+            <td>Login do Atendente</td>
+          </tr>
+          <tr>
+            <td><code>ATENDENTE_SENHA</code></td>
+            <td><em>sua senha</em></td>
+            <td>Senha do Atendente</td>
+          </tr>
+          <tr>
+            <td><code>BACKUP_TOKEN</code></td>
+            <td><em>token secreto</em></td>
+            <td>Token de proteção dos backups</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="alert alert-warning">
+        <span class="alert-icon">⚠️</span>
+        <span><strong>Não adicione</strong> <code>DATABASE_URL</code> manualmente. O Railway já injeta essa variável automaticamente quando o banco MySQL está no mesmo projeto.</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- PASSO 6 -->
+  <div class="section">
+    <div class="section-header">
+      <div class="step-num">6</div>
+      <h2>Redeploy e acesso ao sistema</h2>
+    </div>
+    <div class="section-body">
+      <ol>
+        <li>Após configurar as variáveis, clique em <strong>"Deploy"</strong> (ou o Railway faz automaticamente)</li>
+        <li>Aguarde o build finalizar (~2 minutos)</li>
+        <li>Na aba <strong>"Settings"</strong> do serviço, clique em <strong>"Generate Domain"</strong> para obter a URL pública</li>
+        <li>Acesse a URL gerada no navegador</li>
+      </ol>
+
+      <p><strong>Credenciais padrão para o primeiro acesso:</strong></p>
+      <table>
+        <thead>
+          <tr><th>Papel</th><th>Usuário</th><th>Senha padrão</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Super Admin</td><td><code>superadmin</code></td><td><em>definida no ADMIN_SENHA</em></td></tr>
+          <tr><td>Gerente</td><td><code>admin</code></td><td><em>definida no GERENTE_SENHA</em></td></tr>
+          <tr><td>Atendente</td><td><code>funcionario</code></td><td><em>definida no ATENDENTE_SENHA</em></td></tr>
+        </tbody>
+      </table>
+
+      <div class="alert alert-success">
+        <span class="alert-icon">✅</span>
+        <span>O sistema estará online e acessível pelo celular ou computador de qualquer lugar com internet.</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- PASSO 7 -->
+  <div class="section">
+    <div class="section-header">
+      <div class="step-num">7</div>
+      <h2>Verificar se está funcionando</h2>
+    </div>
+    <div class="section-body">
+      <p>Acesse o endpoint de health check para confirmar que o servidor está rodando:</p>
+      <pre><code>GET https://SUA-URL.railway.app/auth/ping</code></pre>
+      <p>Resposta esperada:</p>
+      <pre><code>{ "status": "ok", "ts": "2026-04-13T..." }</code></pre>
+
+      <p>Teste o login via terminal (opcional):</p>
+      <pre><code>curl -X POST https://SUA-URL.railway.app/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"username":"admin","password":"sua_senha"}'</code></pre>
+    </div>
+  </div>
+
+  <!-- Checklist final -->
+  <div class="section">
+    <div class="section-header">
+      <div class="step-num">✓</div>
+      <h2>Checklist final de deploy</h2>
+    </div>
+    <div class="section-body">
+      <ul class="checklist">
+        <li><span class="check-icon">✓</span> Conta no Railway criada com GitHub</li>
+        <li><span class="check-icon">✓</span> Repositório GitHub conectado ao projeto Railway</li>
+        <li><span class="check-icon">✓</span> Plugin MySQL adicionado ao projeto</li>
+        <li><span class="check-icon">✓</span> Schema criado via <code>sql/schema.sql</code></li>
+        <li><span class="check-icon">✓</span> 9 tabelas criadas no banco</li>
+        <li><span class="check-icon">✓</span> Variáveis de ambiente configuradas no serviço Node.js</li>
+        <li><span class="check-icon">✓</span> <code>NODE_ENV=production</code> definido</li>
+        <li><span class="check-icon">✓</span> Deploy concluído sem erros</li>
+        <li><span class="check-icon">✓</span> Domínio público gerado</li>
+        <li><span class="check-icon">✓</span> Health check <code>/auth/ping</code> retornando <code>ok</code></li>
+        <li><span class="check-icon">✓</span> Login funcionando com as credenciais configuradas</li>
+      </ul>
+    </div>
+  </div>
+
+</main>
+
+<footer>
+  <p>Food Truck System v3.1 · <strong>Equipe 10</strong> · Projeto Aplicado III · SENAI SC</p>
+  <p style="margin-top:0.3rem;">Cristian Diego Bozan · Michel Ângelo da Silva Tuma · Rafael Claumann Bernardes · Guilherme Claumann</p>
+</footer>
+
+</body>
+</html>
