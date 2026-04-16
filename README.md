@@ -40,7 +40,6 @@ O **Food Truck System v3.1** é uma solução web cliente/servidor voltada para 
 **Problema resolvido:** registro manual de pedidos causava lentidão, erros de anotação, inconsistências nos valores e falta de controle de estoque e relatórios gerenciais.
 
 **Níveis de acesso:**
-- **Super Admin** — acesso irrestrito a todas as funcionalidades e configurações do sistema.
 - **Gerente (Proprietário)** — acesso gerencial completo: produtos, atendentes, relatórios, backups e operações.
 - **Atendente** — acesso operacional: pedidos, mesas e consultas de produtos.
 
@@ -51,7 +50,7 @@ O **Food Truck System v3.1** é uma solução web cliente/servidor voltada para 
 - Acompanhamento de **estoque** com auditoria de alterações.
 - Emissão de **relatórios** gerenciais com filtro de período (hoje, semana, mês, personalizado).
 - **Backups** automáticos diários e manuais com exportação em JSON e Excel.
-- **Autenticação JWT** com controle de acesso por papel (admin, gerente, atendente).
+- **Autenticação JWT** com controle de acesso por papel (gerente, atendente).
 - **Sincronização** de dados entre dispositivos dos atendentes e o computador administrador.
 - **Sidebar recolhível** com estado persistido por usuário.
 - **Perfil do usuário** editável: nome, login e senha diretamente no cabeçalho.
@@ -101,7 +100,7 @@ A aplicação utiliza uma API REST em Node.js (Express + Sequelize) e um fronten
 | RF06 | Inclusão de Produto | Cadastro, edição e atualização de produtos com foto, descrição, observações e preço. |
 | RF07 | Cadastro de Atendentes | Registro de atendentes com nome, CPF e telefone. |
 | RF08 | Sincronização de Dados | Atualização de dados entre dispositivos dos atendentes e o administrador. |
-| RF09 | Autenticação de Usuários | Login com JWT para três níveis de acesso: admin, gerente e atendente. |
+| RF09 | Autenticação de Usuários | Login com JWT para dois níveis de acesso: gerente e atendente. |
 | RF10 | Cancelamento de Pedidos | Pedidos cancelados mantêm o histórico com status "cancelado" (sem exclusão). |
 | RF11 | Edição de Perfil | Usuário pode alterar nome, login e senha diretamente no cabeçalho. |
 
@@ -113,10 +112,9 @@ A aplicação utiliza uma API REST em Node.js (Express + Sequelize) e um fronten
 
 - Login com usuário e senha via tela dedicada (`login.html`).
 - Token JWT gerado no login e armazenado no `localStorage`, enviado automaticamente em todas as requisições via header `Authorization: Bearer <token>`.
-- Três níveis de acesso configuráveis via `.env`:
-  - **Super Admin** (`superadmin` / `super123`) — acesso irrestrito.
-  - **Gerente** (`admin` / `admin123`) — acesso gerencial completo.
-  - **Atendente** (`funcionario` / `func123`) — acesso operacional.
+- Dois níveis de acesso:
+  - **Gerente** — credenciais configuradas via variáveis de ambiente `GERENTE_LOGIN` e `GERENTE_SENHA` (padrão: `admin` / `foodtruck2026`).
+  - **Atendente** — usuários criados pelo gerente via interface, com senhas armazenadas com hash bcryptjs no banco de dados.
 - Logout limpa completamente o `localStorage` e `sessionStorage`, invalidando a sessão.
 - Senhas dos atendentes armazenadas com **hash bcryptjs** (salt 10) — nunca salvas em texto plano.
 - Campo `senha` nunca retornado nas respostas da API.
@@ -205,7 +203,7 @@ A aplicação utiliza uma API REST em Node.js (Express + Sequelize) e um fronten
 | Middleware | Função |
 |---|---|
 | `requireAuth.js` | Valida token JWT no header `Authorization: Bearer <token>`. Retorna 401 se ausente ou inválido. |
-| `requireRole.js` | Restringe acesso por papel (`admin`, `gerente`, `atendente`). Retorna 403 se não autorizado. |
+| `requireRole.js` | Restringe acesso por papel (`gerente`, `atendente`). Retorna 403 se não autorizado. |
 | `requireBackupAuth.js` | Proteção adicional de backups via token estático (`BACKUP_TOKEN`). |
 
 ### 5.4 Services
@@ -219,16 +217,16 @@ A aplicação utiliza uma API REST em Node.js (Express + Sequelize) e um fronten
 | Rota montada | Arquivo de rota | Acesso mínimo |
 |---|---|---|
 | `/auth` | `authRoutes.js` | Público |
-| `/admin` | `adminRoutes.js` | gerente / admin |
-| `/atendentes` | `atendenteRoutes.js` | GET: autenticado · POST/PUT/DELETE: gerente/admin |
-| `/produtos` | `produtoRoutes.js` | GET: autenticado · POST/PUT/DELETE: gerente/admin |
-| `/mesas` | `mesaRoutes.js` | GET/PUT: autenticado · POST/DELETE: gerente/admin |
+| `/admin` | `adminRoutes.js` | gerente |
+| `/atendentes` | `atendenteRoutes.js` | GET: autenticado · POST/DELETE: gerente |
+| `/produtos` | `produtoRoutes.js` | GET: autenticado · POST/PUT/DELETE: gerente |
+| `/mesas` | `mesaRoutes.js` | GET/PUT: autenticado · POST/DELETE: gerente |
 | `/pedidos` | `pedidoRoutes.js` | Autenticado |
 | `/itens-pedido` | `itemPedidoRoutes.js` | Autenticado |
-| `/vendas` | `vendaRoutes.js` | GET/POST: autenticado · DELETE: gerente/admin |
-| `/relatorios` | `relatorioRoutes.js` | gerente / admin |
-| `/backups` | `backupRoutes.js` | gerente / admin |
-| `/auditoria/estoque` | `auditoriaRoutes.js` | gerente / admin |
+| `/vendas` | `vendaRoutes.js` | GET/POST: autenticado · DELETE: gerente |
+| `/relatorios` | `relatorioRoutes.js` | gerente |
+| `/backups` | `backupRoutes.js` | gerente |
+| `/auditoria/estoque` | `auditoriaRoutes.js` | gerente |
 | `/sincronizacoes` | `sincronizacaoRoutes.js` | Autenticado |
 
 ### 5.6 Frontend
@@ -250,6 +248,7 @@ projeto-aplicado-3/
 ├── .env.example                # Modelo de variáveis de ambiente
 ├── sql/                        # Scripts SQL auxiliares
 ├── scripts/                    # Scripts Node.js de apoio e testes
+│   └── seed-produtos.js        # Popula banco com cardápio e mesas
 ├── public/                     # Frontend estático
 │   ├── index.html              # SPA principal (todas as seções)
 │   ├── login.html              # Tela de login
@@ -312,6 +311,7 @@ projeto-aplicado-3/
 | Método | Rota | Descrição |
 |---|---|---|
 | POST | `/auth/login` | Autentica usuário e retorna token JWT |
+| GET | `/auth/ping` | Health check da API |
 
 ### Produtos
 
@@ -319,9 +319,9 @@ projeto-aplicado-3/
 |---|---|---|
 | GET | `/produtos` | Autenticado |
 | GET | `/produtos/:id` | Autenticado |
-| POST | `/produtos` | gerente / admin |
-| PUT | `/produtos/:id` | gerente / admin |
-| DELETE | `/produtos/:id` | gerente / admin |
+| POST | `/produtos` | gerente |
+| PUT | `/produtos/:id` | gerente |
+| DELETE | `/produtos/:id` | gerente |
 
 ### Pedidos
 
@@ -332,110 +332,135 @@ projeto-aplicado-3/
 | POST | `/pedidos` | Autenticado |
 | PUT | `/pedidos/:id` | Autenticado |
 | PATCH | `/pedidos/:id/status` | Autenticado |
-| DELETE | `/pedidos/:id` | Autenticado |
+| DELETE | `/pedidos/:id` | gerente |
+
+### Itens de Pedido
+
+| Método | Rota | Acesso |
+|---|---|---|
+| GET | `/itens-pedido` | Autenticado |
+| POST | `/itens-pedido` | Autenticado |
+| PUT | `/itens-pedido/:id` | Autenticado |
+| DELETE | `/itens-pedido/:id` | Autenticado |
+
+### Mesas
+
+| Método | Rota | Acesso |
+|---|---|---|
+| GET | `/mesas` | Autenticado |
+| POST | `/mesas` | gerente |
+| PUT | `/mesas/:id` | Autenticado |
+| DELETE | `/mesas/:id` | gerente |
 
 ### Atendentes
 
 | Método | Rota | Acesso |
 |---|---|---|
 | GET | `/atendentes` | Autenticado |
-| GET | `/atendentes/:id` | Autenticado |
-| POST | `/atendentes` | gerente / admin |
-| PUT | `/atendentes/:id` | gerente / admin |
-| DELETE | `/atendentes/:id` | gerente / admin |
+| POST | `/atendentes` | gerente |
+| PUT | `/atendentes/:id` | gerente / próprio atendente |
+| DELETE | `/atendentes/:id` | gerente |
 
-> Demais rotas seguem o mesmo padrão. Consulte `src/routes/` para a lista completa.
+### Vendas / Relatórios / Backups
+
+| Método | Rota | Acesso |
+|---|---|---|
+| GET | `/vendas` | Autenticado |
+| GET | `/relatorios` | gerente |
+| GET/POST | `/backups` | gerente |
+| GET | `/auditoria/estoque` | gerente |
+| GET | `/sincronizacoes` | Autenticado |
 
 ---
 
 ## 8. Como Executar o Projeto
 
-### 8.1 Pré-requisitos
+### 8.1 Execução Local
 
-- Node.js v20 ou superior
-- npm
-- MySQL instalado e em execução
+**Pré-requisitos:** Node.js v20+, MySQL 8.0+
 
-### 8.2 Configuração das Variáveis de Ambiente
+```bash
+# 1. Clone o repositório
+git clone https://github.com/CristianBozan/Projeto-aplicado-III-FOODTRUCK-System.git
+cd Projeto-aplicado-III-FOODTRUCK-System
 
-Copie `.env.example` para `.env` e preencha com suas configurações:
+# 2. Instale as dependências
+npm install
+
+# 3. Configure as variáveis de ambiente
+cp .env.example .env
+# Edite o .env com suas credenciais do MySQL
+
+# 4. Inicie o servidor
+npm start
+# Ou em modo desenvolvimento (auto-reload):
+npm run dev
+
+# 5. Acesse em: http://localhost:3000
+```
+
+### 8.2 Variáveis de Ambiente (`.env`)
 
 ```env
-# Banco de Dados
-DB_NAME=sistema_pedidos
-DB_USER=root
-DB_PASS=sua_senha
+# Banco de dados
 DB_HOST=localhost
 DB_PORT=3306
-DB_DIALECT=mysql
+DB_NAME=foodtruck_db
+DB_USER=root
+DB_PASS=sua_senha
 
-# Servidor
-PORT=3000
-
-# JWT
-JWT_SECRET=troque_esta_chave_em_producao
-JWT_EXPIRES=8h
-
-# Credenciais — Super Admin (acesso irrestrito)
-ADMIN_LOGIN=superadmin
-ADMIN_SENHA=super123
-
-# Credenciais — Gerente (acesso gerencial)
+# Autenticação JWT
+JWT_SECRET=sua_chave_secreta_jwt
 GERENTE_LOGIN=admin
-GERENTE_SENHA=admin123
+GERENTE_SENHA=foodtruck2026
 
-# Credenciais — Atendente (acesso operacional)
-ATENDENTE_LOGIN=funcionario
-ATENDENTE_SENHA=func123
-
-# Token de proteção de backups (opcional)
-BACKUP_TOKEN=foodtruck_backup_2026
+# Backup
+BACKUP_TOKEN=seu_token_backup
 ```
 
-### 8.3 Instalação de Dependências
+### 8.3 Deploy em Produção (Railway)
+
+O projeto está hospedado no Railway com deploy automático a cada push na branch `main`.
+
+- **URL pública:** https://projeto-aplicado-iii-foodtruck-system-production.up.railway.app
+- **Banco:** MySQL fornecido pelo plugin Railway (variáveis `${{MySQL.*}}` injetadas automaticamente)
+- **Deploy:** automático via GitHub — basta fazer `git push origin main`
+
+### 8.4 Popular o Banco com Dados de Teste
+
+Após o deploy ou localmente, execute o script de seed para criar o cardápio e as mesas:
 
 ```bash
-npm install
+# Para a Railway (produção):
+node scripts/seed-produtos.js
+
+# Para ambiente local:
+BASE_URL=http://localhost:3000 node scripts/seed-produtos.js
 ```
 
-### 8.4 Execução
-
-**Desenvolvimento** (com recarregamento automático):
-```bash
-npm run dev
-```
-
-**Produção**:
-```bash
-npm start
-```
-
-O servidor iniciará na porta `3000`. Acesse: `http://localhost:3000`
-
-### 8.5 Credenciais Padrão
-
-| Papel | Usuário | Senha | Acesso |
-|---|---|---|---|
-| Super Admin | `superadmin` | `super123` | Irrestrito |
-| Gerente | `admin` | `admin123` | Gerencial completo |
-| Atendente | `funcionario` | `func123` | Operacional |
-
-> **Importante:** Troque todas as credenciais e o `JWT_SECRET` antes de colocar em produção.
+O script cria automaticamente:
+- 24 produtos organizados por categoria (Lanche, Bebida, Sobremesa, Porção)
+- 10 mesas numeradas de 1 a 10
 
 ---
 
 ## 9. Considerações Finais
 
-O projeto demonstra:
+O **Food Truck System v3.1** representa a entrega do MVP do Projeto Aplicado III — Sprint 4. O sistema digitalizou completamente o processo de atendimento do food truck do Sr. Elpídio, substituindo o papel por uma interface web rápida e intuitiva.
 
-- Arquitetura em camadas (models, controllers, routes, middleware, services).
-- Autenticação stateless com **JWT** e três níveis de acesso por papel.
-- Segurança: senhas hasheadas com **bcryptjs**, campo `senha` nunca exposto nas respostas da API.
-- ORM (Sequelize) com MySQL — hooks de modelo para hash automático de senhas.
-- Configuração via `.env` com valores padrão para desenvolvimento.
-- Separação clara entre **backend** (API REST) e **frontend** (páginas estáticas).
-- Serviço desacoplado (`syncService`) para backup e sincronização.
-- Funções avançadas para cenário real: backups automáticos, exportação Excel, auditoria de estoque.
-- Interface responsiva (desktop, tablet e mobile) com sidebar recolhível e modais protegidos contra fechamento acidental.
+**Destaques da v3.1:**
+- Sidebar recolhível no desktop com estado persistido no `localStorage`
+- Tela de login limpa, sem dicas de credenciais
+- Script de seed para popular o banco com cardápio realista
+- Deploy contínuo via Railway com MySQL integrado
+- Estrutura de rotas robusta com controle de acesso granular por papel
 
-Este README foi estruturado para facilitar a explicação da arquitetura, das decisões técnicas e do fluxo principal de uso do sistema em ambiente acadêmico e profissional.
+**Próximos passos (backlog):**
+- Impressão de comanda diretamente do sistema
+- Dashboard com gráficos em tempo real
+- Notificação sonora para novos pedidos
+- PWA para uso offline pelos atendentes
+
+---
+
+*Projeto Aplicado III — Equipe 10 | Centro Universitário SENAI Santa Catarina | 2026*
