@@ -188,6 +188,68 @@
       z-index: 999;
     }
 
+    /* ---- BOTÃO COLLAPSE DESKTOP ---- */
+    .sidebar-collapse-btn {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      padding: 0.6rem 0.8rem 0.3rem;
+    }
+    .sidebar-collapse-btn button {
+      background: none;
+      border: 1px solid #E8E8E8;
+      border-radius: 6px;
+      cursor: pointer;
+      color: #AAAAAA;
+      font-size: 1rem;
+      width: 28px;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.15s, color 0.15s;
+    }
+    .sidebar-collapse-btn button:hover {
+      background: rgba(196,30,58,0.07);
+      color: #C41E3A;
+      border-color: rgba(196,30,58,0.3);
+    }
+    .sidebar.collapsed {
+      width: 60px;
+      min-width: 60px;
+      overflow-x: hidden;
+    }
+    .sidebar.collapsed .sidebar-group-label,
+    .sidebar.collapsed .sidebar-logout a span:last-child,
+    .sidebar.collapsed .nav-link span:not(.nav-icon),
+    .sidebar.collapsed .nav-badge {
+      display: none !important;
+    }
+    .sidebar.collapsed .sidebar-group { padding: 0.6rem 0 !important; }
+    .sidebar.collapsed nav a {
+      justify-content: center !important;
+      padding: 0.65rem !important;
+      gap: 0 !important;
+      border-radius: 6px !important;
+      margin: 0 6px !important;
+    }
+    .sidebar.collapsed .nav-icon {
+      width: auto !important;
+      font-size: 1.25rem !important;
+      opacity: 1 !important;
+    }
+    .sidebar.collapsed .sidebar-divider { margin: 0.2rem 0.6rem; }
+    .sidebar.collapsed .sidebar-logout a {
+      justify-content: center !important;
+      padding: 0.65rem !important;
+      gap: 0 !important;
+    }
+    .sidebar.collapsed .sidebar-collapse-btn { justify-content: center; padding: 0.6rem 0 0.3rem; }
+    .main-content.sidebar-collapsed { margin-left: 60px; }
+    @media (max-width: 768px) {
+      .sidebar-collapse-btn { display: none; }
+    }
+
     /* ============================================================
        HEADER — BREADCRUMB + USER INFO
     ============================================================ */
@@ -670,6 +732,11 @@
 
     <!-- ===== SIDEBAR ===== -->
     <aside class="sidebar" id="sidebar">
+
+      <!-- Botão de colapso (desktop) -->
+      <div class="sidebar-collapse-btn">
+        <button id="sidebarCollapseBtn" title="Recolher/expandir menu" aria-label="Recolher menu">&#9664;</button>
+      </div>
 
       <!-- Grupo: Menu Principal (todos os perfis) -->
       <div class="sidebar-group">
@@ -1741,11 +1808,45 @@
     const sidebarOverlay = document.getElementById('sidebarOverlay');
     const sidebarToggle  = document.getElementById('sidebarToggle');
 
+    const collapseBtn    = document.getElementById('sidebarCollapseBtn');
+
+    // Mobile: abrir/fechar com ícone dinâmico
     sidebarToggle.addEventListener('click', () => {
-      sidebar.classList.toggle('open');
-      sidebarOverlay.classList.toggle('open');
+      const isOpen = sidebar.classList.toggle('open');
+      sidebarOverlay.classList.toggle('open', isOpen);
+      sidebarToggle.textContent = isOpen ? '\u2715' : '\u2630';
     });
     sidebarOverlay.addEventListener('click', () => {
+      sidebar.classList.remove('open');
+      sidebarOverlay.classList.remove('open');
+      sidebarToggle.textContent = '\u2630';
+    });
+
+    // Desktop: colapsar/expandir sidebar
+    const SIDEBAR_COLLAPSED_KEY = 'ft_sidebar_collapsed';
+    function applySidebarCollapsed(collapsed) {
+      if (collapsed) {
+        sidebar.classList.add('collapsed');
+        mainContent.classList.add('sidebar-collapsed');
+        if (collapseBtn) collapseBtn.textContent = '\u25b6';
+        if (collapseBtn) collapseBtn.title = 'Expandir menu';
+      } else {
+        sidebar.classList.remove('collapsed');
+        mainContent.classList.remove('sidebar-collapsed');
+        if (collapseBtn) collapseBtn.textContent = '\u25c4';
+        if (collapseBtn) collapseBtn.title = 'Recolher menu';
+      }
+    }
+    const savedCollapsed = localStorage.getItem(SIDEBAR_COLLAPSED_KEY) === 'true';
+    applySidebarCollapsed(savedCollapsed);
+
+    if (collapseBtn) {
+      collapseBtn.addEventListener('click', () => {
+        const newState = !sidebar.classList.contains('collapsed');
+        applySidebarCollapsed(newState);
+        localStorage.setItem(SIDEBAR_COLLAPSED_KEY, String(newState));
+      });
+    }    sidebarOverlay.addEventListener('click', () => {
       sidebar.classList.remove('open');
       sidebarOverlay.classList.remove('open');
     });
@@ -1804,4 +1905,4 @@
     }
   </script>
 </body>
-</html>
+                </html>
