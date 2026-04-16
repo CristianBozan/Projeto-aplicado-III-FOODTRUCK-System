@@ -1249,6 +1249,116 @@ async function openFinalizarModal(pedidoId) {
   try { select.focus(); } catch (e) {}
 }
 
+// ========== PERFIL DO USUÁRIO ==========
+function openPerfilModal() {
+  const role   = localStorage.getItem('userRole') || 'atendente';
+  const userId = localStorage.getItem('userId');
+
+  // Gerente (userId null) não tem registro no banco — exibe aviso
+  if (!userId || userId === 'null' || userId === '') {
+    showAlert('O perfil do gerente é configurado via variáveis de ambiente no servidor.', 'info');
+    return;
+  }
+
+  // Preenche campos com dados atuais do localStorage
+  const nomeEl   = document.getElementById('perfilNome');
+  const loginEl  = document.getElementById('perfilLogin');
+  const senhaEl  = document.getElementById('perfilSenha');
+  const confEl   = document.getElementById('perfilSenhaConfirm');
+  const errEl    = document.getElementById('perfilError');
+
+  if (nomeEl)  nomeEl.value  = localStorage.getItem('userName') || '';
+  if (loginEl) loginEl.value = localStorage.getItem('userLogin') || '';
+  if (senhaEl) senhaEl.value = '';
+  if (confEl)  confEl.value  = '';
+  if (errEl)   errEl.style.display = 'none';
+
+  // Busca login atual do banco para preencher campo login
+  apiFetch(`${API_URL}/atendentes/${userId}`)
+    .then(r => r.ok ? r.json() : null)
+    .then(data => {
+      if (data && loginEl) loginEl.value = data.login || '';
+    })
+    .catch(() => {});
+
+  document.getElementById('perfilModal').classList.add('active');
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  const perfilForm = document.getElementById('perfilForm');
+  if (!perfilForm) return;
+
+  perfilForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const userId  = localStorage.getItem('userId');
+    const nome    = document.getElementById('perfilNome').value.trim();
+    const login   = document.getElementById('perfilLogin').value.trim();
+    const senha   = document.getElementById('perfilSenha').value;
+    const confirm = document.getElementById('perfilSenhaConfirm').value;
+    const errEl   = document.getElementById('perfilError');
+    const saveBtn = document.getElementById('perfilSaveBtn');
+
+    const showErr = (msg) => { errEl.textContent = msg; errEl.style.display = 'block'; };
+    errEl.style.display = 'none';
+
+    if (!nome)  return showErr('O nome não pode ficar em branco.');
+    if (!login) return showErr('O login não pode ficar em branco.');
+    if (senha && senha !== confirm) return showErr('As senhas não coincidem.');
+    if (senha && senha.length < 6) return showErr('A senha deve ter pelo menos 6 caracteres.');
+
+    const payload = { nome, login };
+    if (senha) payload.senha = senha;
+
+    saveBtn.disabled = true;
+    saveBtn.textContent = 'Salvando...';
+
+    try {
+      const resp = await apiFetch(`${API_URL}/atendentes/${userId}`, {
+        method: 'PUT',
+        body: JSON.stringify(payload)
+      });
+
+      if (!resp.ok) {
+        const data = await resp.json().catch(() => ({}));
+        showErr(data.error || data.message || 'Erro ao salvar perfil.');
+        return;
+      }
+
+      // Atualiza localStorage com novo nome
+      localStorage.setItem('userName', nome);
+      localStorage.setItem('userLogin', login);
+
+      // Atualiza header visualmente
+      const headerName = document.getElementById('headerUserName');
+      const headerAvatar = document.getElementById('headerAvatar');
+      if (headerName) headerName.textContent = nome;
+      if (headerAvatar) {
+        const initials = nome.split(' ').slice(0,2).map(w => w[0] || '').join('').toUpperCase() || 'U';
+        headerAvatar.textContent = initials;
+      }
+
+      showAlert('Perfil atualizado com sucesso!', 'success');
+      closeModal('perfilModal');
+
+      // Se senha foi alterada, força novo login por segurança
+      if (senha) {
+        showAlert('Senha alterada! Faça login novamente.', 'info');
+        setTimeout(() => {
+          localStorage.removeItem('loggedIn');
+          localStorage.removeItem('authToken');
+          window.location.href = 'login.html';
+        }, 2000);
+      }
+    } catch (err) {
+      showErr('Erro de conexão com o servidor.');
+    } finally {
+      saveBtn.disabled = false;
+      saveBtn.textContent = '💾 Salvar alterações';
+    }
+  });
+});
+
 // utilitário minúsculo para escapar HTML
 function escapeHtml(str) {
   if (!str) return '';

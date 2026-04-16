@@ -225,6 +225,18 @@
       font-size: 0.85rem;
       flex-shrink: 0;
     }
+    .header-user-clickable {
+      cursor: pointer;
+      border-radius: 8px;
+      padding: 4px 6px;
+      transition: background 0.15s;
+    }
+    .header-user-clickable:hover { background: rgba(255,255,255,0.12); }
+    .header-user-clickable:hover .header-user-name::after {
+      content: ' ✏️';
+      font-size: 0.7rem;
+      opacity: 0.8;
+    }
 
     /* ============================================================
        SEÇÃO ADMIN — CARDS DE USUÁRIOS
@@ -639,7 +651,7 @@
       </div>
       <span class="header-breadcrumb" id="headerBreadcrumb"></span>
       <div class="header-right">
-        <div class="header-user">
+        <div class="header-user header-user-clickable" id="headerUserBtn" title="Clique para editar seu perfil" onclick="openPerfilModal()">
           <div style="text-align:right">
             <div class="header-user-name" id="headerUserName">Usuário</div>
             <div class="header-user-role" id="headerUserRole">—</div>
@@ -1636,6 +1648,41 @@
         <div class="btn-group">
           <button type="submit" class="btn btn-primary">✅ Finalizar</button>
           <button type="button" class="btn btn-secondary" onclick="closeModal('finalizarModal')">❌ Cancelar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal Perfil do Usuário -->
+  <div id="perfilModal" class="modal">
+    <div class="modal-content" style="max-width:420px;">
+      <div class="modal-header">
+        <h3>👤 Meu Perfil</h3>
+        <button class="close-modal" onclick="closeModal('perfilModal')">&times;</button>
+      </div>
+      <form id="perfilForm" autocomplete="off">
+        <div class="form-group">
+          <label>Nome</label>
+          <input type="text" id="perfilNome" placeholder="Seu nome completo" required>
+        </div>
+        <div class="form-group">
+          <label>Login</label>
+          <input type="text" id="perfilLogin" placeholder="Seu login de acesso" required>
+        </div>
+        <hr style="border:none;border-top:1px solid #eee;margin:1rem 0;">
+        <p style="font-size:0.82rem;color:#888;margin-bottom:0.8rem;">Deixe em branco para <strong>não alterar</strong> a senha.</p>
+        <div class="form-group">
+          <label>Nova senha</label>
+          <input type="password" id="perfilSenha" placeholder="••••••••" autocomplete="new-password">
+        </div>
+        <div class="form-group">
+          <label>Confirmar nova senha</label>
+          <input type="password" id="perfilSenhaConfirm" placeholder="••••••••" autocomplete="new-password">
+        </div>
+        <div id="perfilError" style="display:none;background:#FFEBEE;border:1px solid #EF9A9A;color:#C62828;padding:8px 12px;border-radius:6px;font-size:0.85rem;margin-bottom:0.8rem;"></div>
+        <div class="btn-group">
+          <button type="submit" class="btn btn-primary" id="perfilSaveBtn">💾 Salvar alterações</button>
+          <button type="button" class="btn btn-secondary" onclick="closeModal('perfilModal')">Cancelar</button>
         </div>
       </form>
     </div>
