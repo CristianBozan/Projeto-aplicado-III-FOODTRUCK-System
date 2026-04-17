@@ -4,6 +4,7 @@ const API_URL = window.location.protocol === 'file:'
   : window.location.origin;
 
 // Helper de fetch autenticado — injeta Authorization: Bearer <token> automaticamente
+// e redireciona para login.html em caso de 401 (token expirado ou inválido)
 function apiFetch(url, options = {}) {
   const token = localStorage.getItem('authToken');
   const headers = Object.assign({}, options.headers || {});
@@ -11,7 +12,13 @@ function apiFetch(url, options = {}) {
   if (options.body && typeof options.body === 'string' && !headers['Content-Type']) {
     headers['Content-Type'] = 'application/json';
   }
-  return fetch(url, Object.assign({}, options, { headers }));
+  return fetch(url, Object.assign({}, options, { headers })).then(res => {
+    if (res.status === 401) {
+      ['loggedIn','authToken','userRole','userName','userId','carrinho_atendente'].forEach(k => localStorage.removeItem(k));
+      window.location.href = 'login.html';
+    }
+    return res;
+  });
 }
 
 // Carrinho de compras global
