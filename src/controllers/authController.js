@@ -5,7 +5,7 @@ const jwt = require('jsonwebtoken');
 const Atendente = require('../models/Atendente');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'foodtruck_secret_dev';
-const JWT_EXPIRES = '12h';
+const JWT_EXPIRES = '8d';
 
 function gerarToken(payload) {
   return jwt.sign(payload, JWT_SECRET, { expiresIn: JWT_EXPIRES });
