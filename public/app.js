@@ -1746,6 +1746,8 @@ function openProdutoModal(id = null) {
         document.getElementById("produtoEstoque").value = produto.quantidade_estoque;
         document.getElementById("produtoStatus").value = produto.status;
         document.getElementById("produtoFoto").value = produto.foto || "";
+        const fileInput = document.getElementById("produtoFotoFile");
+        if (fileInput) fileInput.value = "";
         document.getElementById("produtoDescricao").value = produto.descricao || "";
       });
   } else {
@@ -1763,25 +1765,43 @@ document.getElementById("produtoForm").addEventListener("submit", async (e) => {
   e.preventDefault();
   
   const id = document.getElementById("produtoId").value;
-  const data = {
-    nome: document.getElementById("produtoNome").value,
-    categoria: document.getElementById("produtoCategoria").value,
-    preco: parseFloat(document.getElementById("produtoPreco").value),
-    quantidade_estoque: parseInt(document.getElementById("produtoEstoque").value),
-    status: document.getElementById("produtoStatus").value,
-    foto: document.getElementById("produtoFoto").value,
-    descricao: document.getElementById("produtoDescricao").value
-  };
-  
+  const fileInput = document.getElementById("produtoFotoFile");
+  const file = fileInput?.files?.[0];
+
+  let body, headers = {};
+
+  if (file) {
+    // Upload real via multipart/form-data → multer + Cloudinary no backend
+    const fd = new FormData();
+    fd.append("nome",               document.getElementById("produtoNome").value);
+    fd.append("categoria",          document.getElementById("produtoCategoria").value);
+    fd.append("preco",              parseFloat(document.getElementById("produtoPreco").value));
+    fd.append("quantidade_estoque", parseInt(document.getElementById("produtoEstoque").value));
+    fd.append("status",             document.getElementById("produtoStatus").value);
+    fd.append("descricao",          document.getElementById("produtoDescricao").value || "");
+    fd.append("foto",               file);
+    body = fd;
+    // Não definir Content-Type — browser define automaticamente com boundary
+  } else {
+    // Sem arquivo: envia JSON com URL existente (retrocompatível)
+    const data = {
+      nome:               document.getElementById("produtoNome").value,
+      categoria:          document.getElementById("produtoCategoria").value,
+      preco:              parseFloat(document.getElementById("produtoPreco").value),
+      quantidade_estoque: parseInt(document.getElementById("produtoEstoque").value),
+      status:             document.getElementById("produtoStatus").value,
+      foto:               document.getElementById("produtoFoto").value || null,
+      descricao:          document.getElementById("produtoDescricao").value || ""
+    };
+    body = JSON.stringify(data);
+    headers = { "Content-Type": "application/json" };
+  }
+
   try {
     const url = id ? `${API_URL}/produtos/${id}` : `${API_URL}/produtos`;
     const method = id ? "PUT" : "POST";
-    
-    const response = await apiFetch(url, {
-      method,
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data)
-    });
+
+    const response = await apiFetch(url, { method, headers, body });
     
     if (response.ok) {
       showAlert(id ? "Produto atualizado com sucesso!" : "Produto criado com sucesso!", "success");
