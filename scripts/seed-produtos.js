@@ -16,7 +16,7 @@ const BASE_URL = process.env.BASE_URL
   || 'https://projeto-aplicado-iii-foodtruck-system-production.up.railway.app';
 
 const GERENTE_LOGIN = process.env.GERENTE_LOGIN || 'admin';
-const GERENTE_SENHA = process.env.GERENTE_SENHA || 'foodtruck2026';
+const GERENTE_SENHA = process.env.GERENTE_SENHA || 'admin123';
 
 // ── CARDÁPIO ────────────────────────────────────────────────────────────────────────────
 const produtos = [
