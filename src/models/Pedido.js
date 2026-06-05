@@ -2,8 +2,6 @@ const { DataTypes } = require("sequelize");
 const sequelize = require("../config/database");
 const Mesa = require("./Mesa");
 const Atendente = require("./Atendente");
-const ItemPedido = require("./ItemPedido");
-const Produto = require("./Produto");
 
 const Pedido = sequelize.define("Pedido", {
   id_pedido: { type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true },
@@ -22,7 +20,5 @@ const Pedido = sequelize.define("Pedido", {
 // Relacionamentos
 Pedido.belongsTo(Mesa, { foreignKey: "id_mesa" });
 Pedido.belongsTo(Atendente, { foreignKey: "id_atendente" });
-Pedido.hasMany(ItemPedido, { foreignKey: "id_pedido", as: "ItensPedido" });
-ItemPedido.belongsTo(Produto, { foreignKey: "id_produto" });
 
 module.exports = Pedido;

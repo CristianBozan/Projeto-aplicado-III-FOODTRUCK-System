@@ -8,6 +8,9 @@ const cors = require("cors");
 const rateLimit = require("express-rate-limit");
 require("dotenv").config();
 
+// Associações entre models (deve vir antes das rotas)
+require("./models/associations");
+
 // Rotas
 const authRoutes            = require("./routes/authRoutes");
 const adminRoutes           = require("./routes/adminRoutes");
