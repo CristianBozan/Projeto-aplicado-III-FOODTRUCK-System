@@ -742,16 +742,20 @@ function renderPedidosFromCache() {
 
 // Atualiza o badge de Vendas com a contagem de pedidos com status 'aberto'
 function updateVendasBadge() {
-  const badge = document.getElementById('vendasBadge');
-  if (!badge) return;
   const pedidos = window.cachedPedidos || [];
-  const count = pedidos.filter(p => p.status === 'aberto').length;
-  if (count > 0) {
-    badge.textContent = count;
-    badge.classList.remove('hidden');
-  } else {
-    badge.textContent = '0';
-    badge.classList.add('hidden');
+  const abertos = pedidos.filter(p => p.status === 'aberto').length;
+
+  // Badge na aba Vendas
+  const badge = document.getElementById('vendasBadge');
+  if (badge) {
+    badge.textContent = abertos;
+    badge.classList.toggle('hidden', abertos === 0);
+  }
+  // 4. Badge na aba Atendimento
+  const badgeAte = document.getElementById('atendimentoBadge');
+  if (badgeAte) {
+    badgeAte.textContent = abertos;
+    badgeAte.classList.toggle('hidden', abertos === 0);
   }
 }
 
@@ -2220,6 +2224,10 @@ async function loadCardapio() {
     const raw = await response.json();
     const produtos = Array.isArray(raw) ? raw : (raw.produtos || []);
 
+    // 7. Normalizar categorias inconsistentes
+    const normCat = { 'Lanches':'Lanche','Bebidas':'Bebida','Porcao':'Porção','Porcão':'Porção','Sobremesas':'Sobremesa' };
+    produtos.forEach(p => { if (p.categoria && normCat[p.categoria]) p.categoria = normCat[p.categoria]; });
+
     // Filtra apenas produtos ativos
     const ativos = produtos.filter(p => p.status === 'ativo' || !p.status);
     window._cardapioAll = ativos;
@@ -2349,11 +2357,18 @@ async function adicionarAoCarrinho(idProduto) {
 function atualizarCarrinho() {
   const carrinhoDiv = document.getElementById("carrinhoItens");
   
+  // 1. Botão Confirmar desabilitado com carrinho vazio
+  const btnConfirmar = document.querySelector('button[onclick="finalizarPedido()"]');
+  if (btnConfirmar) {
+    btnConfirmar.disabled = carrinho.length === 0;
+    btnConfirmar.style.opacity = carrinho.length === 0 ? '0.45' : '1';
+  }
+
   if (carrinho.length === 0) {
     carrinhoDiv.innerHTML = `
       <div class="empty-state">
         <div class="empty-state-icon">🛒</div>
-        <p>Carrinho vazio. Adicione produtos do cardápio acima.</p>
+        <p>Carrinho vazio. Adicione produtos do cardápio.</p>
       </div>
     `;
     document.getElementById("carrinhoTotal").textContent = "R$ 0,00";
@@ -2424,10 +2439,20 @@ function atualizarCarrinho() {
   // Badge de contagem no topo do carrinho
   const countEl = document.getElementById("carrinhoCount");
   const qtd = carrinho.reduce((s,i)=>s+i.quantidade,0);
-  if (countEl) countEl.textContent = `${qtd} ${qtd===1?'item':'itens'}`;
-  // Badge da aba mobile
+  if (countEl) {
+    countEl.textContent = `${qtd} ${qtd===1?'item':'itens'}`;
+    // 3. Bounce animation ao adicionar
+    countEl.classList.remove('badge-bounce');
+    void countEl.offsetWidth;
+    countEl.classList.add('badge-bounce');
+  }
   const tabBadge = document.getElementById("carrinhoTabBadge");
-  if (tabBadge) tabBadge.textContent = qtd;
+  if (tabBadge) {
+    tabBadge.textContent = qtd;
+    tabBadge.classList.remove('badge-bounce');
+    void tabBadge.offsetWidth;
+    tabBadge.classList.add('badge-bounce');
+  }
 }
 
 // Aumenta quantidade de um item
@@ -2493,12 +2518,17 @@ async function loadMesasCarrinho() {
     viagemOpt.textContent = "Pedido para viagem";
     select.appendChild(viagemOpt);
 
-    // Listar apenas mesas livres para o carrinho (criação de pedido)
-    const mesasLivres = mesas.filter(m => m.status === 'livre');
-    mesasLivres.forEach(mesa => {
+    // 2. Mostrar todas as mesas — livres habilitadas, ocupadas desabilitadas com indicador
+    const lista = Array.isArray(mesas) ? mesas : (mesas.mesas || []);
+    lista.sort((a,b) => a.numero_mesa - b.numero_mesa).forEach(mesa => {
       const option = document.createElement("option");
       option.value = mesa.id_mesa;
-      option.textContent = `Mesa ${mesa.numero_mesa} - ${mesa.status}`;
+      const livre = mesa.status === 'livre';
+      option.textContent = livre
+        ? `Mesa ${mesa.numero_mesa} — livre`
+        : `Mesa ${mesa.numero_mesa} — ocupada`;
+      option.disabled = !livre;
+      if (!livre) option.style.color = '#aaa';
       select.appendChild(option);
     });
 
