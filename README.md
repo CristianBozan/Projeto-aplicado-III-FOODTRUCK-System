@@ -64,7 +64,7 @@ A aplicação utiliza uma API REST em Node.js (Express + Sequelize) e um fronten
 ### 2.1 Linguagem Principal
 
 - **JavaScript**
-  - **Backend**: Node.js v20+
+  - **Backend**: Node.js v24+
   - **Frontend**: JavaScript vanilla em páginas HTML estáticas
 
 **Motivações da escolha:**
@@ -113,7 +113,7 @@ A aplicação utiliza uma API REST em Node.js (Express + Sequelize) e um fronten
 - Login com usuário e senha via tela dedicada (`login.html`).
 - Token JWT gerado no login e armazenado no `localStorage`, enviado automaticamente em todas as requisições via header `Authorization: Bearer <token>`.
 - Dois níveis de acesso:
-  - **Gerente** — credenciais configuradas via variáveis de ambiente `GERENTE_LOGIN` e `GERENTE_SENHA` (padrão: `admin` / `foodtruck2026`).
+  - **Gerente** — credenciais configuradas via variáveis de ambiente `GERENTE_LOGIN` e `GERENTE_SENHA` (padrão: `admin` / `admin123`).
   - **Atendente** — usuários criados pelo gerente via interface, com senhas armazenadas com hash bcryptjs no banco de dados.
 - Logout limpa completamente o `localStorage` e `sessionStorage`, invalidando a sessão.
 - Senhas dos atendentes armazenadas com **hash bcryptjs** (salt 10) — nunca salvas em texto plano.
@@ -377,7 +377,7 @@ projeto-aplicado-3/
 
 ### 8.1 Execução Local
 
-**Pré-requisitos:** Node.js v20+, MySQL 8.0+
+**Pré-requisitos:** Node.js v24+, MySQL 8.0+
 
 ```bash
 # 1. Clone o repositório
@@ -405,14 +405,14 @@ npm run dev
 # Banco de dados
 DB_HOST=localhost
 DB_PORT=3306
-DB_NAME=foodtruck_db
+DB_NAME=sistema_pedidos
 DB_USER=root
 DB_PASS=sua_senha
 
 # Autenticação JWT
 JWT_SECRET=sua_chave_secreta_jwt
 GERENTE_LOGIN=admin
-GERENTE_SENHA=foodtruck2026
+GERENTE_SENHA=admin123
 
 # Backup
 BACKUP_TOKEN=seu_token_backup
@@ -423,8 +423,9 @@ BACKUP_TOKEN=seu_token_backup
 O projeto está hospedado no Railway com deploy automático a cada push na branch `main`.
 
 - **URL pública:** https://projeto-aplicado-iii-foodtruck-system-production.up.railway.app
-- **Banco:** MySQL fornecido pelo plugin Railway (variáveis `${{MySQL.*}}` injetadas automaticamente)
+- **Banco:** MySQL fornecido pelo serviço Railway. O app conecta via `DATABASE_URL` (connection string completa) ou pelas variáveis individuais `DB_HOST`, `DB_USER`, `DB_PASS`, `DB_NAME`, `DB_PORT` — configuradas nas variáveis do serviço da aplicação.
 - **Deploy:** automático via GitHub — basta fazer `git push origin main`
+- **Variáveis obrigatórias no serviço da aplicação:** `DATABASE_URL`, `JWT_SECRET`, `GERENTE_LOGIN`, `GERENTE_SENHA`, `BACKUP_TOKEN`
 
 ### 8.4 Popular o Banco com Dados de Teste
 
