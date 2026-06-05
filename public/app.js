@@ -756,6 +756,26 @@ async function finalizarPedidoList(id) {
 }
 
 // ========== ALERTAS ==========
+function trocarAbaAtendimento(aba) {
+  const painelCardapio = document.getElementById('painelCardapio');
+  const painelCarrinho = document.getElementById('painelCarrinho');
+  const tabCardapio    = document.getElementById('tabCardapio');
+  const tabCarrinho    = document.getElementById('tabCarrinho');
+  if (!painelCardapio || !painelCarrinho) return;
+
+  if (aba === 'carrinho') {
+    painelCardapio.classList.remove('painel-ativo');
+    painelCarrinho.classList.add('painel-ativo');
+    tabCarrinho?.classList.add('active');
+    tabCardapio?.classList.remove('active');
+  } else {
+    painelCarrinho.classList.remove('painel-ativo');
+    painelCardapio.classList.add('painel-ativo');
+    tabCardapio?.classList.add('active');
+    tabCarrinho?.classList.remove('active');
+  }
+}
+
 function toggleSenha(inputId, btn) {
   const input = document.getElementById(inputId);
   if (!input) return;
@@ -2222,10 +2242,11 @@ function atualizarCarrinho() {
 
   // Badge de contagem no topo do carrinho
   const countEl = document.getElementById("carrinhoCount");
-  if (countEl) {
-    const qtd = carrinho.reduce((s,i)=>s+i.quantidade,0);
-    countEl.textContent = `${qtd} ${qtd===1?'item':'itens'}`;
-  }
+  const qtd = carrinho.reduce((s,i)=>s+i.quantidade,0);
+  if (countEl) countEl.textContent = `${qtd} ${qtd===1?'item':'itens'}`;
+  // Badge da aba mobile
+  const tabBadge = document.getElementById("carrinhoTabBadge");
+  if (tabBadge) tabBadge.textContent = qtd;
 }
 
 // Aumenta quantidade de um item

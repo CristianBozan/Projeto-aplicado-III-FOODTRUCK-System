@@ -367,6 +367,68 @@
         max-height: none;
         overflow-y: visible;
       }
+
+    /* ── Mobile: painel deslizável (abas) ── */
+    @media (max-width: 768px) {
+      .atendimento-tab-bar {
+        display: flex !important;
+      }
+    }
+    .atendimento-tab-bar {
+      display: none;
+      position: sticky;
+      top: 60px;
+      z-index: 50;
+      background: #fff;
+      border-bottom: 2px solid #eee;
+      margin: -1rem -1rem 1rem -1rem;
+      padding: 0;
+    }
+    .atendimento-tab-bar button {
+      flex: 1;
+      padding: 0.75rem 0.5rem;
+      border: none;
+      background: #fff;
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: #888;
+      cursor: pointer;
+      border-bottom: 3px solid transparent;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.4rem;
+    }
+    .atendimento-tab-bar button.active {
+      color: #C41E3A;
+      border-bottom-color: #C41E3A;
+    }
+    .atendimento-tab-badge {
+      background: #C41E3A;
+      color: #fff;
+      border-radius: 10px;
+      padding: 1px 7px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      min-width: 18px;
+      text-align: center;
+    }
+    @media (max-width: 768px) {
+      .atendimento-layout {
+        display: block !important;
+        overflow: hidden;
+      }
+      .atendimento-painel {
+        display: none;
+      }
+      .atendimento-painel.painel-ativo {
+        display: block;
+      }
+      .carrinho-sticky {
+        position: static !important;
+      }
+    }
       /* Tabelas: scroll horizontal */
       .table-container { overflow-x: auto; }
       /* Controles em linha única viram coluna */
@@ -1078,10 +1140,21 @@
            SEÇÃO: NOVO PEDIDO (ATENDIMENTO)
       ======================================= -->
       <section id="pedidos" class="section active">
+        <!-- Barra de abas (visível só no mobile) -->
+        <div class="atendimento-tab-bar" id="atendimentoTabBar">
+          <button id="tabCardapio" class="active" onclick="trocarAbaAtendimento('cardapio')">
+            Cardápio
+          </button>
+          <button id="tabCarrinho" onclick="trocarAbaAtendimento('carrinho')">
+            Carrinho
+            <span class="atendimento-tab-badge" id="carrinhoTabBadge">0</span>
+          </button>
+        </div>
+
         <div class="atendimento-layout">
 
           <!-- Cardápio -->
-          <div>
+          <div class="atendimento-painel painel-ativo" id="painelCardapio">
             <div class="card">
               <div style="display:flex;align-items:center;justify-content:space-between;gap:1rem;margin-bottom:1rem;flex-wrap:wrap;">
                 <h2 style="margin:0;font-size:1.4rem;">Cardápio</h2>
@@ -1100,7 +1173,7 @@
           </div>
 
           <!-- Carrinho (coluna direita, sticky) -->
-          <div class="carrinho-sticky">
+          <div class="atendimento-painel carrinho-sticky" id="painelCarrinho">
             <div class="card">
               <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;">
                 <h2 style="margin:0;font-size:1.2rem;">🛒 Carrinho</h2>
