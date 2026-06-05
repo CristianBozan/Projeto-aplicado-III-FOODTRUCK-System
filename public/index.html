@@ -1272,32 +1272,38 @@
       ======================================= -->
       <section id="vendas" class="section">
         <div class="card">
-          <h2>📋 Pedidos Realizados</h2>
 
-          <div class="controls-row">
-            <div class="left">
-              <label for="pedidoFilterStatus">Filtrar:</label>
-              <select id="pedidoFilterStatus" title="Filtrar pedidos por status">
-                <option value="all">Todos</option>
-                <option value="aberto">Abertos</option>
-                <option value="pago">Pagos</option>
-              </select>
-              <label for="pedidoSortBy" class="margin-left">Ordenar:</label>
-              <select id="pedidoSortBy" title="Ordenar pedidos">
-                <option value="data_desc">Data ↓</option>
-                <option value="data_asc">Data ↑</option>
-                <option value="total_desc">Total ↓</option>
-                <option value="total_asc">Total ↑</option>
-                <option value="status_desc">Status ↓</option>
-                <option value="status_asc">Status ↑</option>
-                <option value="id_desc">ID ↓</option>
-                <option value="id_asc">ID ↑</option>
-              </select>
-            </div>
-            <div>
-              <button class="btn btn-secondary" onclick="loadPedidos()">🔄 Atualizar Lista</button>
-            </div>
+          <!-- Título + botão na mesma linha -->
+          <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.75rem;margin-bottom:1rem;">
+            <h2 style="margin:0;">📋 Pedidos Realizados</h2>
+            <button class="btn btn-primary" onclick="loadPedidos()" style="white-space:nowrap;">🔄 Atualizar Lista</button>
           </div>
+
+          <!-- Chips de filtro por status -->
+          <div style="display:flex;gap:0.4rem;flex-wrap:wrap;margin-bottom:1rem;" id="pedidoFilterChips">
+            <button class="chip-filter chip-active" onclick="setPedidoFilter('all',this)">Todos</button>
+            <button class="chip-filter" onclick="setPedidoFilter('aberto',this)">Abertos</button>
+            <button class="chip-filter" onclick="setPedidoFilter('pago',this)">Pagos</button>
+            <button class="chip-filter" onclick="setPedidoFilter('cancelado',this)">Cancelados</button>
+          </div>
+
+          <!-- Selects ocultos mantidos para compatibilidade com JS -->
+          <select id="pedidoFilterStatus" style="display:none;">
+            <option value="all">Todos</option>
+            <option value="aberto">Abertos</option>
+            <option value="pago">Pagos</option>
+            <option value="cancelado">Cancelados</option>
+          </select>
+          <select id="pedidoSortBy" style="display:none;">
+            <option value="data_desc">Data ↓</option>
+            <option value="data_asc">Data ↑</option>
+            <option value="total_desc">Total ↓</option>
+            <option value="total_asc">Total ↑</option>
+            <option value="status_desc">Status ↓</option>
+            <option value="status_asc">Status ↑</option>
+            <option value="id_desc">ID ↓</option>
+            <option value="id_asc">ID ↑</option>
+          </select>
 
           <div class="loading" id="loadingPedidos">
             <div class="spinner"></div>
@@ -1308,13 +1314,13 @@
             <table id="pedidoTable">
               <thead>
                 <tr>
-                  <th>ID</th>
-                  <th>Data/Hora</th>
+                  <th class="th-sort" onclick="setPedidoSort('id',this)" id="thSortId">ID <span class="sort-icon">↕</span></th>
+                  <th class="th-sort" onclick="setPedidoSort('data',this)" id="thSortData">Data/Hora <span class="sort-icon">↓</span></th>
                   <th>Mesa</th>
                   <th>Atendente</th>
-                  <th>Status</th>
+                  <th class="th-sort" onclick="setPedidoSort('status',this)" id="thSortStatus">Status <span class="sort-icon">↕</span></th>
                   <th>Pagamento</th>
-                  <th>Total</th>
+                  <th class="th-sort" onclick="setPedidoSort('total',this)" id="thSortTotal">Total <span class="sort-icon">↕</span></th>
                   <th>Ações</th>
                 </tr>
               </thead>

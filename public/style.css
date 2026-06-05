@@ -1308,3 +1308,28 @@ tbody td {
     grid-template-columns: 1fr;
   }
 }
+
+/* ── Chips de filtro ── */
+.chip-filter {
+  padding: 4px 14px;
+  border-radius: 20px;
+  border: 1.5px solid #ddd;
+  background: #fff;
+  color: #555;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.chip-filter:hover { border-color: #C41E3A; color: #C41E3A; }
+.chip-filter.chip-active { background: #C41E3A; border-color: #C41E3A; color: #fff; }
+
+/* ── Headers de tabela clicáveis ── */
+.th-sort {
+  cursor: pointer;
+  user-select: none;
+  white-space: nowrap;
+}
+.th-sort:hover { opacity: 0.85; }
+.sort-icon { font-size: 0.75rem; opacity: 0.7; margin-left: 3px; }
+.th-sort.sort-ativo .sort-icon { opacity: 1; color: #FFD700; }

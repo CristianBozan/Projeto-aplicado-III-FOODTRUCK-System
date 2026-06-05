@@ -756,6 +756,36 @@ async function finalizarPedidoList(id) {
 }
 
 // ========== ALERTAS ==========
+function setPedidoFilter(status, btn) {
+  const sel = document.getElementById('pedidoFilterStatus');
+  if (sel) { sel.value = status; }
+  document.querySelectorAll('.chip-filter').forEach(c => c.classList.remove('chip-active'));
+  if (btn) btn.classList.add('chip-active');
+  renderPedidosFromCache();
+}
+
+function setPedidoSort(campo, th) {
+  const sel = document.getElementById('pedidoSortBy');
+  if (!sel) return;
+  const atual = sel.value;
+  const isDesc = atual === campo + '_desc';
+  const novoValor = isDesc ? campo + '_asc' : campo + '_desc';
+  sel.value = novoValor;
+
+  // Atualiza ícones
+  document.querySelectorAll('.th-sort').forEach(t => {
+    t.classList.remove('sort-ativo');
+    const icon = t.querySelector('.sort-icon');
+    if (icon) icon.textContent = '↕';
+  });
+  if (th) {
+    th.classList.add('sort-ativo');
+    const icon = th.querySelector('.sort-icon');
+    if (icon) icon.textContent = novoValor.endsWith('_asc') ? '↑' : '↓';
+  }
+  renderPedidosFromCache();
+}
+
 function trocarAbaAtendimento(aba) {
   const painelCardapio = document.getElementById('painelCardapio');
   const painelCarrinho = document.getElementById('painelCarrinho');
