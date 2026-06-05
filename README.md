@@ -1,4 +1,4 @@
-# Food Truck System — v3.1
+# Food Truck System — v3.2
 
 **Centro Universitário SENAI Santa Catarina**
 Curso Superior de Tecnologia em Análise e Desenvolvimento de Sistemas
@@ -35,7 +35,7 @@ Aplicação web cliente/servidor desenvolvida para digitalizar e otimizar a gest
 
 ## 1. Visão Geral do Sistema
 
-O **Food Truck System v3.1** é uma solução web cliente/servidor voltada para o dia a dia do food truck do Sr. Elpídio, digitalizando o processo de atendimento que antes era realizado manualmente em papel.
+O **Food Truck System v3.2** é uma solução web cliente/servidor voltada para o dia a dia do food truck do Sr. Elpídio, digitalizando o processo de atendimento que antes era realizado manualmente em papel.
 
 **Problema resolvido:** registro manual de pedidos causava lentidão, erros de anotação, inconsistências nos valores e falta de controle de estoque e relatórios gerenciais.
 
@@ -449,7 +449,9 @@ O script cria automaticamente:
 
 O **Food Truck System v3.1** representa a entrega do MVP do Projeto Aplicado III — Sprint 4. O sistema digitalizou completamente o processo de atendimento do food truck do Sr. Elpídio, substituindo o papel por uma interface web rápida e intuitiva.
 
-**Destaques da v3.1:**
+**Destaques da v3.2:**
+- Dashboard reorganizado: gráficos empilhados em tela cheia (faturamento por dia + vendas por pagamento)
+- Filtro de cardápio por categoria corrigido (comparação insensível a espaços e maiúsculas)
 - Sidebar recolhível no desktop com estado persistido no `localStorage`
 - Tela de login limpa, sem dicas de credenciais
 - Script de seed para popular o banco com cardápio realista
@@ -458,10 +460,9 @@ O **Food Truck System v3.1** representa a entrega do MVP do Projeto Aplicado III
 
 **Próximos passos (backlog):**
 - Impressão de comanda diretamente do sistema
-- Dashboard com gráficos em tempo real
 - Notificação sonora para novos pedidos
 - PWA para uso offline pelos atendentes
 
 ---
 
-*Projeto Aplicado III — Equipe 10 | Centro Universitário SENAI Santa Catarina | 2026*
+*Projeto Aplicado III — Equipe 10 | Centro Universitário SENAI Santa Catarina | v3.2 — 2026*

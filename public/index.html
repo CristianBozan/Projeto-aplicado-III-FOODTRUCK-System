@@ -937,67 +937,35 @@
         </div>
 
         <!-- Gráficos -->
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-bottom:1.5rem;" class="dash-graficos">
+        <div style="display:flex;flex-direction:column;gap:1.5rem;margin-bottom:1.5rem;">
           <div class="card" style="margin-bottom:0;">
             <h3 style="font-size:0.9rem;color:#888;margin-bottom:0.75rem;">Faturamento por Dia</h3>
-            <canvas id="chartVendasDia" height="160"></canvas>
+            <canvas id="chartVendasDia"></canvas>
           </div>
           <div class="card" style="margin-bottom:0;">
             <h3 style="font-size:0.9rem;color:#888;margin-bottom:0.75rem;">Vendas por Pagamento</h3>
-            <canvas id="chartPagamento" height="160"></canvas>
+            <div style="max-width:420px;margin:0 auto;">
+              <canvas id="chartPagamento"></canvas>
+            </div>
           </div>
         </div>
 
-        <!-- Pedidos recentes + Acesso rápido -->
-        <div class="dash-grid-2col">
-
-          <div class="card" style="margin-bottom:0;">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
-              <h3 style="font-size:1rem; color:#1A1A1A; margin:0;">Pedidos recentes</h3>
-              <a href="#" class="nav-link" data-section="vendas" style="font-size:0.82rem; color:#C41E3A; font-weight:600; text-decoration:none;">Ver todos →</a>
-            </div>
-            <div class="table-container" style="margin-top:0;">
-              <table id="dashPedidosTable">
-                <thead>
-                  <tr><th>#</th><th>Mesa</th><th>Atendente</th><th>Total</th><th>Pagamento</th><th>Status</th></tr>
-                </thead>
-                <tbody id="dashPedidosBody">
-                  <tr><td colspan="6" style="text-align:center;color:#aaa;padding:1.5rem;">Carregando...</td></tr>
-                </tbody>
-              </table>
-            </div>
+        <!-- Pedidos recentes (full width) -->
+        <div class="card" style="margin-bottom:1.5rem;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+            <h3 style="font-size:1rem; color:#1A1A1A; margin:0;">Pedidos recentes</h3>
+            <a href="#" class="nav-link" data-section="vendas" style="font-size:0.82rem; color:#C41E3A; font-weight:600; text-decoration:none;">Ver todos →</a>
           </div>
-
-          <div class="card" style="margin-bottom:0;">
-            <h3 style="font-size:1rem; color:#1A1A1A; margin-bottom:0.9rem;">Acesso rápido</h3>
-            <div class="quick-access-grid">
-              <a href="#" class="quick-card nav-link" data-section="pedidos">
-                <span class="quick-card-icon">🧾</span>
-                <span class="quick-card-label">Novo Pedido</span>
-              </a>
-              <a href="#" class="quick-card nav-link" data-section="produtos">
-                <span class="quick-card-icon">📦</span>
-                <span class="quick-card-label">Add. Produto</span>
-              </a>
-              <a href="#" class="quick-card nav-link" data-section="atendentes">
-                <span class="quick-card-icon">👤</span>
-                <span class="quick-card-label">Novo Atendente</span>
-              </a>
-              <a href="#" class="quick-card nav-link" data-section="sincronizacao">
-                <span class="quick-card-icon">🔄</span>
-                <span class="quick-card-label">Sincronizar</span>
-              </a>
-              <a href="#" class="quick-card nav-link" data-section="relatorios">
-                <span class="quick-card-icon">📋</span>
-                <span class="quick-card-label">Relatório</span>
-              </a>
-              <a href="#" class="quick-card nav-link" data-section="backups">
-                <span class="quick-card-icon">💾</span>
-                <span class="quick-card-label">Backup</span>
-              </a>
-            </div>
+          <div class="table-container" style="margin-top:0;">
+            <table id="dashPedidosTable">
+              <thead>
+                <tr><th>#</th><th>Mesa</th><th>Atendente</th><th>Total</th><th>Pagamento</th><th>Status</th></tr>
+              </thead>
+              <tbody id="dashPedidosBody">
+                <tr><td colspan="6" style="text-align:center;color:#aaa;padding:1.5rem;">Carregando...</td></tr>
+              </tbody>
+            </table>
           </div>
-
         </div>
 
         <!-- Ranking de atendentes -->

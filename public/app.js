@@ -1146,6 +1146,7 @@ async function loadDashboard() {
           },
           options: {
             responsive: true,
+            aspectRatio: 3.5,
             plugins: {
               legend: { display: true }
             },
@@ -2297,7 +2298,8 @@ function filtrarCardapio(q) {
   if (!window._cardapioAll) return;
   let lista = window._cardapioAll;
   if (window._cardapioCatAtiva && window._cardapioCatAtiva !== 'Todos') {
-    lista = lista.filter(p => p.categoria === window._cardapioCatAtiva);
+    const catAlvo = window._cardapioCatAtiva.trim().toLowerCase();
+    lista = lista.filter(p => (p.categoria||'').trim().toLowerCase() === catAlvo);
   }
   if (q) lista = lista.filter(p => p.nome.toLowerCase().includes(q.toLowerCase()));
   renderCardapio(lista);
