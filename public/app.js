@@ -330,7 +330,7 @@ function renderEstoqueTable(lista) {
       <td>R$ ${parseFloat(p.preco||0).toLocaleString('pt-BR',{minimumFractionDigits:2})}</td>
       <td>${p.quantidade_estoque ?? '—'}</td>
       <td><span class="${esgotado?'badge-esgotado':'badge-estoque'}">${esgotado?'Esgotado':'Em estoque'}</span></td>
-      <td><button class="action-btn action-edit" onclick="editarProduto(${p.id_produto})">✏️</button></td>
+      <td><button class="action-btn action-edit" onclick="editProduto(${p.id_produto})">✏️</button></td>
     </tr>`;
   }).join('');
 }
