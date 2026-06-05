@@ -8,7 +8,7 @@ const Pedido = sequelize.define("Pedido", {
   data_hora: { type: DataTypes.DATE, defaultValue: DataTypes.NOW },
   id_atendente: { type: DataTypes.INTEGER, allowNull: true },
   id_mesa: { type: DataTypes.INTEGER, allowNull: true },
-  forma_pagamento: { type: DataTypes.ENUM("pix","credito","debito","dinheiro","mix"), allowNull: true },
+  forma_pagamento: { type: DataTypes.ENUM("pix","credito","debito","dinheiro"), allowNull: true },
   status: { type: DataTypes.ENUM("aberto","em_preparo","pronto","finalizado","cancelado","pago"), defaultValue: "aberto" },
   observacoes: { type: DataTypes.TEXT },
   total: { type: DataTypes.DECIMAL(10,2), defaultValue: 0 }
