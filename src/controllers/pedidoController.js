@@ -46,6 +46,24 @@ module.exports = {
     }
   },
 
+  async listarCozinha(req, res) {
+    try {
+      const { Op } = require('sequelize');
+      const pedidos = await Pedido.findAll({
+        where: { status: { [Op.in]: ['aberto', 'em_preparo', 'pronto'] } },
+        include: [
+          Mesa,
+          Atendente,
+          { model: ItemPedido, as: 'ItensPedido', include: [{ model: Produto }] }
+        ],
+        order: [['data_hora', 'ASC']]
+      });
+      res.json(pedidos);
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  },
+
   async buscarPorId(req, res) {
     try {
       const pedido = await Pedido.findByPk(req.params.id, { include: [Mesa, Atendente] });
@@ -240,7 +258,7 @@ module.exports = {
       const { id } = req.params;
       const { status, forma_pagamento } = req.body || {};
 
-      const statusValidos = ['aberto', 'finalizado', 'cancelado', 'pago'];
+      const statusValidos = ['aberto', 'em_preparo', 'pronto', 'finalizado', 'cancelado', 'pago'];
       if (!status || !statusValidos.includes(status)) {
         return res.status(400).json({ error: `Status inválido. Use: ${statusValidos.join(', ')}` });
       }

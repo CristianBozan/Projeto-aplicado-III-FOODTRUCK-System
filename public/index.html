@@ -816,6 +816,10 @@
               </a>
             </li>
             <li>
+              <a href="#cozinha" class="nav-link" data-section="cozinha" data-breadcrumb="Atendimento · Painel da Cozinha">
+                <span class="nav-icon">🍳</span> Cozinha
+                <span id="cozinhaBadge" style="display:none;background:#C41E3A;color:#fff;border-radius:10px;padding:1px 7px;font-size:0.7rem;font-weight:700;margin-left:auto;"></span>
+              </a>
               <a href="#vendas" class="nav-link" data-section="vendas" data-breadcrumb="Atendimento · Pedidos &amp; Vendas">
                 <span class="nav-icon">💰</span> Vendas
                 <span id="vendasBadge" class="nav-badge hidden" aria-live="polite">0</span>
@@ -1265,6 +1269,43 @@
             </div>
           </div>
 
+        </div>
+      </section>
+
+      <!-- ======================================
+           SEÇÃO: PAINEL DA COZINHA
+      ======================================= -->
+      <section id="cozinha" class="section">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.75rem;margin-bottom:1.25rem;">
+          <div>
+            <h2 class="page-title" style="margin:0;">🍳 Painel da Cozinha</h2>
+            <p style="font-size:0.82rem;color:#888;margin:2px 0 0;">Atualiza automaticamente a cada 15 segundos</p>
+          </div>
+          <button class="btn btn-secondary" onclick="loadCozinha()" id="btnAtualizarCozinha">🔄 Atualizar agora</button>
+        </div>
+
+        <div class="cozinha-kanban" id="cozinhaKanban">
+          <!-- Coluna: Novos -->
+          <div class="cozinha-col">
+            <div class="cozinha-col-header cozinha-col-novo">
+              Novos <span class="cozinha-col-count" id="countNovos">0</span>
+            </div>
+            <div class="cozinha-cards" id="colNovos"></div>
+          </div>
+          <!-- Coluna: Em Preparo -->
+          <div class="cozinha-col">
+            <div class="cozinha-col-header cozinha-col-preparo">
+              Em Preparo <span class="cozinha-col-count" id="countPreparo">0</span>
+            </div>
+            <div class="cozinha-cards" id="colPreparo"></div>
+          </div>
+          <!-- Coluna: Prontos -->
+          <div class="cozinha-col">
+            <div class="cozinha-col-header cozinha-col-pronto">
+              Prontos para Retirar <span class="cozinha-col-count" id="countProntos">0</span>
+            </div>
+            <div class="cozinha-cards" id="colProntos"></div>
+          </div>
         </div>
       </section>
 

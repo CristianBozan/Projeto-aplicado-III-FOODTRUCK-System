@@ -58,16 +58,20 @@ app.use("/backups",           backupRoutes);
 app.use("/auditoria/estoque", auditoriaRoutes);
 app.use("/sincronizacoes",    sincronizacaoRoutes);
 
-// Inicia servidor
+// Inicia servidor (apenas quando executado diretamente, não em testes)
 const PORT = process.env.PORT || 3000;
 
-sequelize.sync().then(() => {
-  console.log("Banco sincronizado!");
+if (require.main === module) {
+  sequelize.sync().then(() => {
+    console.log("Banco sincronizado!");
 
-  app.listen(PORT, () => {
-    console.log(`Food Truck System v3.0 rodando em http://localhost:${PORT}`);
+    app.listen(PORT, () => {
+      console.log(`Food Truck System v3.0 rodando em http://localhost:${PORT}`);
+    });
+
+    // Backup automático diário às 05:00 via syncService
+    cron.schedule("0 5 * * *", () => syncService.backupAutomatico(), { timezone: "America/Sao_Paulo" });
   });
+}
 
-  // Backup automático diário às 05:00 via syncService
-  cron.schedule("0 5 * * *", () => syncService.backupAutomatico(), { timezone: "America/Sao_Paulo" });
-});
+module.exports = app;

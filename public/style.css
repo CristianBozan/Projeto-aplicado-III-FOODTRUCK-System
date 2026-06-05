@@ -1333,3 +1333,104 @@ tbody td {
 .th-sort:hover { opacity: 0.85; }
 .sort-icon { font-size: 0.75rem; opacity: 0.7; margin-left: 3px; }
 .th-sort.sort-ativo .sort-icon { opacity: 1; color: #FFD700; }
+
+/* ── Painel da Cozinha (KDS) ── */
+.cozinha-kanban {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.25rem;
+  align-items: start;
+}
+@media (max-width: 900px) {
+  .cozinha-kanban { grid-template-columns: 1fr; }
+}
+.cozinha-col {
+  border-radius: 12px;
+  overflow: hidden;
+  background: #f8f8f8;
+  border: 1px solid #eee;
+  min-height: 200px;
+}
+.cozinha-col-header {
+  padding: 0.75rem 1rem;
+  font-weight: 700;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+.cozinha-col-novo    { background: #1A1A1A; color: #fff; }
+.cozinha-col-preparo { background: #e67e22; color: #fff; }
+.cozinha-col-pronto  { background: #27ae60; color: #fff; }
+.cozinha-col-count {
+  background: rgba(255,255,255,0.25);
+  border-radius: 12px;
+  padding: 2px 10px;
+  font-size: 0.8rem;
+}
+.cozinha-cards { padding: 0.75rem; display: flex; flex-direction: column; gap: 0.75rem; }
+.cozinha-card {
+  background: #fff;
+  border-radius: 10px;
+  padding: 0.9rem 1rem;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+  border-left: 4px solid #ddd;
+}
+.cozinha-card.card-novo    { border-left-color: #1A1A1A; }
+.cozinha-card.card-preparo { border-left-color: #e67e22; }
+.cozinha-card.card-pronto  { border-left-color: #27ae60; }
+.cozinha-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+.cozinha-card-id {
+  font-weight: 800;
+  font-size: 1rem;
+  color: #1A1A1A;
+  font-family: 'Syne', sans-serif;
+}
+.cozinha-card-tempo {
+  font-size: 0.75rem;
+  color: #888;
+  background: #f0f0f0;
+  border-radius: 8px;
+  padding: 2px 8px;
+}
+.cozinha-card-tempo.tempo-urgente { background: #fde8e8; color: #C41E3A; font-weight: 700; }
+.cozinha-card-mesa {
+  font-size: 0.82rem;
+  color: #555;
+  margin-bottom: 0.4rem;
+}
+.cozinha-card-itens {
+  font-size: 0.82rem;
+  color: #333;
+  margin-bottom: 0.75rem;
+  line-height: 1.5;
+}
+.cozinha-card-item { display: flex; gap: 0.4rem; }
+.cozinha-card-item-qtd { font-weight: 700; color: #C41E3A; min-width: 20px; }
+.cozinha-card-btn {
+  width: 100%;
+  padding: 0.55rem;
+  border: none;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 0.82rem;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+.cozinha-card-btn:hover { opacity: 0.85; }
+.btn-iniciar  { background: #e67e22; color: #fff; }
+.btn-pronto   { background: #27ae60; color: #fff; }
+.btn-entregar { background: #C41E3A; color: #fff; }
+.cozinha-vazio {
+  text-align: center;
+  color: #bbb;
+  padding: 2rem 1rem;
+  font-size: 0.85rem;
+}

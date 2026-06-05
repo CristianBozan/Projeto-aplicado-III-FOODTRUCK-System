@@ -2,6 +2,8 @@ const { DataTypes } = require("sequelize");
 const sequelize = require("../config/database");
 const Mesa = require("./Mesa");
 const Atendente = require("./Atendente");
+const ItemPedido = require("./ItemPedido");
+const Produto = require("./Produto");
 
 const Pedido = sequelize.define("Pedido", {
   id_pedido: { type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true },
@@ -9,7 +11,7 @@ const Pedido = sequelize.define("Pedido", {
   id_atendente: { type: DataTypes.INTEGER, allowNull: true },
   id_mesa: { type: DataTypes.INTEGER, allowNull: true },
   forma_pagamento: { type: DataTypes.ENUM("pix","credito","debito","dinheiro","mix"), allowNull: true },
-  status: { type: DataTypes.ENUM("aberto","finalizado","cancelado","pago"), defaultValue: "aberto" },
+  status: { type: DataTypes.ENUM("aberto","em_preparo","pronto","finalizado","cancelado","pago"), defaultValue: "aberto" },
   observacoes: { type: DataTypes.TEXT },
   total: { type: DataTypes.DECIMAL(10,2), defaultValue: 0 }
 }, {
@@ -20,5 +22,7 @@ const Pedido = sequelize.define("Pedido", {
 // Relacionamentos
 Pedido.belongsTo(Mesa, { foreignKey: "id_mesa" });
 Pedido.belongsTo(Atendente, { foreignKey: "id_atendente" });
+Pedido.hasMany(ItemPedido, { foreignKey: "id_pedido", as: "ItensPedido" });
+ItemPedido.belongsTo(Produto, { foreignKey: "id_produto" });
 
 module.exports = Pedido;

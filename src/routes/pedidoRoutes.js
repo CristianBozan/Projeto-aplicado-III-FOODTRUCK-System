@@ -5,6 +5,7 @@ const requireAuth = require("../middleware/requireAuth");
 
 router.use(requireAuth);
 
+router.get("/cozinha",   pedidoController.listarCozinha);
 router.get("/",          pedidoController.listar);
 router.get("/:id",       pedidoController.buscarPorId);
 router.post("/",         pedidoController.criar);

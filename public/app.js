@@ -93,6 +93,8 @@ document.addEventListener("DOMContentLoaded", () => {
       if (bc) bc.textContent = target.getAttribute('data-breadcrumb') || '';
 
       loadSectionData(sectionId);
+      if (sectionId === 'cozinha') iniciarAutoRefreshCozinha();
+      else pararAutoRefreshCozinha();
     });
   });
 
@@ -172,6 +174,9 @@ function loadSectionData(section) {
       break;
     case "vendas":
       loadVendas();
+      break;
+    case "cozinha":
+      loadCozinha();
       break;
     case "admin-dashboard":
       loadDashboard();
@@ -756,6 +761,119 @@ async function finalizarPedidoList(id) {
 }
 
 // ========== ALERTAS ==========
+// ══════════════════════════════════════════════
+//  PAINEL DA COZINHA (KDS)
+// ══════════════════════════════════════════════
+let _cozinhaTimer = null;
+
+async function loadCozinha() {
+  try {
+    const resp = await apiFetch(`${API_URL}/pedidos/cozinha`);
+    if (!resp.ok) return;
+    const data = await resp.json();
+    const todos = data.pedidos || data || [];
+
+    const novos   = todos.filter(p => p.status === 'aberto');
+    const preparo = todos.filter(p => p.status === 'em_preparo');
+    const prontos = todos.filter(p => p.status === 'pronto');
+
+    renderColunaCozinha('colNovos',   novos,   'novo',    'countNovos');
+    renderColunaCozinha('colPreparo', preparo, 'preparo', 'countPreparo');
+    renderColunaCozinha('colProntos', prontos, 'pronto',  'countProntos');
+
+    // Badge na sidebar
+    const total = novos.length + preparo.length + prontos.length;
+    const badge = document.getElementById('cozinhaBadge');
+    if (badge) {
+      badge.textContent = total;
+      badge.style.display = total > 0 ? 'inline-block' : 'none';
+    }
+  } catch (e) {
+    console.error('Erro ao carregar cozinha:', e);
+  }
+}
+
+function renderColunaCozinha(colId, pedidos, tipo, countId) {
+  const col   = document.getElementById(colId);
+  const count = document.getElementById(countId);
+  if (!col) return;
+  if (count) count.textContent = pedidos.length;
+
+  if (!pedidos.length) {
+    col.innerHTML = `<div class="cozinha-vazio">Nenhum pedido aqui</div>`;
+    return;
+  }
+
+  col.innerHTML = pedidos.map(p => {
+    const agora    = Date.now();
+    const abertura = p.data_hora ? new Date(p.data_hora).getTime() : agora;
+    const mins     = Math.floor((agora - abertura) / 60000);
+    const urgente  = mins >= 20;
+    const tempoTxt = mins < 1 ? 'agora' : `${mins} min`;
+    const mesa     = p.Mesa?.numero_mesa ? `Mesa ${p.Mesa.numero_mesa}` : (p.id_mesa ? `Mesa ${p.id_mesa}` : 'Viagem');
+    const atend    = p.Atendente?.nome || '';
+
+    let itensHtml = '<div class="cozinha-vazio" style="padding:0.3rem 0;">Sem itens registrados</div>';
+    if (p.ItensPedido?.length) {
+      itensHtml = p.ItensPedido.map(i =>
+        `<div class="cozinha-card-item">
+          <span class="cozinha-card-item-qtd">${i.quantidade}x</span>
+          <span>${escapeHtml(i.Produto?.nome || `Produto #${i.id_produto}`)}</span>
+        </div>`
+      ).join('');
+    }
+
+    let btnHtml = '';
+    if (tipo === 'novo') {
+      btnHtml = `<button class="cozinha-card-btn btn-iniciar" onclick="avancarCozinha(${p.id_pedido},'em_preparo')">🔥 Iniciar Preparo</button>`;
+    } else if (tipo === 'preparo') {
+      btnHtml = `<button class="cozinha-card-btn btn-pronto" onclick="avancarCozinha(${p.id_pedido},'pronto')">✅ Marcar como Pronto</button>`;
+    } else if (tipo === 'pronto') {
+      btnHtml = `<button class="cozinha-card-btn btn-entregar" onclick="avancarCozinha(${p.id_pedido},'finalizado')">💰 Entregar e Cobrar</button>`;
+    }
+
+    return `
+      <div class="cozinha-card card-${tipo}">
+        <div class="cozinha-card-header">
+          <span class="cozinha-card-id">#${String(p.id_pedido).padStart(4,'0')}</span>
+          <span class="cozinha-card-tempo${urgente?' tempo-urgente':''}">${tempoTxt}</span>
+        </div>
+        <div class="cozinha-card-mesa">${mesa}${atend ? ` · ${escapeHtml(atend)}` : ''}</div>
+        <div class="cozinha-card-itens">${itensHtml}</div>
+        ${btnHtml}
+      </div>`;
+  }).join('');
+}
+
+async function avancarCozinha(idPedido, novoStatus) {
+  try {
+    const resp = await apiFetch(`${API_URL}/pedidos/${idPedido}/status`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status: novoStatus })
+    });
+    if (!resp.ok) { showAlert('Erro ao atualizar pedido', 'error'); return; }
+    if (novoStatus === 'finalizado') showAlert(`Pedido #${String(idPedido).padStart(4,'0')} entregue! Faça a cobrança.`, 'success');
+    loadCozinha();
+  } catch (e) {
+    showAlert('Erro de conexão', 'error');
+  }
+}
+
+// Auto-refresh a cada 15s enquanto a seção cozinha estiver ativa
+function iniciarAutoRefreshCozinha() {
+  pararAutoRefreshCozinha();
+  _cozinhaTimer = setInterval(() => {
+    const sec = document.getElementById('cozinha');
+    if (sec && sec.classList.contains('active')) loadCozinha();
+    else pararAutoRefreshCozinha();
+  }, 15000);
+}
+
+function pararAutoRefreshCozinha() {
+  if (_cozinhaTimer) { clearInterval(_cozinhaTimer); _cozinhaTimer = null; }
+}
+
 function setPedidoFilter(status, btn) {
   const sel = document.getElementById('pedidoFilterStatus');
   if (sel) { sel.value = status; }
