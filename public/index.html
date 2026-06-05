@@ -1204,30 +1204,10 @@
                 <span id="carrinhoCount" style="background:#C41E3A;color:#fff;border-radius:12px;padding:2px 10px;font-size:0.78rem;font-weight:700;">0 itens</span>
               </div>
 
-              <div class="carrinho-header">
-                <div class="form-grid form-grid-tight">
-                  <div class="form-group">
-                    <label>Mesa: *</label>
-                    <select id="carrinhoMesa" required title="Mesa do carrinho">
-                      <option value="">Selecione a mesa...</option>
-                    </select>
-                  </div>
-                  <div class="form-group">
-                    <label>Forma de Pagamento</label>
-                    <select id="carrinhoPagamento" title="Forma de pagamento do pedido">
-                      <option value="">Selecione (opcional)</option>
-                      <option value="pix">PIX</option>
-                      <option value="credito">Crédito</option>
-                      <option value="debito">Débito</option>
-                      <option value="dinheiro">Dinheiro</option>
-                    </select>
-                  </div>
-                  <!-- Atendente oculto (preenchido automaticamente) -->
-                  <select id="carrinhoAtendente" style="display:none;" title="Atendente do carrinho">
-                    <option value="">Selecione o atendente...</option>
-                  </select>
-                </div>
-              </div>
+              <!-- Atendente oculto (preenchido automaticamente) -->
+              <select id="carrinhoAtendente" style="display:none;" title="Atendente do carrinho">
+                <option value="">Selecione o atendente...</option>
+              </select>
 
               <div id="carrinhoItens" class="carrinho-itens">
                 <div class="empty-state">
@@ -1258,6 +1238,27 @@
                   <span>TOTAL</span>
                   <span id="carrinhoTotal" style="color:#C41E3A;font-family:'Syne',sans-serif;font-size:1.2rem;">R$ 0,00</span>
                 </div>
+
+                <!-- Mesa e Pagamento abaixo do total -->
+                <div style="display:flex;flex-direction:column;gap:0.6rem;margin-bottom:1rem;">
+                  <div>
+                    <label style="font-size:0.8rem;font-weight:600;color:#555;margin-bottom:3px;display:block;">Mesa *</label>
+                    <select id="carrinhoMesa" required title="Mesa do carrinho" style="width:100%;">
+                      <option value="">Selecione a mesa...</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label style="font-size:0.8rem;font-weight:600;color:#555;margin-bottom:3px;display:block;">Forma de Pagamento</label>
+                    <select id="carrinhoPagamento" title="Forma de pagamento do pedido" style="width:100%;">
+                      <option value="">Selecione (opcional)</option>
+                      <option value="pix">PIX</option>
+                      <option value="credito">Crédito</option>
+                      <option value="debito">Débito</option>
+                      <option value="dinheiro">Dinheiro</option>
+                    </select>
+                  </div>
+                </div>
+
                 <button class="btn btn-success" style="width:100%;margin-bottom:0.5rem;padding:0.75rem;" onclick="finalizarPedido()">✅ Confirmar Pedido</button>
                 <button class="btn btn-danger" style="width:100%;padding:0.6rem;background:transparent;color:#C41E3A;border:1.5px solid #C41E3A;" onclick="limparCarrinho()">🗑️ Limpar Carrinho</button>
               </div>
