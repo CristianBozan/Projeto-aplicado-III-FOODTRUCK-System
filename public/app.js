@@ -302,8 +302,8 @@ async function loadEstoque() {
     const data = await resp.json();
     const produtos = data.produtos || data || [];
 
-    const emEstoque = produtos.filter(p => (p.estoque||0) > 0).length;
-    const esgotados = produtos.filter(p => (p.estoque||0) <= 0).length;
+    const emEstoque = produtos.filter(p => (p.quantidade_estoque||0) > 0).length;
+    const esgotados = produtos.filter(p => (p.quantidade_estoque||0) <= 0).length;
     const setEl = (id,v) => { const el=document.getElementById(id); if(el) el.textContent=v; };
     setEl('estTotalProd', produtos.length);
     setEl('estEmEstoque', emEstoque);
@@ -323,14 +323,14 @@ function renderEstoqueTable(lista) {
   if (!tbody) return;
   if (!lista.length) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#aaa;padding:1rem;">Nenhum produto encontrado</td></tr>'; return; }
   tbody.innerHTML = lista.map(p => {
-    const esgotado = (p.estoque||0) <= 0;
+    const esgotado = (p.quantidade_estoque||0) <= 0;
     return `<tr>
       <td>${escapeHtml(p.emoji||'🍔')} ${escapeHtml(p.nome)}</td>
       <td>${escapeHtml(p.categoria||'—')}</td>
       <td>R$ ${parseFloat(p.preco||0).toLocaleString('pt-BR',{minimumFractionDigits:2})}</td>
-      <td>${p.estoque ?? '—'}</td>
+      <td>${p.quantidade_estoque ?? '—'}</td>
       <td><span class="${esgotado?'badge-esgotado':'badge-estoque'}">${esgotado?'Esgotado':'Em estoque'}</span></td>
-      <td><button class="action-btn action-edit" onclick="editarProduto(${p.id})">✏️</button></td>
+      <td><button class="action-btn action-edit" onclick="editarProduto(${p.id_produto})">✏️</button></td>
     </tr>`;
   }).join('');
 }
@@ -844,8 +844,8 @@ async function loadDashboard() {
       if (prodResp.ok) {
         const prodData = await prodResp.json();
         const prods = prodData.produtos || prodData || [];
-        setEl('statEstoque', prods.filter(p=>(p.estoque||0)>0).length);
-        const esgotados = prods.filter(p=>(p.estoque||0)<=0).length;
+        setEl('statEstoque', prods.filter(p=>(p.quantidade_estoque||0)>0).length);
+        const esgotados = prods.filter(p=>(p.quantidade_estoque||0)<=0).length;
         if (esgotados > 0) setEl('statEstoqueVar', `−${esgotados} esgotados`);
       }
     } catch(e){}
