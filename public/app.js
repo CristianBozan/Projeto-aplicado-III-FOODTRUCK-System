@@ -894,15 +894,15 @@ async function loadDashboard() {
       const pedResp = await apiFetch(`${API_URL}/pedidos`);
       if (pedResp.ok) {
         const pedData = await pedResp.json();
-        const pedidos = (pedData.pedidos || pedData || []).sort((a,b)=>b.id-a.id).slice(0,5);
+        const pedidos = (pedData.pedidos || pedData || []).sort((a,b)=>(b.id_pedido||0)-(a.id_pedido||0)).slice(0,5);
         const tbody = document.getElementById('dashPedidosBody');
         if (tbody) {
           if (!pedidos.length) { tbody.innerHTML='<tr><td colspan="6" style="text-align:center;color:#aaa;padding:1rem;">Nenhum pedido</td></tr>'; }
           else tbody.innerHTML = pedidos.map(p => {
             const statusCls = p.status==='pago'?'badge-pago':p.status==='finalizado'?'badge-fin':p.status==='cancelado'?'badge-cancel':'badge-aberto';
             return `<tr>
-              <td>#${String(p.id).padStart(3,'0')}</td>
-              <td>${escapeHtml(p.Mesa?.numero||p.mesa_id||'—')}</td>
+              <td>#${String(p.id_pedido||0).padStart(3,'0')}</td>
+              <td>${escapeHtml(p.Mesa?.numero_mesa||p.id_mesa||'—')}</td>
               <td>${escapeHtml(p.Atendente?.nome||'—')}</td>
               <td>R$ ${parseFloat(p.total||0).toLocaleString('pt-BR',{minimumFractionDigits:2})}</td>
               <td>${escapeHtml(p.forma_pagamento||'—')}</td>
