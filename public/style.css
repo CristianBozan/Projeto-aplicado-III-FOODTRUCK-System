@@ -1282,3 +1282,29 @@ tbody td {
   align-items: center;
 }
 .btn-toggle-senha:hover { color: #C0392B; }
+
+/* ── Dashboard grid 2 colunas responsivo ── */
+.dash-grid-2col {
+  display: grid;
+  grid-template-columns: 1fr 260px;
+  gap: 1.5rem;
+  align-items: start;
+}
+@media (max-width: 768px) {
+  .dash-grid-2col {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ── Gráficos dashboard responsivos ── */
+.dash-graficos {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+@media (max-width: 768px) {
+  .dash-graficos {
+    grid-template-columns: 1fr;
+  }
+}

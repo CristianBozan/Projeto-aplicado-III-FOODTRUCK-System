@@ -931,8 +931,20 @@
           </div>
         </div>
 
+        <!-- Gráficos -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-bottom:1.5rem;" class="dash-graficos">
+          <div class="card" style="margin-bottom:0;">
+            <h3 style="font-size:0.9rem;color:#888;margin-bottom:0.75rem;">Faturamento por Dia</h3>
+            <canvas id="chartVendasDia" height="160"></canvas>
+          </div>
+          <div class="card" style="margin-bottom:0;">
+            <h3 style="font-size:0.9rem;color:#888;margin-bottom:0.75rem;">Vendas por Pagamento</h3>
+            <canvas id="chartPagamento" height="160"></canvas>
+          </div>
+        </div>
+
         <!-- Pedidos recentes + Acesso rápido -->
-        <div style="display:grid; grid-template-columns:1fr 260px; gap:1.5rem; align-items:start;">
+        <div class="dash-grid-2col">
 
           <div class="card" style="margin-bottom:0;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
