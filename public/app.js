@@ -1063,6 +1063,39 @@ async function loadDashboard() {
       console.warn('Falha ao carregar vendas por atendente:', err);
     }
 
+    // Ranking de atendentes no dashboard
+    try {
+      const rankResp = await apiFetch(`${API_URL}/relatorios/vendas-por-atendente`);
+      if (rankResp.ok) {
+        const ranking = await rankResp.json();
+        const el = document.getElementById('rankingAtendentes');
+        if (el && Array.isArray(ranking) && ranking.length) {
+          const max = parseFloat(ranking[0].total_vendas);
+          const medalhas = ['🥇','🥈','🥉'];
+          el.innerHTML = ranking.map((a, i) => {
+            const total = parseFloat(a.total_vendas);
+            const pct   = max > 0 ? (total / max * 100).toFixed(0) : 0;
+            const medal = medalhas[i] || `${i+1}º`;
+            return `
+              <div style="display:flex;align-items:center;gap:0.75rem;">
+                <span style="font-size:1.1rem;width:24px;text-align:center;">${medal}</span>
+                <div style="flex:1;">
+                  <div style="display:flex;justify-content:space-between;margin-bottom:3px;">
+                    <span style="font-size:0.88rem;font-weight:600;color:#1A1A1A;">${escapeHtml(a.nome_atendente)}</span>
+                    <span style="font-size:0.88rem;color:#C41E3A;font-weight:700;">R$ ${total.toLocaleString('pt-BR',{minimumFractionDigits:2})}</span>
+                  </div>
+                  <div style="background:#f0f0f0;border-radius:6px;height:6px;">
+                    <div style="background:#C41E3A;width:${pct}%;height:6px;border-radius:6px;transition:width 0.4s;"></div>
+                  </div>
+                </div>
+              </div>`;
+          }).join('');
+        }
+      }
+    } catch (err) {
+      console.warn('Falha ao carregar ranking atendentes:', err);
+    }
+
   } catch (error) {
     console.error("Erro ao carregar dashboard:", error);
     showAlert("Erro ao carregar dados do dashboard", "error");
