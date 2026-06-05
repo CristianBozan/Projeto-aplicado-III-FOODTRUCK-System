@@ -1259,3 +1259,26 @@ tbody td {
     gap: 1rem;
   }
 }
+
+/* ── Toggle senha (ícone olho) ── */
+.input-password-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.input-password-wrap input {
+  flex: 1;
+  padding-right: 2.5rem;
+}
+.btn-toggle-senha {
+  position: absolute;
+  right: 0.6rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #888;
+  padding: 0;
+  display: flex;
+  align-items: center;
+}
+.btn-toggle-senha:hover { color: #C0392B; }
