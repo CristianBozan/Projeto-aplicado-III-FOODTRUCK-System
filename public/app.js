@@ -447,30 +447,29 @@ async function loadSincronizacoes() {
 
 // Função para disparar sincronização / backup via endpoint administrativo
 async function syncBackup() {
-  const btn = document.getElementById('syncBackupBtn');
+  const btn = document.getElementById('syncNowBtn') || document.getElementById('syncBackupBtn');
   if (!btn) return;
-  // solicita nome do backup ao usuário
   const nome = prompt('Informe um nome para o backup:');
-  if (nome === null) return; // usuário cancelou
+  if (nome === null) return;
 
   const originalText = btn.textContent;
   try {
     btn.disabled = true;
-    btn.textContent = '⏳ Criando backup...';
+    btn.textContent = '⏳ Sincronizando...';
 
     const resp = await apiFetch(`${API_URL}/backups`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ nome }) });
     if (!resp.ok) {
       const err = await resp.json().catch(() => null);
-      showAlert(err?.message || 'Erro ao executar backup', 'error');
+      showAlert(err?.message || 'Erro ao sincronizar', 'error');
       return;
     }
     const result = await resp.json().catch(() => null);
-    showAlert(result?.message || 'Backup criado com sucesso', 'success');
-    // atualizar lista de backups se modal aberto
+    showAlert(result?.message || 'Sincronização realizada com sucesso', 'success');
+    loadSincronizacoes();
     try { fetchBackups(); } catch(e){}
   } catch (err) {
-    console.error('Erro ao criar backup:', err);
-    showAlert(err?.message || 'Erro ao criar backup', 'error');
+    console.error('Erro ao sincronizar:', err);
+    showAlert(err?.message || 'Erro ao sincronizar', 'error');
   } finally {
     btn.disabled = false;
     try { btn.textContent = originalText; } catch(e) {}
