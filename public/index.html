@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Food Truck System</title>
-  <link rel="stylesheet" href="style.css?v=3.2">
+  <link rel="stylesheet" href="style.css?v=3.3">
   <style>
     /* ============================================================
        LAYOUT COM MENU LATERAL
@@ -1911,19 +1911,8 @@
        SCRIPTS
   ==================================================== -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="app.js?v=3.2"></script>
+  <script src="app.js?v=3.3"></script>
   <script>
-    // ---- FILTRO CARDÁPIO ----
-    function filtrarCardapio(termo) {
-      const t = termo.toLowerCase().trim();
-      const cards = document.querySelectorAll('#cardapioGrid .produto-card');
-      cards.forEach(card => {
-        const nome = (card.querySelector('.produto-nome') || card).textContent.toLowerCase();
-        const cat  = (card.querySelector('.produto-categoria') || {textContent:''}).textContent.toLowerCase();
-        card.style.display = (!t || nome.includes(t) || cat.includes(t)) ? '' : 'none';
-      });
-    }
-
     // ---- SIDEBAR TOGGLE (mobile) ----
     const sidebar        = document.getElementById('sidebar');
     const sidebarOverlay = document.getElementById('sidebarOverlay');
