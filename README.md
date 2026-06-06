@@ -486,15 +486,18 @@ DATABASE_URL=<connection string do MySQL Railway>
 
 > Para gerar um segredo seguro: `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"`
 
-### 9.3 O que os avaliadores precisam
+### 9.3 Acesso para avaliadores / testers
 
-Para avaliar a aplicação é necessário apenas:
-- **URL pública** do deploy no Railway
-- **Login e senha** do usuário de avaliação (fornecidos separadamente — não estão no repositório)
+| Campo | Valor |
+|---|---|
+| **URL** | https://projeto-aplicado-iii-foodtruck-system-production.up.railway.app |
+| **Login** | `avaliador` |
+| **Senha** | `Senai@2026` |
+| **Nível de acesso** | Gerente (acesso completo a todas as funcionalidades) |
 
-Avaliadores **não** têm acesso ao Railway, ao banco de dados, às variáveis de ambiente ou a qualquer credencial pessoal do desenvolvedor.
+Avaliadores **não** têm acesso ao Railway, ao banco de dados, às variáveis de ambiente ou a qualquer credencial do desenvolvedor.
 
-> Para configurar o ambiente de avaliação e restaurar dados após os testes, consulte **[AVALIACAO.md](AVALIACAO.md)**.
+> Para um guia completo do que testar e como restaurar os dados após a avaliação, consulte **[AVALIACAO.md](AVALIACAO.md)**.
 
 ---
 
