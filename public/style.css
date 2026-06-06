@@ -1236,6 +1236,10 @@ tbody td {
     grid-template-columns: 1fr;
   }
 
+  .produto-imagem {
+    height: 140px;
+  }
+
   .carrinho-item {
     flex-direction: column;
     text-align: center;

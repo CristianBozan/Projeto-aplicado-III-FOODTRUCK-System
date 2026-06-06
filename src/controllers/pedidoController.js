@@ -39,8 +39,18 @@ module.exports = {
         if (end)   where.data_hora[Op.lte] = new Date(end   + 'T23:59:59');
       }
 
-      const pedidos = await Pedido.findAll({ where, include: [Mesa, Atendente], order: [['data_hora', 'DESC']] });
-      res.json(pedidos);
+      const limit  = parseInt(req.query.limit)  || 100;
+      const offset = parseInt(req.query.offset) || 0;
+
+      const { count, rows: pedidos } = await Pedido.findAndCountAll({
+        where,
+        include: [Mesa, Atendente],
+        order: [['data_hora', 'DESC']],
+        limit,
+        offset
+      });
+
+      res.json({ pedidos, total: count, limit, offset });
     } catch (err) {
       res.status(500).json({ error: err.message });
     }

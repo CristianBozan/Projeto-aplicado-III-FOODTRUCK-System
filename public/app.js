@@ -22,8 +22,9 @@ function apiFetch(url, options = {}) {
 }
 
 // Carrinho de compras global
- 
-let carrinho = [];
+let carrinho = (function() {
+  try { return JSON.parse(localStorage.getItem('ft_carrinho') || '[]'); } catch(e) { return []; }
+})();
 let chartVendasDia = null;
 let chartPagamento = null;
 let chartAtendente = null;
@@ -2168,39 +2169,72 @@ async function deleteMesa(id) {
 }
 
 // ========== PEDIDOS ==========
+const PEDIDOS_LIMIT = 100;
+
 async function loadPedidos() {
   // Carrega o cardápio
   await loadCardapio();
-  
+
   // Carrega mesas e atendentes para o carrinho
   await loadMesasCarrinho();
   await loadAtendentesCarrinho();
-  
+
   // Carrega lista de pedidos realizados
   const loading = document.getElementById("loadingPedidos");
   const tbody = document.getElementById("pedidoTableBody");
-  
+
   loading.classList.add("show");
   tbody.innerHTML = "";
-  
+
   try {
-    const response = await apiFetch(`${API_URL}/pedidos`);
-    const pedidos = await response.json();
+    const response = await apiFetch(`${API_URL}/pedidos?limit=${PEDIDOS_LIMIT}&offset=0`);
+    const data = await response.json();
+    const pedidos = Array.isArray(data) ? data : (data.pedidos || []);
+    const total   = data.total || pedidos.length;
 
-    // Cache local dos pedidos para filtros/ordenacao e badge
-    window.cachedPedidos = pedidos || [];
+    window.cachedPedidos = pedidos;
+    window._pedidosOffset = pedidos.length;
+    window._pedidosTotal  = total;
 
-    // Renderiza usando cache (aplica filtros/ordenacao se houver)
     renderPedidosFromCache();
-
-    // Atualiza badge de pedidos abertos
     updateVendasBadge();
+    atualizarBotaoCarregarMais();
   } catch (error) {
     console.error("Erro ao carregar pedidos:", error);
     showAlert("Erro ao carregar pedidos", "error");
   } finally {
     loading.classList.remove("show");
   }
+}
+
+async function carregarMaisPedidos() {
+  const btn = document.getElementById('btnCarregarMaisPedidos');
+  if (btn) { btn.disabled = true; btn.textContent = 'Carregando...'; }
+  try {
+    const offset = window._pedidosOffset || 0;
+    const response = await apiFetch(`${API_URL}/pedidos?limit=${PEDIDOS_LIMIT}&offset=${offset}`);
+    const data = await response.json();
+    const novos = Array.isArray(data) ? data : (data.pedidos || []);
+
+    window.cachedPedidos = [...(window.cachedPedidos || []), ...novos];
+    window._pedidosOffset = (window._pedidosOffset || 0) + novos.length;
+
+    renderPedidosFromCache();
+    updateVendasBadge();
+    atualizarBotaoCarregarMais();
+  } catch (error) {
+    showAlert("Erro ao carregar mais pedidos", "error");
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = 'Carregar mais'; }
+  }
+}
+
+function atualizarBotaoCarregarMais() {
+  const btn = document.getElementById('btnCarregarMaisPedidos');
+  if (!btn) return;
+  const total   = window._pedidosTotal  || 0;
+  const loaded  = window._pedidosOffset || 0;
+  btn.style.display = loaded < total ? 'block' : 'none';
 }
 
 // Conectar listeners dos controles de filtro/ordenacao (se existirem)
@@ -2358,6 +2392,7 @@ async function adicionarAoCarrinho(idProduto) {
 
 // Atualiza a visualização do carrinho
 function atualizarCarrinho() {
+  try { localStorage.setItem('ft_carrinho', JSON.stringify(carrinho)); } catch(e) {}
   const carrinhoDiv = document.getElementById("carrinhoItens");
   
   // 1. Botão Confirmar desabilitado com carrinho vazio
@@ -2755,6 +2790,7 @@ async function finalizarPedido() {
 
     // Limpa o carrinho e desconto
     carrinho = [];
+    try { localStorage.removeItem('ft_carrinho'); } catch(e) {}
     try { const d = document.getElementById('carrinhoDesconto'); if (d) d.value = ''; } catch(e) {}
     atualizarCarrinho();
 

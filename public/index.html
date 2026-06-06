@@ -934,6 +934,10 @@
             <span class="stat-val" id="statMesas">—</span>
             <span style="font-size:0.78rem;color:#888;" id="statMesasVar"></span>
           </div>
+          <div class="admin-stat-card">
+            <span class="stat-label">Ticket médio</span>
+            <span class="stat-val" id="statTicket">R$ —</span>
+          </div>
         </div>
 
         <!-- Filtro de período -->
@@ -1370,6 +1374,9 @@
               </thead>
               <tbody id="pedidoTableBody"></tbody>
             </table>
+          </div>
+          <div style="text-align:center;margin-top:1rem;">
+            <button id="btnCarregarMaisPedidos" class="btn btn-secondary" onclick="carregarMaisPedidos()" style="display:none;">Carregar mais</button>
           </div>
         </div>
 
