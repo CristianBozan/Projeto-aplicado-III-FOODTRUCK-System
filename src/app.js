@@ -90,7 +90,7 @@ app.use((err, req, res, _next) => {
 const PORT = process.env.PORT || 3000;
 
 if (require.main === module) {
-  sequelize.sync({ alter: true }).then(() => {
+  sequelize.sync().then(() => {
     console.log("Banco sincronizado!");
 
     app.listen(PORT, () => {
