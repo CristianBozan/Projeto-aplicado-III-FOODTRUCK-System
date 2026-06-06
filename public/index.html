@@ -972,20 +972,6 @@
           </div>
         </div>
 
-        <!-- Gráfico de Vendas por Atendente -->
-        <div class="card" style="margin-bottom:1.5rem;">
-          <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.6rem;margin-bottom:0.75rem;">
-            <h3 style="font-size:0.9rem;color:#888;margin:0;">Vendas por Atendente</h3>
-            <div style="display:flex;align-items:center;gap:0.5rem;">
-              <select id="selectAtendente" style="font-size:0.82rem;padding:0.3rem 0.6rem;border:1px solid #ddd;border-radius:6px;">
-                <option value="">Todos</option>
-              </select>
-              <button id="applyAtendente" class="btn btn-primary" style="font-size:0.8rem;padding:0.3rem 0.8rem;">Filtrar</button>
-            </div>
-          </div>
-          <canvas id="chartAtendente"></canvas>
-        </div>
-
         <!-- Pedidos recentes (full width) -->
         <div class="card" style="margin-bottom:1.5rem;">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
@@ -1004,14 +990,26 @@
           </div>
         </div>
 
-        <!-- Ranking de atendentes -->
+        <!-- Desempenho por Atendente — tabela unificada -->
         <div class="card" style="margin-top:1.5rem;">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;">
             <h3 style="font-size:1rem;color:#1A1A1A;margin:0;">Desempenho por Atendente</h3>
-            <span style="font-size:0.78rem;color:#888;">Total acumulado</span>
+            <span style="font-size:0.78rem;color:#888;">Total acumulado no período</span>
           </div>
-          <div id="rankingAtendentes" style="display:flex;flex-direction:column;gap:0.6rem;">
-            <div style="text-align:center;color:#aaa;padding:1rem;">Carregando...</div>
+          <div class="table-container" style="margin-top:0;">
+            <table>
+              <thead>
+                <tr>
+                  <th style="width:48px;text-align:center;">#</th>
+                  <th>Atendente</th>
+                  <th style="text-align:right;">Total Vendido</th>
+                  <th>Participação</th>
+                </tr>
+              </thead>
+              <tbody id="rankingAtendentes">
+                <tr><td colspan="4" style="text-align:center;color:#aaa;padding:1.5rem;">Carregando...</td></tr>
+              </tbody>
+            </table>
           </div>
         </div>
 

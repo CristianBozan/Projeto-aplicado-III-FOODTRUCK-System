@@ -27,7 +27,6 @@ let carrinho = (function() {
 })();
 let chartVendasDia = null;
 let chartPagamento = null;
-let chartAtendente = null;
 
 // Navegação entre seções
 document.addEventListener("DOMContentLoaded", () => {
@@ -1316,17 +1315,6 @@ async function loadDashboard() {
       console.warn('Erro ao criar chartPagamento:', e);
     }
 
-    // Carrega gráfico de Vendas por Atendente (Top N selecionável)
-    try {
-      // carrega select de atendentes (apenas uma vez por sessão)
-      try { populateAtendentesSelect(); } catch(e){}
-      const sel = document.getElementById('selectAtendente');
-      const atendenteId = sel && sel.value ? sel.value : '';
-      await loadVendasPorAtendente(null, atendenteId || null);
-    } catch (err) {
-      console.warn('Falha ao carregar vendas por atendente:', err);
-    }
-
     // Ranking de atendentes no dashboard
     try {
       const rankResp = await apiFetch(`${API_URL}/relatorios/vendas-por-atendente`);
@@ -1334,25 +1322,25 @@ async function loadDashboard() {
         const ranking = await rankResp.json();
         const el = document.getElementById('rankingAtendentes');
         if (el && Array.isArray(ranking) && ranking.length) {
-          const max = parseFloat(ranking[0].total_vendas);
+          const totalGeral = ranking.reduce((s, a) => s + parseFloat(a.total_vendas), 0);
           const medalhas = ['🥇','🥈','🥉'];
           el.innerHTML = ranking.map((a, i) => {
             const total = parseFloat(a.total_vendas);
-            const pct   = max > 0 ? (total / max * 100).toFixed(0) : 0;
+            const pct   = totalGeral > 0 ? (total / totalGeral * 100).toFixed(1) : 0;
             const medal = medalhas[i] || `${i+1}º`;
-            return `
-              <div style="display:flex;align-items:center;gap:0.75rem;">
-                <span style="font-size:1.1rem;width:24px;text-align:center;">${medal}</span>
-                <div style="flex:1;">
-                  <div style="display:flex;justify-content:space-between;margin-bottom:3px;">
-                    <span style="font-size:0.88rem;font-weight:600;color:#1A1A1A;">${escapeHtml(a.nome_atendente)}</span>
-                    <span style="font-size:0.88rem;color:#C41E3A;font-weight:700;">R$ ${total.toLocaleString('pt-BR',{minimumFractionDigits:2})}</span>
+            return `<tr>
+              <td style="text-align:center;font-size:1rem;">${medal}</td>
+              <td style="font-weight:600;color:#1A1A1A;">${escapeHtml(a.nome_atendente)}</td>
+              <td style="text-align:right;color:#C41E3A;font-weight:700;white-space:nowrap;">R$ ${total.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})}</td>
+              <td style="min-width:140px;">
+                <div style="display:flex;align-items:center;gap:0.5rem;">
+                  <div style="flex:1;background:#f0f0f0;border-radius:6px;height:8px;">
+                    <div style="background:#C41E3A;width:${pct}%;height:8px;border-radius:6px;transition:width 0.4s;"></div>
                   </div>
-                  <div style="background:#f0f0f0;border-radius:6px;height:6px;">
-                    <div style="background:#C41E3A;width:${pct}%;height:6px;border-radius:6px;transition:width 0.4s;"></div>
-                  </div>
+                  <span style="font-size:0.72rem;color:#888;white-space:nowrap;">${pct}%</span>
                 </div>
-              </div>`;
+              </td>
+            </tr>`;
           }).join('');
         }
       }
@@ -1800,51 +1788,6 @@ async function deleteAtendente(id) {
   }
 }
 
-// ========== PRODUTOS ==========
-async function loadVendasPorAtendente(top = null, atendenteId = null) {
-  try {
-    let url = `${API_URL}/relatorios/vendas-por-atendente`;
-    const params = [];
-    if (top && Number.isInteger(top) && top > 0) params.push(`top=${encodeURIComponent(top)}`);
-    if (atendenteId) params.push(`atendente=${encodeURIComponent(atendenteId)}`);
-    if (params.length) url += `?${params.join('&')}`;
-    const resp = await apiFetch(url);
-    if (!resp.ok) {
-      console.warn('Resposta não OK ao buscar vendas por atendente');
-      return;
-    }
-    const data = await resp.json();
-    if (!Array.isArray(data) || data.length === 0) {
-      if (chartAtendente) { try { chartAtendente.destroy(); } catch(e){} chartAtendente = null; }
-      return;
-    }
-
-    const labels = data.map(d => d.nome_atendente || `ID ${d.id_atendente}`);
-    const valores = data.map(d => parseFloat(d.total_vendas) || 0);
-
-    const ctx = document.getElementById('chartAtendente');
-    if (!ctx) return;
-
-    if (chartAtendente) { try { chartAtendente.destroy(); } catch(e) { console.warn('Erro destruindo chartAtendente', e); } chartAtendente = null; }
-
-    chartAtendente = new Chart(ctx, {
-      type: 'bar',
-      data: { labels, datasets: [{ label: 'Total vendido (R$)', data: valores, backgroundColor: '#118AB2' }] },
-      options: {
-        indexAxis: 'y', // horizontal bars
-        responsive: true,
-        plugins: { legend: { display: false } },
-        scales: {
-          x: { display: true, title: { display: true, text: 'R$' } },
-          y: { display: true, title: { display: true, text: 'Atendente' } }
-        }
-      }
-    });
-  } catch (err) {
-    console.error('Erro carregando vendas por atendente:', err);
-  }
-}
-
 // popula select de atendentes
 async function populateAtendentesSelect() {
   try {
@@ -1866,15 +1809,6 @@ async function populateAtendentesSelect() {
   }
 }
 
-// conecta handler do seletor de atendente
-const applyAtBtn = document.getElementById('applyAtendente');
-if (applyAtBtn) {
-  applyAtBtn.addEventListener('click', () => {
-    const sel = document.getElementById('selectAtendente');
-    const id = sel && sel.value ? sel.value : null;
-    loadVendasPorAtendente(null, id);
-  });
-}
 
 
 // Permite buscar ao pressionar Enter no input de busca (movido para fora do DOMContentLoaded redundante)
