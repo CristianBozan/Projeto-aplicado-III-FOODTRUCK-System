@@ -99,6 +99,11 @@ A aplicação utiliza uma API REST em Node.js (Express + Sequelize) e um fronten
 | **mysql2** | ^3.15.3 | Driver MySQL utilizado pelo Sequelize |
 | **jsonwebtoken** | ^9.0.3 | Geração e validação de tokens JWT para autenticação |
 | **bcryptjs** | ^3.0.3 | Hash seguro de senhas dos atendentes |
+| **helmet** | ^8.1.0 | Headers de segurança HTTP e Content Security Policy (CSP) |
+| **cors** | ^2.8.6 | Controle de origens permitidas para requisições cross-origin |
+| **express-rate-limit** | ^8.3.2 | Limitação de requisições por IP (proteção contra força bruta) |
+| **multer** | ^2.1.1 | Upload de imagens de produtos (multipart/form-data) |
+| **cloudinary** | ^2.10.0 | Armazenamento e entrega de imagens de produtos na nuvem |
 | **exceljs** | ^4.4.0 | Geração de planilhas Excel (.xlsx) para exportação |
 | **node-cron** | ^4.2.1 | Agendamento de tarefas (backups automáticos diários) |
 | **dotenv** | ^17.2.3 | Leitura de variáveis de ambiente a partir do arquivo `.env` |
@@ -301,6 +306,7 @@ projeto-aplicado-3/
     │   ├── auditoriaController.js
     │   └── sincronizacaoController.js
     ├── models/
+    │   ├── associations.js     # Define relacionamentos entre os models (hasMany, belongsTo)
     │   ├── Atendente.js        # Hash de senha via bcryptjs (hooks Sequelize)
     │   ├── Backup.js
     │   ├── EstoqueLog.js
@@ -483,7 +489,7 @@ O script cria automaticamente:
 | CORS | Configurável via `ALLOWED_ORIGINS`. Em produção, restringir à URL do Railway. |
 | Erros internos | Em `NODE_ENV=production`, mensagens de erro do servidor são ocultadas (`"Erro interno no servidor."`). |
 | Mass assignment | Controllers de Produto e Atendente utilizam whitelist de campos — campos extras no corpo da requisição são ignorados. |
-| Payload | `express.json({ limit: '10kb' })` — rejeita corpos maiores que 10 KB. |
+| Payload | `express.json({ limit: '5mb' })` — limite generoso para suportar upload de imagens em base64. |
 
 ### 9.2 Variáveis obrigatórias em produção (Railway)
 
