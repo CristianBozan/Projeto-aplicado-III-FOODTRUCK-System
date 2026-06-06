@@ -33,7 +33,7 @@ app.use(helmet({
       defaultSrc:  ["'self'"],
       scriptSrc:   ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net"],
       styleSrc:    ["'self'", "'unsafe-inline'"],
-      imgSrc:      ["'self'", "data:", "blob:", "https://res.cloudinary.com"],
+      imgSrc:      ["'self'", "data:", "blob:", "https:"],
       connectSrc:  ["'self'"],
       fontSrc:     ["'self'"],
       objectSrc:   ["'none'"],
@@ -53,7 +53,7 @@ app.use('/auth/login', limiterLogin);
 app.use(limiterGeral);
 
 // Middlewares
-app.use(express.json({ limit: '10kb' }));
+app.use(express.json({ limit: '5mb' }));
 app.use(express.static(path.join(__dirname, "../public")));
 
 // Pasta de imagens local — opcional, não existe em produção na nuvem
