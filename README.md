@@ -29,7 +29,8 @@ Aplicação web cliente/servidor desenvolvida para digitalizar e otimizar a gest
 - [6. Estrutura de Pastas](#6-estrutura-de-pastas)
 - [7. API REST — Endpoints](#7-api-rest--endpoints)
 - [8. Como Executar o Projeto](#8-como-executar-o-projeto)
-- [9. Considerações Finais](#9-considerações-finais)
+- [9. Segurança](#9-segurança)
+- [10. Considerações Finais](#10-considerações-finais)
 
 ---
 
@@ -452,9 +453,52 @@ O script cria automaticamente:
 
 ---
 
-## 9. Considerações Finais
+## 9. Segurança
 
-O **Food Truck System v3.3** representa a entrega do MVP do Projeto Aplicado III — Sprint 4. O sistema digitalizou completamente o processo de atendimento do food truck do Sr. Elpídio, substituindo o papel por uma interface web rápida e intuitiva.
+### 9.1 Medidas implementadas
+
+| Camada | Mecanismo |
+|---|---|
+| Autenticação | JWT com expiração configurável (`JWT_EXPIRES`). `JWT_SECRET` obrigatório — servidor não sobe sem ele. |
+| Senhas de atendentes | Hash bcryptjs (salt 10). Nunca retornadas pela API (`attributes: { exclude: ['senha'] }`). |
+| Gerente | Credenciais via variáveis de ambiente. Se `GERENTE_SENHA` não estiver definida, login de gerente fica desabilitado automaticamente. |
+| Backups | Protegidos por `requireBackupAuth` — exige header `x-backup-token` com o valor de `BACKUP_TOKEN`. |
+| Rate limiting | Login: 20 tentativas / 15 min. Geral: 200 req / 15 min (express-rate-limit). |
+| Headers HTTP | `helmet` ativo com CSP restritivo: scripts apenas de `'self'` e `cdn.jsdelivr.net`; iframes bloqueados; objetos bloqueados. |
+| CORS | Configurável via `ALLOWED_ORIGINS`. Em produção, restringir à URL do Railway. |
+| Erros internos | Em `NODE_ENV=production`, mensagens de erro do servidor são ocultadas (`"Erro interno no servidor."`). |
+| Mass assignment | Controllers de Produto e Atendente utilizam whitelist de campos — campos extras no corpo da requisição são ignorados. |
+| Payload | `express.json({ limit: '10kb' })` — rejeita corpos maiores que 10 KB. |
+
+### 9.2 Variáveis obrigatórias em produção (Railway)
+
+Configure as seguintes variáveis no painel do serviço da aplicação no Railway:
+
+```
+NODE_ENV=production
+JWT_SECRET=<chave aleatória de 32+ caracteres>
+GERENTE_LOGIN=<login do gerente>
+GERENTE_SENHA=<senha forte>
+BACKUP_TOKEN=<token secreto para backup>
+ALLOWED_ORIGINS=https://<sua-url>.up.railway.app
+DATABASE_URL=<connection string do MySQL Railway>
+```
+
+> Para gerar um segredo seguro: `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"`
+
+### 9.3 O que os avaliadores precisam
+
+Para avaliar a aplicação é necessário apenas:
+- **URL pública** do deploy no Railway
+- **Login e senha** do gerente (fornecidos separadamente — não estão no repositório)
+
+Avaliadores **não** têm acesso ao Railway, ao banco de dados, às variáveis de ambiente ou a qualquer credencial pessoal do desenvolvedor.
+
+---
+
+## 10. Considerações Finais
+
+O **Food Truck System v3.3** representa a entrega do MVP completo do Projeto Aplicado III — Sprint 4. O sistema digitalizou completamente o processo de atendimento do food truck do Sr. Elpídio, substituindo o papel por uma interface web rápida e intuitiva.
 
 **Destaques da v3.3:**
 - Auditoria completa de estoque: saída ao criar pedido, entrada ao cancelar (com devolução automática), ajuste ao editar produto

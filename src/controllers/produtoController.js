@@ -93,7 +93,8 @@ module.exports = {
         fotoUrl = await uploadParaCloudinary(req.file.buffer);
       }
 
-      const dados = { ...req.body, foto: fotoUrl };
+      const { nome, descricao, preco, categoria, observacoes, quantidade_estoque, disponivel } = req.body;
+      const dados = { nome, descricao, preco, categoria, observacoes, quantidade_estoque, disponivel, foto: fotoUrl };
       const novo  = await Produto.create(dados);
       res.status(201).json(novo);
     } catch (err) {
@@ -106,7 +107,10 @@ module.exports = {
   async atualizar(req, res) {
     try {
       const { id } = req.params;
-      const dados   = { ...req.body };
+      const { nome, descricao, preco, categoria, observacoes, quantidade_estoque, disponivel, foto: fotoBody } = req.body;
+      const dados = { nome, descricao, preco, categoria, observacoes, quantidade_estoque, disponivel };
+      Object.keys(dados).forEach(k => dados[k] === undefined && delete dados[k]);
+      if (fotoBody !== undefined) dados.foto = fotoBody;
 
       // Se veio arquivo via multer, faz upload para Cloudinary
       if (req.file) {

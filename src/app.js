@@ -27,8 +27,24 @@ const sincronizacaoRoutes   = require("./routes/sincronizacaoRoutes");
 const syncService           = require("./services/syncService");
 
 // Segurança
-app.use(helmet({ contentSecurityPolicy: false })); // CSP desativado para servir HTML estático
-app.use(cors({ origin: process.env.ALLOWED_ORIGINS || '*' }));
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc:  ["'self'"],
+      scriptSrc:   ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net"],
+      styleSrc:    ["'self'", "'unsafe-inline'"],
+      imgSrc:      ["'self'", "data:", "blob:", "https://res.cloudinary.com"],
+      connectSrc:  ["'self'"],
+      fontSrc:     ["'self'"],
+      objectSrc:   ["'none'"],
+      frameSrc:    ["'none'"],
+      upgradeInsecureRequests: [],
+    }
+  }
+}));
+
+const allowedOrigins = process.env.ALLOWED_ORIGINS || '*';
+app.use(cors({ origin: allowedOrigins }));
 
 // Rate limiting — login mais restrito
 const limiterGeral = rateLimit({ windowMs: 15 * 60 * 1000, max: 200 });

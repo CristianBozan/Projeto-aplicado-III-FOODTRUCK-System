@@ -23,9 +23,9 @@ module.exports = {
 
       // 1. Verifica login de gerente fixo (via .env)
       const GERENTE_LOGIN = process.env.GERENTE_LOGIN || 'admin';
-      const GERENTE_SENHA = process.env.GERENTE_SENHA || 'admin123';
+      const GERENTE_SENHA = process.env.GERENTE_SENHA || null;
 
-      if (username === GERENTE_LOGIN && password === GERENTE_SENHA) {
+      if (GERENTE_SENHA && username === GERENTE_LOGIN && password === GERENTE_SENHA) {
         const token = gerarToken({ userId: null, role: 'gerente', nome: 'Administrador' });
         return res.json({
           success: true,

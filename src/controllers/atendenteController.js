@@ -24,8 +24,9 @@ module.exports = {
 
   async criar(req, res) {
     try {
-      const novo = await Atendente.create(req.body);
-      const { senha, ...dados } = novo.toJSON();
+      const { nome, login, senha, cpf, telefone, tipo_usuario } = req.body;
+      const novo = await Atendente.create({ nome, login, senha, cpf, telefone, tipo_usuario });
+      const { senha: _, ...dados } = novo.toJSON();
       res.status(201).json(dados);
     } catch (err) {
       res.status(500).json({ error: err.message });
@@ -37,9 +38,10 @@ module.exports = {
       const { id } = req.params;
       const atendente = await Atendente.findByPk(id);
       if (!atendente) return res.status(404).json({ message: "Atendente não encontrado" });
-      const payload = { ...req.body };
-      // Não atualizar senha se vier vazia (usuário não quis alterar)
-      if (!payload.senha) delete payload.senha;
+      const { nome, login, senha, cpf, telefone, tipo_usuario } = req.body;
+      const payload = { nome, login, cpf, telefone, tipo_usuario };
+      Object.keys(payload).forEach(k => payload[k] === undefined && delete payload[k]);
+      if (senha) payload.senha = senha;
       await atendente.update(payload);
       res.json({ message: "Atendente atualizado com sucesso" });
     } catch (err) {
