@@ -35,10 +35,12 @@ module.exports = {
   async atualizar(req, res) {
     try {
       const { id } = req.params;
-      // Usar findByPk + save para que os hooks beforeUpdate sejam disparados
       const atendente = await Atendente.findByPk(id);
       if (!atendente) return res.status(404).json({ message: "Atendente não encontrado" });
-      await atendente.update(req.body);
+      const payload = { ...req.body };
+      // Não atualizar senha se vier vazia (usuário não quis alterar)
+      if (!payload.senha) delete payload.senha;
+      await atendente.update(payload);
       res.json({ message: "Atendente atualizado com sucesso" });
     } catch (err) {
       res.status(500).json({ error: err.message });

@@ -11,6 +11,8 @@ const Pedido = sequelize.define("Pedido", {
   forma_pagamento: { type: DataTypes.ENUM("pix","credito","debito","dinheiro"), allowNull: true },
   status: { type: DataTypes.ENUM("aberto","em_preparo","pronto","finalizado","cancelado","pago"), defaultValue: "aberto" },
   observacoes: { type: DataTypes.TEXT },
+  desconto_tipo: { type: DataTypes.ENUM('fixo', 'percent'), allowNull: true },
+  desconto_valor: { type: DataTypes.DECIMAL(10,2), defaultValue: 0 },
   total: { type: DataTypes.DECIMAL(10,2), defaultValue: 0 }
 }, {
   tableName: "pedidos",

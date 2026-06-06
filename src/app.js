@@ -65,7 +65,7 @@ app.use("/sincronizacoes",    sincronizacaoRoutes);
 const PORT = process.env.PORT || 3000;
 
 if (require.main === module) {
-  sequelize.sync().then(() => {
+  sequelize.sync({ alter: true }).then(() => {
     console.log("Banco sincronizado!");
 
     app.listen(PORT, () => {

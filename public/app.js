@@ -1401,7 +1401,8 @@ function openAtendenteModal(id = null) {
         document.getElementById("atendenteCpf").value = atendente.cpf;
         document.getElementById("atendenteTelefone").value = atendente.telefone || "";
         document.getElementById("atendenteLogin").value = atendente.login;
-        document.getElementById("atendenteSenha").value = atendente.senha;
+        document.getElementById("atendenteSenha").value = "";
+        document.getElementById("atendenteSenha").placeholder = "Deixe em branco para manter a senha atual";
         document.getElementById("atendenteTipo").value = atendente.tipo_usuario;
       });
   } else {
@@ -2697,11 +2698,14 @@ async function finalizarPedido() {
   }
   const total = Math.max(0, subtotal - desconto);
 
+  const descontoTipoVal = descontoTipo ? descontoTipo.value : null;
   const pedidoData = {
     id_mesa: idMesa === 'viagem' ? null : parseInt(idMesa),
     id_atendente: idAtendente ? parseInt(idAtendente) : null,
     status: "aberto",
     total: total,
+    desconto_tipo: desconto > 0 ? descontoTipoVal : null,
+    desconto_valor: desconto > 0 ? parseFloat(desconto.toFixed(2)) : 0,
     observacoes: `Pedido com ${carrinho.length} item(ns): ${carrinho.map(i => `${i.nome} (${i.quantidade}x)`).join(', ')}`
   };
 

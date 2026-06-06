@@ -936,6 +936,24 @@
           </div>
         </div>
 
+        <!-- Filtro de período -->
+        <div class="card" style="margin-bottom:1.5rem;padding:0.75rem 1rem;">
+          <div style="display:flex;align-items:center;gap:0.6rem;flex-wrap:wrap;">
+            <span style="font-size:0.85rem;color:#555;font-weight:600;">Período:</span>
+            <select id="filtroPeriodo" style="font-size:0.85rem;padding:0.3rem 0.6rem;border:1px solid #ddd;border-radius:6px;">
+              <option value="preset:day">Hoje</option>
+              <option value="preset:week">Últimos 7 dias</option>
+              <option value="preset:month">Este mês</option>
+              <option value="selectMonth">Mês específico</option>
+              <option value="custom">Período personalizado</option>
+            </select>
+            <input type="date" id="periodStart" class="hidden-inline" style="font-size:0.85rem;padding:0.3rem 0.6rem;border:1px solid #ddd;border-radius:6px;">
+            <input type="date" id="periodEnd" class="hidden-inline" style="font-size:0.85rem;padding:0.3rem 0.6rem;border:1px solid #ddd;border-radius:6px;">
+            <select id="selectMonth" class="hidden-inline" style="font-size:0.85rem;padding:0.3rem 0.6rem;border:1px solid #ddd;border-radius:6px;"></select>
+            <button id="applyPeriodo" class="btn btn-primary" style="font-size:0.82rem;padding:0.3rem 0.9rem;">Aplicar</button>
+          </div>
+        </div>
+
         <!-- Gráficos -->
         <div style="display:flex;flex-direction:column;gap:1.5rem;margin-bottom:1.5rem;">
           <div class="card" style="margin-bottom:0;">
@@ -948,6 +966,20 @@
               <canvas id="chartPagamento"></canvas>
             </div>
           </div>
+        </div>
+
+        <!-- Gráfico de Vendas por Atendente -->
+        <div class="card" style="margin-bottom:1.5rem;">
+          <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.6rem;margin-bottom:0.75rem;">
+            <h3 style="font-size:0.9rem;color:#888;margin:0;">Vendas por Atendente</h3>
+            <div style="display:flex;align-items:center;gap:0.5rem;">
+              <select id="selectAtendente" style="font-size:0.82rem;padding:0.3rem 0.6rem;border:1px solid #ddd;border-radius:6px;">
+                <option value="">Todos</option>
+              </select>
+              <button id="applyAtendente" class="btn btn-primary" style="font-size:0.8rem;padding:0.3rem 0.8rem;">Filtrar</button>
+            </div>
+          </div>
+          <canvas id="chartAtendente"></canvas>
         </div>
 
         <!-- Pedidos recentes (full width) -->
@@ -1956,10 +1988,7 @@
         applySidebarCollapsed(newState);
         localStorage.setItem(SIDEBAR_COLLAPSED_KEY, String(newState));
       });
-    }    sidebarOverlay.addEventListener('click', () => {
-      sidebar.classList.remove('open');
-      sidebarOverlay.classList.remove('open');
-    });
+    }
 
     // ---- NAVEGAÇÃO POR SEÇÃO ----
     // Compatível com o app.js existente: mantém a lógica de data-section
