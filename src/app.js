@@ -61,6 +61,15 @@ app.use("/backups",           backupRoutes);
 app.use("/auditoria/estoque", auditoriaRoutes);
 app.use("/sincronizacoes",    sincronizacaoRoutes);
 
+// Middleware de erro global — oculta detalhes internos em produção
+app.use((err, req, res, _next) => {
+  console.error('[ERROR]', err.message);
+  const isProd = process.env.NODE_ENV === 'production';
+  res.status(err.status || 500).json({
+    error: isProd ? 'Erro interno no servidor.' : err.message
+  });
+});
+
 // Inicia servidor (apenas quando executado diretamente, não em testes)
 const PORT = process.env.PORT || 3000;
 

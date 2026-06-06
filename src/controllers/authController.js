@@ -4,8 +4,9 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const Atendente = require('../models/Atendente');
 
-const JWT_SECRET = process.env.JWT_SECRET || 'foodtruck_secret_dev';
-const JWT_EXPIRES = '8d';
+const JWT_SECRET = process.env.JWT_SECRET;
+if (!JWT_SECRET) throw new Error('JWT_SECRET não configurado nas variáveis de ambiente.');
+const JWT_EXPIRES = process.env.JWT_EXPIRES || '8h';
 
 function gerarToken(payload) {
   return jwt.sign(payload, JWT_SECRET, { expiresIn: JWT_EXPIRES });

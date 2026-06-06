@@ -9,7 +9,7 @@ module.exports = function requireAuth(req, res, next) {
   }
 
   try {
-    const payload = jwt.verify(token, process.env.JWT_SECRET || 'foodtruck_secret_dev');
+    const payload = jwt.verify(token, process.env.JWT_SECRET);
     req.user = payload; // { userId, role, nome }
     next();
   } catch (err) {
