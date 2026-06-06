@@ -1,4 +1,4 @@
-# Food Truck System — v3.2
+# Food Truck System — v3.3
 
 **Centro Universitário SENAI Santa Catarina**
 Curso Superior de Tecnologia em Análise e Desenvolvimento de Sistemas
@@ -35,7 +35,7 @@ Aplicação web cliente/servidor desenvolvida para digitalizar e otimizar a gest
 
 ## 1. Visão Geral do Sistema
 
-O **Food Truck System v3.2** é uma solução web cliente/servidor voltada para o dia a dia do food truck do Sr. Elpídio, digitalizando o processo de atendimento que antes era realizado manualmente em papel.
+O **Food Truck System v3.3** é uma solução web cliente/servidor voltada para o dia a dia do food truck do Sr. Elpídio, digitalizando o processo de atendimento que antes era realizado manualmente em papel.
 
 **Problema resolvido:** registro manual de pedidos causava lentidão, erros de anotação, inconsistências nos valores e falta de controle de estoque e relatórios gerenciais.
 
@@ -45,10 +45,12 @@ O **Food Truck System v3.2** é uma solução web cliente/servidor voltada para 
 
 **Principais capacidades:**
 - Cadastro e manutenção de **produtos** com controle de estoque integrado.
-- Abertura, edição e **cancelamento** de **pedidos** vinculados a mesas e atendentes.
-- Registro de **vendas** com formas de pagamento (Pix, crédito, débito, dinheiro).
-- Acompanhamento de **estoque** com auditoria de alterações.
-- Emissão de **relatórios** gerenciais com filtro de período (hoje, semana, mês, personalizado).
+- Abertura, edição e **cancelamento** de **pedidos** vinculados a mesas e atendentes, com devolução automática de estoque.
+- Registro de **vendas** com formas de pagamento (Pix, crédito, débito, dinheiro) e suporte a **desconto** (R$ fixo ou %).
+- Acompanhamento de **estoque** com auditoria completa de movimentações (saída, entrada, ajuste).
+- Emissão de **relatórios** gerenciais com filtro de período (hoje, semana, mês, personalizado) e exportação em Excel (.xlsx).
+- **Painel da cozinha (KDS)** com notificação sonora ao chegar novos pedidos.
+- **Carrinho persistente** no navegador — sobrevive a recarregamentos de página.
 - **Backups** automáticos diários e manuais com exportação em JSON e Excel.
 - **Autenticação JWT** com controle de acesso por papel (gerente, atendente).
 - **Sincronização** de dados entre dispositivos dos atendentes e o computador administrador.
@@ -156,7 +158,12 @@ A aplicação utiliza uma API REST em Node.js (Express + Sequelize) e um fronten
 ### 4.7 Estoque e Auditoria
 
 - Controle de quantidade em estoque dos produtos.
-- Registro de alterações na tabela `EstoqueLog`: produto, quantidade anterior, nova, ação e data/hora.
+- Registro automático de movimentações na tabela `EstoqueLog`:
+  - **saída** — ao criar um pedido com itens (decrementa estoque).
+  - **entrada** — ao cancelar um pedido (restaura o estoque de cada item).
+  - **ajuste** — ao editar manualmente a quantidade de um produto.
+- Histórico de movimentações visível na seção Estoque, filtrável por tipo de ação.
+- Paginação de pedidos: exibe até 100 por vez com botão "Carregar mais".
 
 ### 4.8 Sincronização de Dados
 
@@ -447,7 +454,19 @@ O script cria automaticamente:
 
 ## 9. Considerações Finais
 
-O **Food Truck System v3.1** representa a entrega do MVP do Projeto Aplicado III — Sprint 4. O sistema digitalizou completamente o processo de atendimento do food truck do Sr. Elpídio, substituindo o papel por uma interface web rápida e intuitiva.
+O **Food Truck System v3.3** representa a entrega do MVP do Projeto Aplicado III — Sprint 4. O sistema digitalizou completamente o processo de atendimento do food truck do Sr. Elpídio, substituindo o papel por uma interface web rápida e intuitiva.
+
+**Destaques da v3.3:**
+- Auditoria completa de estoque: saída ao criar pedido, entrada ao cancelar (com devolução automática), ajuste ao editar produto
+- Desconto por pedido persistido no banco (R$ fixo ou %) com campos `desconto_tipo` e `desconto_valor`
+- Exportação de relatórios em Excel (.xlsx) via SheetJS (CDN)
+- Notificação sonora no painel da cozinha ao receber novos pedidos
+- Carrinho de atendimento persistido no `localStorage` — sobrevive a recarregamentos
+- Paginação de pedidos (100/página) com botão "Carregar mais"
+- Card de Ticket médio no dashboard
+- Histórico de movimentações de estoque com filtro por ação
+- Correção de cancelamento de pedido não restaurava estoque
+- Campo senha nunca pré-preenchido no modal de edição de atendente
 
 **Destaques da v3.2:**
 - Dashboard reorganizado: gráficos empilhados em tela cheia (faturamento por dia + vendas por pagamento)
@@ -460,9 +479,8 @@ O **Food Truck System v3.1** representa a entrega do MVP do Projeto Aplicado III
 
 **Próximos passos (backlog):**
 - Impressão de comanda diretamente do sistema
-- Notificação sonora para novos pedidos
 - PWA para uso offline pelos atendentes
 
 ---
 
-*Projeto Aplicado III — Equipe 10 | Centro Universitário SENAI Santa Catarina | v3.2 — 2026*
+*Projeto Aplicado III — Equipe 10 | Centro Universitário SENAI Santa Catarina | v3.3 — 2026*

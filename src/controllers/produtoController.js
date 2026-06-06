@@ -50,7 +50,6 @@ module.exports = {
         };
       }
 
-      console.log("GET /produtos search=", search);
       let produtos = await Produto.findAll({ where });
 
       // Deduplicar por id_produto (proteção contra joins extras)
@@ -60,9 +59,7 @@ module.exports = {
         const id = p.id_produto ?? p.dataValues?.id_produto;
         if (!seen.has(id)) { seen.add(id); unique.push(p); }
       });
-      if (unique.length !== produtos.length) {
-        console.log(`GET /produtos: deduplicated ${produtos.length} -> ${unique.length}`);
-      }
+
 
       res.json(unique);
     } catch (err) {
@@ -85,7 +82,6 @@ module.exports = {
   async criar(req, res) {
     try {
       let fotoUrl = req.body.foto || null;
-      console.log("POST /produtos — body:", req.body, "| file:", req.file?.originalname);
 
       // Se veio arquivo via multer, faz upload para Cloudinary
       if (req.file) {
@@ -94,9 +90,7 @@ module.exports = {
             error: "Cloudinary não configurado. Defina CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY e CLOUDINARY_API_SECRET nas variáveis de ambiente.",
           });
         }
-        console.log("Iniciando upload para Cloudinary...");
         fotoUrl = await uploadParaCloudinary(req.file.buffer);
-        console.log("Upload concluído:", fotoUrl);
       }
 
       const dados = { ...req.body, foto: fotoUrl };
@@ -113,7 +107,6 @@ module.exports = {
     try {
       const { id } = req.params;
       const dados   = { ...req.body };
-      console.log(`PUT /produtos/${id} — body:`, req.body, "| file:", req.file?.originalname);
 
       // Se veio arquivo via multer, faz upload para Cloudinary
       if (req.file) {
@@ -122,9 +115,7 @@ module.exports = {
             error: "Cloudinary não configurado. Defina CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY e CLOUDINARY_API_SECRET nas variáveis de ambiente.",
           });
         }
-        console.log("Iniciando upload para Cloudinary...");
         dados.foto = await uploadParaCloudinary(req.file.buffer);
-        console.log("Upload concluído:", dados.foto);
       }
       // Se não veio arquivo e não veio foto textual, não altera o campo foto
       // (evita sobrescrever URL existente com null)

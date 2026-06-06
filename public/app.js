@@ -218,6 +218,7 @@ async function loadRelatorios() {
     if (!resp.ok) return;
     const data = await resp.json();
     const pedidos = data.pedidos || data || [];
+    window._relatoriosPedidos = pedidos;
 
     const pagos = pedidos.filter(p => p.status === 'pago' || p.status === 'finalizado');
     const total = pagos.reduce((s, p) => s + parseFloat(p.total || 0), 0);
@@ -294,7 +295,34 @@ async function loadRelatorios() {
   }
 }
 
-function exportarExcel() { showAlert('Função de exportação Excel em desenvolvimento.', 'info'); }
+function exportarExcel() {
+  const pedidos = window._relatoriosPedidos;
+  if (!pedidos || !pedidos.length) {
+    showAlert('Carregue os relatórios antes de exportar.', 'info');
+    return;
+  }
+  if (typeof XLSX === 'undefined') {
+    showAlert('Biblioteca de exportação não carregada. Verifique a conexão.', 'error');
+    return;
+  }
+
+  const linhas = pedidos.map(p => ({
+    'ID': `#${String(p.id_pedido || 0).padStart(4, '0')}`,
+    'Data/Hora': p.data_hora ? new Date(p.data_hora).toLocaleString('pt-BR') : '—',
+    'Mesa': p.Mesa?.numero_mesa ?? (p.id_mesa ? `Mesa ${p.id_mesa}` : 'Viagem'),
+    'Atendente': p.Atendente?.nome || '—',
+    'Status': p.status,
+    'Pagamento': p.forma_pagamento || '—',
+    'Desconto (R$)': parseFloat(p.desconto_valor || 0).toFixed(2),
+    'Total (R$)': parseFloat(p.total || 0).toFixed(2),
+  }));
+
+  const ws = XLSX.utils.json_to_sheet(linhas);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Pedidos');
+  const data = new Date().toLocaleDateString('pt-BR').replace(/\//g, '-');
+  XLSX.writeFile(wb, `relatorio_pedidos_${data}.xlsx`);
+}
 function exportarPDF()   { showAlert('Função de exportação PDF em desenvolvimento.', 'info'); }
 
 // ── Estoque ──
@@ -818,6 +846,23 @@ async function finalizarPedidoList(id) {
 // ══════════════════════════════════════════════
 let _cozinhaTimer = null;
 
+function _beepCozinha() {
+  try {
+    const ctx  = new (window.AudioContext || window.webkitAudioContext)();
+    const osc  = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.type = 'sine';
+    osc.frequency.value = 880;
+    gain.gain.setValueAtTime(0.4, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.5);
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime + 0.5);
+    setTimeout(() => ctx.close(), 800);
+  } catch (e) {}
+}
+
 async function loadCozinha() {
   try {
     const resp = await apiFetch(`${API_URL}/pedidos/cozinha`);
@@ -828,6 +873,14 @@ async function loadCozinha() {
     const novos   = todos.filter(p => p.status === 'aberto');
     const preparo = todos.filter(p => p.status === 'em_preparo');
     const prontos = todos.filter(p => p.status === 'pronto');
+
+    // Som de notificação quando chegarem novos pedidos
+    const novosIds = new Set(novos.map(p => p.id_pedido));
+    if (window._cozinhaIdsAntes) {
+      const temNovo = [...novosIds].some(id => !window._cozinhaIdsAntes.has(id));
+      if (temNovo) _beepCozinha();
+    }
+    window._cozinhaIdsAntes = novosIds;
 
     renderColunaCozinha('colNovos',   novos,   'novo',    'countNovos');
     renderColunaCozinha('colPreparo', preparo, 'preparo', 'countPreparo');
