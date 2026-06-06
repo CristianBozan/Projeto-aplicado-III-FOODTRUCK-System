@@ -5,7 +5,7 @@ const sequelize = require("../config/database");
 const Atendente = sequelize.define("Atendente", {
   id_atendente: { type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true },
   nome: { type: DataTypes.STRING, allowNull: false },
-  cpf: { type: DataTypes.STRING(11), unique: true, allowNull: false },
+  cpf: { type: DataTypes.STRING(11), allowNull: false },
   telefone: { type: DataTypes.STRING },
   login: { type: DataTypes.STRING, unique: true, allowNull: false },
   senha: { type: DataTypes.STRING, allowNull: false },
