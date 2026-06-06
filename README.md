@@ -19,6 +19,21 @@ Aplicação web cliente/servidor desenvolvida para digitalizar e otimizar a gest
 
 ---
 
+## Acesso ao Sistema
+
+> Sistema em produção — acesse agora pelo navegador, sem instalação.
+
+| | |
+|---|---|
+| **URL** | https://projeto-aplicado-iii-foodtruck-system-production.up.railway.app |
+| **Login** | `avaliador` |
+| **Senha** | `Senai@2026` |
+| **Perfil** | Gerente — acesso completo a todas as funcionalidades |
+
+Para um guia completo do que testar e como restaurar dados após a avaliação, consulte **[AVALIACAO.md](AVALIACAO.md)**.
+
+---
+
 ## Sumário
 
 - [1. Visão Geral do Sistema](#1-visão-geral-do-sistema)
