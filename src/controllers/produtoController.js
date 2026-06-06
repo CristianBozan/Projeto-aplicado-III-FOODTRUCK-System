@@ -1,8 +1,5 @@
-// src/controllers/produtoController.js
-// Atualizado para suportar upload de imagens via Cloudinary.
-// Requer: npm install cloudinary multer
-
-const Produto = require("../models/Produto");
+const Produto    = require("../models/Produto");
+const EstoqueLog = require("../models/EstoqueLog");
 const { Op } = require("sequelize");
 const cloudinary = require("cloudinary").v2;
 
@@ -135,8 +132,25 @@ module.exports = {
         delete dados.foto;
       }
 
+      const produtoAtual = await Produto.findByPk(id);
+      if (!produtoAtual) return res.status(404).json({ message: "Produto não encontrado" });
+
+      const estoqueAntes = produtoAtual.quantidade_estoque;
       const [atualizado] = await Produto.update(dados, { where: { id_produto: id } });
       if (!atualizado) return res.status(404).json({ message: "Produto não encontrado" });
+
+      // Registra ajuste de estoque se a quantidade mudou
+      if (dados.quantidade_estoque !== undefined && parseInt(dados.quantidade_estoque) !== estoqueAntes) {
+        const estoqueDepois = parseInt(dados.quantidade_estoque);
+        await EstoqueLog.create({
+          id_produto: parseInt(id),
+          acao: 'ajuste',
+          quantidade_anterior: estoqueAntes,
+          quantidade_nova: estoqueDepois,
+          nota: `Ajuste manual de estoque`
+        });
+      }
+
       res.json({ message: "Produto atualizado com sucesso" });
     } catch (err) {
       console.error(`ERRO PUT /produtos/${req.params.id}:`, err.message, err.http_code || "");

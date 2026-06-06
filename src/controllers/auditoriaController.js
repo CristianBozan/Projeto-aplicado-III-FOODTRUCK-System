@@ -1,4 +1,5 @@
 const EstoqueLog = require('../models/EstoqueLog');
+const Produto    = require('../models/Produto');
 const { Op } = require('sequelize');
 
 module.exports = {
@@ -14,7 +15,7 @@ module.exports = {
         if(start) where.data_hora[Op.gte] = new Date(start);
         if(end) where.data_hora[Op.lte] = new Date(end);
       }
-      const opts = { where, order: [['data_hora','DESC']] };
+      const opts = { where, order: [['data_hora','DESC']], include: [{ model: Produto, attributes: ['nome'] }] };
       if(limit) opts.limit = parseInt(limit,10) || 100;
       if(offset) opts.offset = parseInt(offset,10) || 0;
       const rows = await EstoqueLog.findAll(opts);

@@ -1577,6 +1577,41 @@
             </table>
           </div>
         </div>
+
+        <!-- Histórico de movimentações -->
+        <div class="card" style="margin-top:1.5rem;">
+          <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.6rem;margin-bottom:1rem;">
+            <h3 style="font-size:1rem;color:#1A1A1A;margin:0;">Histórico de Movimentações</h3>
+            <div style="display:flex;align-items:center;gap:0.5rem;flex-wrap:wrap;">
+              <select id="estoqueLogFiltroAcao" style="font-size:0.82rem;padding:0.3rem 0.6rem;border:1px solid #ddd;border-radius:6px;" onchange="loadEstoqueLogs()">
+                <option value="">Todas as ações</option>
+                <option value="saida">Saída (pedido)</option>
+                <option value="entrada">Entrada (cancelamento)</option>
+                <option value="ajuste">Ajuste manual</option>
+              </select>
+              <button class="btn btn-secondary" style="font-size:0.82rem;padding:0.3rem 0.8rem;" onclick="loadEstoqueLogs()">🔁 Atualizar</button>
+            </div>
+          </div>
+          <div class="loading" id="loadingEstoqueLogs"><div class="spinner"></div> Carregando...</div>
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>Data/Hora</th>
+                  <th>Produto</th>
+                  <th>Ação</th>
+                  <th>Antes</th>
+                  <th>Depois</th>
+                  <th>Variação</th>
+                  <th>Nota</th>
+                </tr>
+              </thead>
+              <tbody id="estoqueLogsBody">
+                <tr><td colspan="7" style="text-align:center;color:#aaa;padding:1.5rem;">Carregando...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
       </section>
 
       <!-- ======================================

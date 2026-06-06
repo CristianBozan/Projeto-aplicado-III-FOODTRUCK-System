@@ -299,6 +299,7 @@ function exportarPDF()   { showAlert('Função de exportação PDF em desenvolvi
 
 // ── Estoque ──
 async function loadEstoque() {
+  loadEstoqueLogs();
   const loading = document.getElementById('loadingEstoque');
   const tbody = document.getElementById('estoqueTableBody');
   if (loading) loading.style.display = 'flex';
@@ -345,6 +346,52 @@ function filtrarEstoque(q) {
   if (!window._estoqueAll) return;
   const lista = q ? window._estoqueAll.filter(p => p.nome.toLowerCase().includes(q.toLowerCase())) : window._estoqueAll;
   renderEstoqueTable(lista);
+}
+
+async function loadEstoqueLogs() {
+  const loading = document.getElementById('loadingEstoqueLogs');
+  const tbody   = document.getElementById('estoqueLogsBody');
+  if (!tbody) return;
+  if (loading) loading.style.display = 'flex';
+
+  try {
+    const acao = document.getElementById('estoqueLogFiltroAcao')?.value || '';
+    const url  = `${API_URL}/auditoria/estoque?limit=100${acao ? `&acao=${encodeURIComponent(acao)}` : ''}`;
+    const resp = await apiFetch(url);
+    if (!resp.ok) throw new Error();
+    const { logs } = await resp.json();
+
+    if (!logs || !logs.length) {
+      tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#aaa;padding:1.5rem;">Nenhuma movimentação registrada</td></tr>';
+      return;
+    }
+
+    const acaoBadge = { saida: '#e74c3c', entrada: '#27ae60', ajuste: '#2980b9' };
+    const acaoLabel = { saida: 'Saída', entrada: 'Entrada', ajuste: 'Ajuste' };
+
+    tbody.innerHTML = logs.map(log => {
+      const variacao = (log.quantidade_nova ?? 0) - (log.quantidade_anterior ?? 0);
+      const sinal    = variacao > 0 ? `+${variacao}` : String(variacao);
+      const cor      = variacao >= 0 ? '#27ae60' : '#e74c3c';
+      const dataFmt  = log.data_hora ? new Date(log.data_hora).toLocaleString('pt-BR') : '—';
+      const badge    = acaoBadge[log.acao] || '#888';
+      const label    = acaoLabel[log.acao] || log.acao;
+      const nomeProd = log.Produto?.nome || `ID ${log.id_produto}`;
+      return `<tr>
+        <td style="font-size:0.82rem;color:#555;">${dataFmt}</td>
+        <td>${escapeHtml(nomeProd)}</td>
+        <td><span style="background:${badge};color:#fff;padding:2px 8px;border-radius:10px;font-size:0.75rem;font-weight:600;">${label}</span></td>
+        <td style="text-align:center;">${log.quantidade_anterior ?? '—'}</td>
+        <td style="text-align:center;">${log.quantidade_nova ?? '—'}</td>
+        <td style="text-align:center;font-weight:700;color:${cor};">${sinal}</td>
+        <td style="font-size:0.8rem;color:#777;">${escapeHtml(log.nota || '—')}</td>
+      </tr>`;
+    }).join('');
+  } catch (err) {
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#e74c3c;padding:1rem;">Erro ao carregar histórico</td></tr>';
+  } finally {
+    if (loading) loading.style.display = 'none';
+  }
 }
 
 // ── Backups (seção dedicada) ──

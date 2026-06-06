@@ -1,10 +1,11 @@
-const Pedido = require("../models/Pedido");
-const Mesa = require("../models/Mesa");
-const Atendente = require("../models/Atendente");
-const Venda = require("../models/Venda");
+const Pedido     = require("../models/Pedido");
+const Mesa       = require("../models/Mesa");
+const Atendente  = require("../models/Atendente");
+const Venda      = require("../models/Venda");
 const ItemPedido = require("../models/ItemPedido");
-const Produto = require("../models/Produto");
-const sequelize = require("../config/database");
+const Produto    = require("../models/Produto");
+const EstoqueLog = require("../models/EstoqueLog");
+const sequelize  = require("../config/database");
 
 module.exports = {
   async listar(req, res) {
@@ -158,8 +159,16 @@ module.exports = {
 
             itensCriados.push(itemCriado);
 
-            // decrementa estoque
-            await produto.update({ quantidade_estoque: produto.quantidade_estoque - quantidade }, { transaction: t });
+            const estoqueAntes = produto.quantidade_estoque;
+            await produto.update({ quantidade_estoque: estoqueAntes - quantidade }, { transaction: t });
+
+            await EstoqueLog.create({
+              id_produto: idp,
+              acao: 'saida',
+              quantidade_anterior: estoqueAntes,
+              quantidade_nova: estoqueAntes - quantidade,
+              nota: `Pedido criado (id_pedido: ${novo.id_pedido})`
+            }, { transaction: t });
           }
         }
 
@@ -283,6 +292,22 @@ module.exports = {
           await pedido.update({ status: 'cancelado' }, { transaction: t });
           if (pedido.id_mesa) {
             await Mesa.update({ status: 'livre' }, { where: { id_mesa: pedido.id_mesa }, transaction: t });
+          }
+          // Devolver estoque dos itens e registrar entrada no log
+          const itens = await ItemPedido.findAll({ where: { id_pedido: pedido.id_pedido }, transaction: t });
+          for (const item of itens) {
+            const prod = await Produto.findByPk(item.id_produto, { transaction: t, lock: t.LOCK.UPDATE });
+            if (prod) {
+              const estoqueAntes = prod.quantidade_estoque;
+              await prod.update({ quantidade_estoque: estoqueAntes + item.quantidade }, { transaction: t });
+              await EstoqueLog.create({
+                id_produto: item.id_produto,
+                acao: 'entrada',
+                quantidade_anterior: estoqueAntes,
+                quantidade_nova: estoqueAntes + item.quantidade,
+                nota: `Pedido cancelado (id_pedido: ${pedido.id_pedido})`
+              }, { transaction: t });
+            }
           }
         } else if (status === 'finalizado') {
           const forma = forma_pagamento || pedido.forma_pagamento;
