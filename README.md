@@ -131,7 +131,7 @@ A aplicação utiliza uma API REST em Node.js (Express + Sequelize) e um fronten
 - Login com usuário e senha via tela dedicada (`login.html`).
 - Token JWT gerado no login e armazenado no `localStorage`, enviado automaticamente em todas as requisições via header `Authorization: Bearer <token>`.
 - Dois níveis de acesso:
-  - **Gerente** — credenciais configuradas via variáveis de ambiente `GERENTE_LOGIN` e `GERENTE_SENHA` (padrão: `admin` / `admin123`).
+  - **Gerente** — credenciais configuradas via variáveis de ambiente `GERENTE_LOGIN` e `GERENTE_SENHA`.
   - **Atendente** — usuários criados pelo gerente via interface, com senhas armazenadas com hash bcryptjs no banco de dados.
 - Logout limpa completamente o `localStorage` e `sessionStorage`, invalidando a sessão.
 - Senhas dos atendentes armazenadas com **hash bcryptjs** (salt 10) — nunca salvas em texto plano.
@@ -434,8 +434,8 @@ DB_PASS=sua_senha
 
 # Autenticação JWT
 JWT_SECRET=sua_chave_secreta_jwt
-GERENTE_LOGIN=admin
-GERENTE_SENHA=admin123
+GERENTE_LOGIN=avaliador
+GERENTE_SENHA=Senai@2026
 
 # Backup
 BACKUP_TOKEN=seu_token_backup
