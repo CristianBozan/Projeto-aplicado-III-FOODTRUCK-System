@@ -229,7 +229,7 @@ async function loadRelatorios() {
     setEl('relPedidos', pedidos.length);
     setEl('relConcluidos', pagos.length);
     setEl('relConcluidosPct', pedidos.length ? `${Math.round(pagos.length/pedidos.length*100)}% de conclusão` : '');
-    setEl('relTicket', `R$ ${ticket.toLocaleString('pt-BR', {minimumFractionDigits:2})}`);
+    setEl('relTicket', `R$ ${ticket.toLocaleString('pt-BR', {minimumFractionDigits:2,maximumFractionDigits:2})}`);
 
     // Últimos pedidos
     const tbody = document.getElementById('relUltimosPedidosBody');
@@ -1170,7 +1170,7 @@ async function loadDashboard() {
     } catch(e){}
 
     // IDs antigos mantidos para compatibilidade (charts podem usar)
-    try { document.getElementById("statTicket").textContent = `R$ ${parseFloat(resumo.ticket_medio || 0).toLocaleString('pt-BR',{minimumFractionDigits:2})}`; } catch(e){}
+    try { document.getElementById("statTicket").textContent = `R$ ${parseFloat(resumo.ticket_medio || 0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})}`; } catch(e){}
 
     // Faturamento por dia - usa filtros de período se aplicados
     // Inicializa controles de período (se ainda não inicializados)
