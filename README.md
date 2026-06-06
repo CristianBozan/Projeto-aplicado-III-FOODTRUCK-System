@@ -490,9 +490,11 @@ DATABASE_URL=<connection string do MySQL Railway>
 
 Para avaliar a aplicação é necessário apenas:
 - **URL pública** do deploy no Railway
-- **Login e senha** do gerente (fornecidos separadamente — não estão no repositório)
+- **Login e senha** do usuário de avaliação (fornecidos separadamente — não estão no repositório)
 
 Avaliadores **não** têm acesso ao Railway, ao banco de dados, às variáveis de ambiente ou a qualquer credencial pessoal do desenvolvedor.
+
+> Para configurar o ambiente de avaliação e restaurar dados após os testes, consulte **[AVALIACAO.md](AVALIACAO.md)**.
 
 ---
 
