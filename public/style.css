@@ -963,6 +963,11 @@ tbody td {
   transform: none;
 }
 
+.btn-add-produto.btn-add-ativo {
+  background: linear-gradient(135deg, #27ae60 0%, #1e8449 100%);
+  box-shadow: 0 4px 8px rgba(39, 174, 96, 0.35);
+}
+
 /* Estoque Badge */
 .produto-estoque {
   position: absolute;

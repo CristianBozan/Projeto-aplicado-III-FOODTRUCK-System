@@ -1266,8 +1266,15 @@ async function loadDashboard() {
 
     // Vendas por pagamento
     const vendasPagamento = await apiFetch(`${API_URL}/relatorios/vendas-por-pagamento`).then(r => r.json());
-  const labelsPag = vendasPagamento.map(d => (d.forma_pagamento || '').toUpperCase());
-  const valoresPag = vendasPagamento.map(d => parseFloat(d.total_vendas));
+  const validos = new Set(['pix', 'credito', 'debito', 'dinheiro']);
+  const agrupado = {};
+  vendasPagamento.forEach(d => {
+    const key = (d.forma_pagamento || '').toLowerCase();
+    const label = validos.has(key) ? key.toUpperCase() : 'OUTROS';
+    agrupado[label] = (agrupado[label] || 0) + parseFloat(d.total_vendas);
+  });
+  const labelsPag  = Object.keys(agrupado).filter(l => agrupado[l] > 0);
+  const valoresPag = labelsPag.map(l => agrupado[l]);
 
     try {
       const ctxPag = document.getElementById("chartPagamento");
@@ -2422,7 +2429,7 @@ function renderCardapio(lista) {
           <div class="produto-preco">
             <small>R$</small> ${parseFloat(produto.preco).toLocaleString('pt-BR',{minimumFractionDigits:2})}
           </div>
-          <button class="btn-add-produto" onclick="adicionarAoCarrinho(${produto.id_produto || produto.id})" ${semEstoque ? 'disabled' : ''}>
+          <button class="btn-add-produto" data-produto-id="${produto.id_produto || produto.id}" onclick="adicionarAoCarrinho(${produto.id_produto || produto.id})" ${semEstoque ? 'disabled' : ''}>
             + Adicionar
           </button>
         </div>
@@ -2496,6 +2503,20 @@ async function adicionarAoCarrinho(idProduto) {
 // Atualiza a visualização do carrinho
 function atualizarCarrinho() {
   try { localStorage.setItem('ft_carrinho', JSON.stringify(carrinho)); } catch(e) {}
+
+  // Atualiza estado visual dos botões do cardápio
+  document.querySelectorAll('.btn-add-produto[data-produto-id]').forEach(btn => {
+    const id = parseInt(btn.dataset.produtoId);
+    const item = carrinho.find(i => i.id_produto === id);
+    if (item) {
+      btn.textContent = `✓ ${item.quantidade}x no carrinho`;
+      btn.classList.add('btn-add-ativo');
+    } else {
+      btn.textContent = '+ Adicionar';
+      btn.classList.remove('btn-add-ativo');
+    }
+  });
+
   const carrinhoDiv = document.getElementById("carrinhoItens");
   
   // 1. Botão Confirmar desabilitado com carrinho vazio

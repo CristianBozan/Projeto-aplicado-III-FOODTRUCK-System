@@ -19,7 +19,7 @@ module.exports = function requireBackupAuth(req, res, next) {
     // ou token via query ?token=...
     if (req.query && req.query.token && req.query.token === required) return next();
 
-    return res.status(401).json({ message: 'Unauthorized: backup token missing or invalid' });
+    return res.status(403).json({ message: 'Forbidden: backup token missing or invalid' });
   } catch (err) {
     return res.status(500).json({ message: 'Auth middleware error' });
   }
