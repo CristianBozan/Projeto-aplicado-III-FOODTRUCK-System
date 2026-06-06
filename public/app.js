@@ -533,12 +533,15 @@ async function syncBackup() {
   const nome = prompt('Informe um nome para o backup:');
   if (nome === null) return;
 
+  const backupHeaders = await getBackupAuthHeaders();
+  if (!backupHeaders) return;
+
   const originalText = btn.textContent;
   try {
     btn.disabled = true;
     btn.textContent = '⏳ Sincronizando...';
 
-    const resp = await apiFetch(`${API_URL}/backups`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ nome }) });
+    const resp = await apiFetch(`${API_URL}/backups`, { method: 'POST', headers: { 'Content-Type': 'application/json', ...backupHeaders }, body: JSON.stringify({ nome }) });
     if (!resp.ok) {
       const err = await resp.json().catch(() => null);
       showAlert(err?.message || 'Erro ao sincronizar', 'error');
