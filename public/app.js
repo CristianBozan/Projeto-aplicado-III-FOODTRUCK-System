@@ -2814,7 +2814,7 @@ async function finalizarPedido() {
 
     if (!response.ok) {
       const error = await response.json().catch(() => null);
-      showAlert(error?.message || "Erro ao criar pedido", "error");
+      showAlert(error?.message || error?.error || "Erro ao criar pedido", "error");
       return;
     }
 
@@ -3028,7 +3028,7 @@ document.getElementById("pedidoForm").addEventListener("submit", async (e) => {
 
     if (!response.ok) {
       const error = await response.json().catch(() => null);
-      showAlert(error?.message || "Erro ao salvar pedido", "error");
+      showAlert(error?.message || error?.error || "Erro ao salvar pedido", "error");
       return;
     }
 
