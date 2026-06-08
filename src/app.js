@@ -91,7 +91,9 @@ app.use((err, req, res, _next) => {
 const PORT = process.env.PORT || 3000;
 
 if (require.main === module) {
-  sequelize.sync({ alter: true }).then(() => {
+  sequelize.query(
+    "ALTER TABLE estoque_logs MODIFY COLUMN acao ENUM('saida','entrada','ajuste') NOT NULL"
+  ).catch(() => {}).then(() => sequelize.sync()).then(() => {
     console.log("Banco sincronizado!");
 
     app.listen(PORT, () => {
