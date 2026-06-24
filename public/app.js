@@ -1144,16 +1144,20 @@ function showItensCriadosModal(itens, pedidoId = null) {
 // ========== DASHBOARD ==========
 async function loadDashboard() {
   try {
-    // Subtitle com data atual
-    const sub = document.getElementById('dashSubtitle');
-    if (sub) {
-      const now = new Date();
-      sub.textContent = 'Resumo do dia — ' + now.toLocaleDateString('pt-BR', {weekday:'long', day:'2-digit', month:'long', year:'numeric'});
-    }
+    // Inicializa controles de período e descobre o período selecionado
+    try { initPeriodoControls(); } catch(e) {}
+    const periodQuery = buildPeriodoQuery();
+    const lbl = _periodoLabels();
 
-    // Resumo geral
-    const resumo = await apiFetch(`${API_URL}/relatorios/resumo`).then(r => r.json());
+    // Rótulos dinâmicos + subtítulo conforme o período selecionado
     const setEl = (id,v) => { const el=document.getElementById(id); if(el) el.textContent=v; };
+    setEl('dashSubtitle', lbl.sub);
+    setEl('statFaturamentoLabel', lbl.fat);
+    setEl('statVendasLabel', lbl.ped);
+    setEl('statTicketLabel', lbl.tic);
+
+    // Resumo geral (faturamento, vendas e ticket médio) filtrado pelo período
+    const resumo = await apiFetch(`${API_URL}/relatorios/resumo${periodQuery}`).then(r => r.json());
     setEl("statVendas", resumo.quantidade_vendas || 0);
     setEl("statFaturamento", `R$ ${parseFloat(resumo.faturamento_total || 0).toLocaleString('pt-BR',{minimumFractionDigits:2})}`);
     // Ticket → statEstoque é novo; manter compatibilidade
@@ -1205,14 +1209,7 @@ async function loadDashboard() {
     // IDs antigos mantidos para compatibilidade (charts podem usar)
     try { document.getElementById("statTicket").textContent = `R$ ${parseFloat(resumo.ticket_medio || 0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})}`; } catch(e){}
 
-    // Faturamento por dia - usa filtros de período se aplicados
-    // Inicializa controles de período (se ainda não inicializados)
-    try {
-      initPeriodoControls();
-    } catch(e) {}
-
-    const periodQuery = buildPeriodoQuery();
-    // busca vendas por dia e normaliza vários possíveis formatos de resposta do backend
+    // Faturamento por dia — reutiliza o mesmo período já calculado acima
     const vendasDiaRaw = await apiFetch(`${API_URL}/relatorios/vendas-por-dia${periodQuery}`).then(r => r.json());
     const vendasDia = Array.isArray(vendasDiaRaw) ? vendasDiaRaw : (vendasDiaRaw && vendasDiaRaw.data ? vendasDiaRaw.data : []);
 
@@ -1267,29 +1264,46 @@ async function loadDashboard() {
         chartVendasDia.destroy();
         chartVendasDia = null;
       }
-        // Cria o gráfico com os dados filtrados
+        // Gráfico de barras verticais (picos por dia)
         chartVendasDia = new Chart(ctxVendas, {
-          type: "line",
+          type: "bar",
           data: {
             labels,
             datasets: [{
               label: "Faturamento (R$)",
               data: valores,
-              borderColor: "#C41E3A",
-              backgroundColor: "rgba(196, 30, 58, 0.1)",
-              fill: true,
-              tension: 0.4
+              backgroundColor: "#C41E3A",
+              hoverBackgroundColor: "#A01830",
+              borderRadius: 6,
+              borderSkipped: false,
+              maxBarThickness: 48,
+              categoryPercentage: 0.7,
+              barPercentage: 0.85
             }]
           },
           options: {
             responsive: true,
-            aspectRatio: 3.5,
+            aspectRatio: 3,
             plugins: {
-              legend: { display: true }
+              legend: { display: false },
+              tooltip: {
+                callbacks: {
+                  label: (c) => 'R$ ' + Number(c.parsed.y || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })
+                }
+              }
             },
             scales: {
-              x: { display: true, title: { display: true, text: 'Data' } },
-              y: { display: true, title: { display: true, text: 'R$' } }
+              x: {
+                grid: { display: false },
+                title: { display: true, text: 'Data' },
+                ticks: { color: '#888' }
+              },
+              y: {
+                beginAtZero: true,
+                grid: { color: '#EEE' },
+                title: { display: true, text: 'R$' },
+                ticks: { color: '#888', callback: (v) => 'R$ ' + Number(v).toLocaleString('pt-BR') }
+              }
             }
           }
         });
@@ -1452,6 +1466,34 @@ function buildPeriodoQuery() {
     return m ? `?month=${encodeURIComponent(m)}` : '';
   }
   return '';
+}
+
+// Rótulos dos cards e subtítulo do dashboard de acordo com o período selecionado
+function _periodoLabels() {
+  const filtro = document.getElementById('filtroPeriodo');
+  const v = filtro ? filtro.value : 'preset:day';
+  const hoje = new Date();
+  const dataHoje = hoje.toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' });
+  const mesAtual = hoje.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+
+  if (v === 'preset:day')   return { fat: 'Faturamento hoje',      ped: 'Pedidos hoje',      tic: 'Ticket médio (hoje)',   sub: 'Resumo de hoje — ' + dataHoje };
+  if (v === 'preset:week')  return { fat: 'Faturamento (7 dias)',  ped: 'Pedidos (7 dias)',  tic: 'Ticket médio (7 dias)', sub: 'Resumo dos últimos 7 dias' };
+  if (v === 'preset:month') return { fat: 'Faturamento do mês',    ped: 'Pedidos do mês',    tic: 'Ticket médio (mês)',    sub: 'Resumo de ' + mesAtual };
+
+  if (v === 'selectMonth') {
+    const sel = document.getElementById('selectMonth');
+    const txt = (sel && sel.selectedOptions && sel.selectedOptions[0]) ? sel.selectedOptions[0].textContent : 'mês selecionado';
+    return { fat: 'Faturamento — ' + txt, ped: 'Pedidos — ' + txt, tic: 'Ticket médio — ' + txt, sub: 'Resumo — ' + txt };
+  }
+  if (v === 'custom') {
+    const s = document.getElementById('periodStart');
+    const e = document.getElementById('periodEnd');
+    const sv = (s && s.value) ? new Date(s.value + 'T00:00').toLocaleDateString('pt-BR') : '';
+    const ev = (e && e.value) ? new Date(e.value + 'T00:00').toLocaleDateString('pt-BR') : '';
+    const range = (sv || ev) ? `${sv || '...'} a ${ev || '...'}` : 'período selecionado';
+    return { fat: 'Faturamento — período', ped: 'Pedidos — período', tic: 'Ticket médio — período', sub: 'Resumo — ' + range };
+  }
+  return { fat: 'Faturamento', ped: 'Pedidos', tic: 'Ticket médio', sub: 'Resumo' };
 }
 
 // vendas por atendente removido (reversão)

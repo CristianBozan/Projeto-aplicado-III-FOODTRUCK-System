@@ -1,73 +1,67 @@
 const { Sequelize, Op } = require("sequelize");
 const Venda = require("../models/Venda");
 
+// Os dados (data_hora) são gravados em UTC, mas o negócio opera no fuso de Brasília
+// (UTC-3). Estas funções montam os limites do filtro no horário de Brasília para que
+// "hoje", "este mês" e períodos personalizados batam com o dia civil brasileiro.
+const TZ_BR = 'America/Sao_Paulo';
+const OFFSET_BR = '-03:00';
+function brHoje() {
+  // data de hoje no fuso de Brasília, no formato YYYY-MM-DD
+  return new Date().toLocaleDateString('en-CA', { timeZone: TZ_BR });
+}
+function brInicio(ymd) { return new Date(`${ymd}T00:00:00.000${OFFSET_BR}`); }
+function brFim(ymd)    { return new Date(`${ymd}T23:59:59.999${OFFSET_BR}`); }
+function somaDias(ymd, n) {
+  const d = new Date(`${ymd}T12:00:00${OFFSET_BR}`);
+  d.setUTCDate(d.getUTCDate() + n);
+  return d.toLocaleDateString('en-CA', { timeZone: TZ_BR });
+}
+
+// Constrói o filtro de data (where.data_hora) no fuso de Brasília.
+// Aceita: preset=day|week|month, month=YYYY-MM, start=YYYY-MM-DD, end=YYYY-MM-DD.
+function periodoWhere(query) {
+  const { start, end, preset, month } = query || {};
+  const hoje = brHoje();
+  let ini = null;
+  let fim = null;
+
+  if (preset === 'day')        { ini = hoje;               fim = hoje; }
+  else if (preset === 'week')  { ini = somaDias(hoje, -6); fim = hoje; }
+  else if (preset === 'month') { ini = hoje.slice(0, 7) + '-01'; fim = hoje; }
+
+  if (month && /^\d{4}-\d{2}$/.test(String(month))) {
+    const [y, m] = String(month).split('-').map(Number);
+    const ultimo = new Date(y, m, 0).getDate();
+    ini = `${month}-01`;
+    fim = `${month}-${String(ultimo).padStart(2, '0')}`;
+  }
+  if (start) ini = start;
+  if (end)   fim = end;
+
+  const where = {};
+  if (ini && fim)   where.data_hora = { [Op.between]: [brInicio(ini), brFim(fim)] };
+  else if (ini)     where.data_hora = { [Op.gte]: brInicio(ini) };
+  return where;
+}
+
 module.exports = {
   // Total de vendas por dia
   async vendasPorDia(req, res) {
     try {
-      // aceita filtros via query params: start=YYYY-MM-DD, end=YYYY-MM-DD, preset=day|week|month, month=YYYY-MM
-      const { start, end, preset, month } = req.query || {};
+      // Filtro de período no fuso de Brasília
+      const where = periodoWhere(req.query || {});
 
-      let startDate = null;
-      let endDate = null;
-
-      const now = new Date();
-
-      if (preset) {
-        if (preset === 'day') {
-          startDate = new Date(now.toISOString().slice(0,10));
-          endDate = new Date(startDate);
-        } else if (preset === 'week') {
-          endDate = new Date(now.toISOString().slice(0,10));
-          startDate = new Date(endDate);
-          startDate.setDate(startDate.getDate() - 6); // last 7 days
-        } else if (preset === 'month') {
-          // current month
-          startDate = new Date(now.getFullYear(), now.getMonth(), 1);
-          endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0);
-        }
-      }
-
-      if (month) {
-        // month format YYYY-MM
-        const parts = String(month).split('-');
-        if (parts.length === 2) {
-          const y = parseInt(parts[0], 10);
-          const m = parseInt(parts[1], 10) - 1;
-          startDate = new Date(y, m, 1);
-          endDate = new Date(y, m + 1, 0);
-        }
-      }
-
-      if (start) {
-        const s = new Date(start);
-        if (!isNaN(s)) startDate = s;
-      }
-      if (end) {
-        const e = new Date(end);
-        if (!isNaN(e)) endDate = e;
-      }
-
-      const where = {};
-      if (startDate && endDate) {
-        // expand to include the whole end day
-        const endWithTime = new Date(endDate);
-        endWithTime.setHours(23,59,59,999);
-        where.data_hora = { [Op.between]: [startDate, endWithTime] };
-      } else if (startDate) {
-        const endWithTime = new Date(startDate);
-        endWithTime.setHours(23,59,59,999);
-        where.data_hora = { [Op.between]: [startDate, endWithTime] };
-      }
-
+      // Agrupa por dia no fuso de Brasília (os dados são gravados em UTC → subtrai 3h)
+      const diaBR = Sequelize.literal("DATE(data_hora - INTERVAL 3 HOUR)");
       const vendas = await Venda.findAll({
         attributes: [
-          [Sequelize.fn("DATE", Sequelize.col("data_hora")), "data"],
+          [diaBR, "data"],
           [Sequelize.fn("SUM", Sequelize.col("valor_total")), "total_vendas"]
         ],
         where: Object.keys(where).length ? where : undefined,
-        group: [Sequelize.fn("DATE", Sequelize.col("data_hora"))],
-        order: [[Sequelize.fn("DATE", Sequelize.col("data_hora")), "ASC"]]
+        group: [diaBR],
+        order: [[diaBR, "ASC"]]
       });
 
       // Normaliza o retorno para objetos plain: { data: 'YYYY-MM-DD', total_vendas: number }
@@ -182,15 +176,17 @@ module.exports = {
     }
   },
 
-  // Resumo geral
+  // Resumo geral (faturamento, nº de vendas e ticket médio) — filtrado por período
   async resumo(req, res) {
     try {
+      const where = periodoWhere(req.query || {});
       const resumo = await Venda.findAll({
         attributes: [
           [Sequelize.fn("COUNT", Sequelize.col("id_venda")), "quantidade_vendas"],
           [Sequelize.fn("SUM", Sequelize.col("valor_total")), "faturamento_total"],
           [Sequelize.fn("AVG", Sequelize.col("valor_total")), "ticket_medio"]
-        ]
+        ],
+        where: Object.keys(where).length ? where : undefined
       });
       res.json(resumo[0]);
     } catch (err) {

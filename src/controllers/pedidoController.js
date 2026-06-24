@@ -35,9 +35,10 @@ module.exports = {
         const endOfMonth = new Date(y, m, 1);
         where.data_hora = { [Op.gte]: startOfMonth, [Op.lt]: endOfMonth };
       } else if (start || end) {
+        // Datas no fuso de Brasília (UTC-3); os dados são gravados em UTC
         where.data_hora = {};
-        if (start) where.data_hora[Op.gte] = new Date(start + 'T00:00:00');
-        if (end)   where.data_hora[Op.lte] = new Date(end   + 'T23:59:59');
+        if (start) where.data_hora[Op.gte] = new Date(start + 'T00:00:00.000-03:00');
+        if (end)   where.data_hora[Op.lte] = new Date(end   + 'T23:59:59.999-03:00');
       }
 
       const limit  = parseInt(req.query.limit)  || 100;
