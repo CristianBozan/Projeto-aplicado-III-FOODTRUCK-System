@@ -65,6 +65,9 @@ document.addEventListener("DOMContentLoaded", () => {
   loadPedidos();
   loadCardapio();
 
+  // Monitor global da cozinha: avisa de novos pedidos em qualquer aba (badge + som)
+  iniciarMonitorCozinhaGlobal();
+
   // Breadcrumb inicial
   const bcInit = document.getElementById('headerBreadcrumb');
   if (bcInit) bcInit.textContent = 'Atendimento · Novo Pedido';
@@ -865,6 +868,50 @@ function _beepCozinha() {
   } catch (e) {}
 }
 
+// Atualiza o badge da Cozinha na sidebar, destaca a aba e toca o som ao chegar pedido novo.
+// Compartilhado entre o painel (loadCozinha) e o monitor global, usando o mesmo conjunto de ids.
+function _aplicarStatusCozinha(todos) {
+  const ativos = todos.filter(p => ['aberto', 'em_preparo', 'pronto'].includes(p.status));
+  const novos  = todos.filter(p => p.status === 'aberto');
+  const novosIds = new Set(novos.map(p => p.id_pedido));
+
+  let temNovo = false;
+  if (window._cozinhaIdsAntes) {
+    temNovo = [...novosIds].some(id => !window._cozinhaIdsAntes.has(id));
+  }
+  window._cozinhaIdsAntes = novosIds;
+
+  const badge   = document.getElementById('cozinhaBadge');
+  const navLink = document.querySelector('.nav-link[data-section="cozinha"]');
+  const total   = ativos.length;
+  if (badge) {
+    badge.textContent = total;
+    badge.style.display = total > 0 ? 'inline-block' : 'none';
+    badge.classList.toggle('badge-pulse', novos.length > 0);
+  }
+  if (navLink) navLink.classList.toggle('cozinha-alerta', novos.length > 0);
+
+  if (temNovo) _beepCozinha();
+  return { ativos, novos };
+}
+
+// Monitor global: roda em qualquer aba para avisar de novos pedidos na cozinha.
+let _cozinhaMonitorTimer = null;
+async function verificarCozinhaGlobal() {
+  try {
+    const resp = await apiFetch(`${API_URL}/pedidos/cozinha`);
+    if (!resp.ok) return;
+    const data  = await resp.json();
+    const todos = data.pedidos || data || [];
+    _aplicarStatusCozinha(todos);
+  } catch (e) { /* silencioso */ }
+}
+function iniciarMonitorCozinhaGlobal() {
+  if (_cozinhaMonitorTimer) return;
+  verificarCozinhaGlobal();
+  _cozinhaMonitorTimer = setInterval(verificarCozinhaGlobal, 12000);
+}
+
 async function loadCozinha() {
   try {
     const resp = await apiFetch(`${API_URL}/pedidos/cozinha`);
@@ -876,25 +923,12 @@ async function loadCozinha() {
     const preparo = todos.filter(p => p.status === 'em_preparo');
     const prontos = todos.filter(p => p.status === 'pronto');
 
-    // Som de notificação quando chegarem novos pedidos
-    const novosIds = new Set(novos.map(p => p.id_pedido));
-    if (window._cozinhaIdsAntes) {
-      const temNovo = [...novosIds].some(id => !window._cozinhaIdsAntes.has(id));
-      if (temNovo) _beepCozinha();
-    }
-    window._cozinhaIdsAntes = novosIds;
-
     renderColunaCozinha('colNovos',   novos,   'novo',    'countNovos');
     renderColunaCozinha('colPreparo', preparo, 'preparo', 'countPreparo');
     renderColunaCozinha('colProntos', prontos, 'pronto',  'countProntos');
 
-    // Badge na sidebar
-    const total = novos.length + preparo.length + prontos.length;
-    const badge = document.getElementById('cozinhaBadge');
-    if (badge) {
-      badge.textContent = total;
-      badge.style.display = total > 0 ? 'inline-block' : 'none';
-    }
+    // Badge na sidebar + som ao chegar novo pedido (lógica compartilhada com o monitor global)
+    _aplicarStatusCozinha(todos);
   } catch (e) {
     console.error('Erro ao carregar cozinha:', e);
   }
@@ -1556,9 +1590,29 @@ async function openFinalizarModal(pedidoId) {
           const subtotal = parseFloat(it.subtotal || (it.preco_unitario * qtd) || 0).toFixed(2);
           return `<div class="resumo-item"><span class="resumo-item-nome">${escapeHtml(nome)}</span> <span class="resumo-item-qtd">x${qtd}</span> <span class="resumo-item-sub">R$ ${subtotal}</span></div>`;
         }).join('');
-        const totalCalc = itens.reduce((s, it) => s + (parseFloat(it.subtotal || 0) || 0), 0);
-        const totalHtml = `<div class="resumo-total">Total calculado: R$ ${totalCalc.toFixed(2)}</div>`;
-        resumoEl.innerHTML = `<div class="resumo-list">${itemsHtml}</div>${totalHtml}`;
+        // Subtotal = soma dos itens; Total = total do pedido (já com desconto aplicado)
+        const subtotal = itens.reduce((s, it) => {
+          const q = it.quantidade || 1;
+          return s + (parseFloat(it.subtotal || (it.preco_unitario * q) || 0) || 0);
+        }, 0);
+        let totalFinal = subtotal;
+        if (pedido && pedido.total != null && pedido.total !== '') {
+          const t = parseFloat(pedido.total);
+          if (!isNaN(t)) totalFinal = t;
+        }
+        let desconto = 0;
+        if (pedido && pedido.desconto_valor != null && pedido.desconto_valor !== '') {
+          desconto = parseFloat(pedido.desconto_valor) || 0;
+        }
+        if (desconto <= 0 && totalFinal < subtotal) desconto = subtotal - totalFinal;
+        const descLabel = (pedido && pedido.desconto_tipo === 'percent') ? 'Desconto (%)' : 'Desconto';
+        let resumoHtml = `<div class="resumo-list">${itemsHtml}</div>`;
+        resumoHtml += `<div class="resumo-sub">Subtotal <span>R$ ${subtotal.toFixed(2)}</span></div>`;
+        if (desconto > 0.004) {
+          resumoHtml += `<div class="resumo-desc">${descLabel} <span>− R$ ${desconto.toFixed(2)}</span></div>`;
+        }
+        resumoHtml += `<div class="resumo-total">Total: R$ ${totalFinal.toFixed(2)}</div>`;
+        resumoEl.innerHTML = resumoHtml;
       }
     }
   } catch (err) {
@@ -2863,6 +2917,9 @@ async function finalizarPedido() {
 
     // Recarrega dados
     loadPedidos();
+
+    // Verifica a cozinha imediatamente para atualizar badge/som do novo pedido
+    try { verificarCozinhaGlobal(); } catch (e) {}
 
     // preserva seleção de pagamento do carrinho ao recarregar pedidos
     try { preserveCarrinhoPagamentoSelection(); } catch(e) {}
